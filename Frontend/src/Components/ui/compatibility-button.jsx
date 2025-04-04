@@ -40,6 +40,6 @@ const Button = forwardRef(
   }
 );
 
-Button.displayName = 'CompatibilityButton';
+// Button.displayName = 'CompatibilityButton';
 
 export default Button;
