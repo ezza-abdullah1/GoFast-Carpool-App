@@ -147,7 +147,7 @@ const CarpoolPost = ({
                   {schedule.recurring.map((day, index) => (
                     <span
                       key={index}
-                      className="bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 px-2.5 py-0.5 rounded-full text-xs font-medium"
+                      className="bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-secondary-300 px-2.5 py-0.5 rounded-full text-xs font-medium"
                     >
                       {day}
                     </span>
