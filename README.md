@@ -90,7 +90,7 @@ FAST NUCES students face high travel costs and inefficient commuting due to a la
 
 ---
 
-## ➕ Additional Features (If Time Allows)
+## ➕ Additional Features
 
 ### 💬 1. Direct Messaging System
 
