@@ -176,8 +176,16 @@ const CarpoolPost = ({
           {/* Actions */}
           {variant === "default" && (
             <div className="mt-4 flex gap-3">
-              <Button className="flex-1 bg-primary text-white">Request Seat</Button>
-              <Button variant="outline" className="flex-1 bg-primary text-white">
+              <Button
+                variant="outline"
+                className="flex-1 bg-primary text-white"
+              >
+                Request Seat
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1 bg-primary text-white"
+              >
                 <MessageCircle className="mr-2 h-4 w-4" />
                 Message
               </Button>

@@ -224,7 +224,11 @@ const CarpoolSearch = ({ onSearch, className }) => {
 
           {/* Search buttons */}
           <div className="mt-8 flex gap-3">
-            <Button type="submit" className="flex-1 bg-primary text-white">
+            <Button
+              type="submit"
+              variant="outline"
+              className="flex-1 bg-primary text-white"
+            >
               <Search className="mr-2 h-8 w-3" />
               Search
             </Button>
