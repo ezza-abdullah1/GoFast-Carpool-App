@@ -13,9 +13,10 @@ const Footer = () => {
               <div className="relative flex items-center justify-center h-8 w-8 bg-primary rounded-full overflow-hidden">
                 <Car className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary-700 bg-clip-text text-transparent">
-                GoFAST
-              </span>
+              <span className="text-xl font-bold text-primary">
+  GoFAST
+</span>
+
             </Link>
             <p className="text-sm text-muted-foreground mt-4 max-w-md">
               Simplifying commutes for FAST NUCES students through carpooling.

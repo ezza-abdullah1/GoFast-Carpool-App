@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Filter, MapPin, SlidersHorizontal, Car } from 'lucide-react';
-import CarpoolPost from './CarpoolPost';
-import CarpoolSearch from './CarpoolSearch';
+import CarpoolPost from '../Components/FindCarpool/CarpoolPost';
+import CarpoolSearch from '../Components/FindCarpool/CarpoolSearch';
 const Button = ({ children, onClick, className }) => {
   return (
     <button
