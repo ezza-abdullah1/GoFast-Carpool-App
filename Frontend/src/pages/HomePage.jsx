@@ -129,7 +129,7 @@ const HomePage = () => {
         <CTA />
       </main>
       
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 };

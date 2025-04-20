@@ -5,6 +5,8 @@ import CarpoolPage from "./pages/CarpoolPage";
 import NotFound from "./pages/NotFound";
 import Messages from "./pages/Messages";
 import Layout from "./Components/layout/Layout";
+import SignIn from "./Components/Authentication/SignIn";
+import SignUp from "./Components/Authentication/SignUp";
 
 function App() {
   return (
@@ -14,6 +16,10 @@ function App() {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="carpools" element={<CarpoolPage />} />
         <Route path="messages" element={<Messages />} />
+        <Route path="signIn" element={<SignIn/>}/> 
+        <Route path= "signUp" element={<SignUp/>}/>
+
+
       </Route>
 
       <Route path="*" element={<NotFound />} />
