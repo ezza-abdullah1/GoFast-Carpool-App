@@ -312,7 +312,6 @@ const Dashboard = () => {
         </section>
       </main>
       
-      <Footer />
     </div>
   );
 };

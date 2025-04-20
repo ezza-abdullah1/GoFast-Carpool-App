@@ -364,7 +364,6 @@ const Messages = () => {
         </div>
       </main>
       
-      <Footer />
     </div>
   );
 };

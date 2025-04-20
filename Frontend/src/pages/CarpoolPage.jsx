@@ -132,7 +132,6 @@ const handleSearch = async (filters) => {
           </section>
         </main>
       </div>
-      <Footer />
     </>
   );
 };
