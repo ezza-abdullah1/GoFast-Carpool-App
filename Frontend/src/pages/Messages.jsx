@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Search, MoreVertical, PhoneCall, Video, Send, MapPin, Calendar, Clock, Users } from 'lucide-react';
 import Button from '../Components/ui/compatibility-button';
-
+import Header from '../Components/layout/Header';
+import Footer from '../Components/layout/Footer';
 import { cn } from '../lib/utils'; // Fixed import path to match Dashboard component
 
 const Messages = () => {
@@ -128,7 +129,8 @@ const Messages = () => {
   
   return (
     <div className="flex flex-col min-h-screen">
-   
+      <Header />
+      
       <main className="flex-1 pt-16">
         <div className="h-[calc(100vh-64px)] flex">
           {/* Contacts Sidebar */}
@@ -362,7 +364,7 @@ const Messages = () => {
         </div>
       </main>
       
-      
+      <Footer />
     </div>
   );
 };

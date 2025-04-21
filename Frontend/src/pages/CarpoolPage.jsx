@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { Filter, MapPin, SlidersHorizontal, Car } from "lucide-react";
 import CarpoolPost from "../Components/FindCarpool/CarpoolPost";
 import CarpoolSearch from "../Components/FindCarpool/CarpoolSearch";
-
+import Header from "../Components/layout/Header";
+import Footer from "../Components/layout/Footer";
 const Button = ({ children, onClick, className }) => {
   return (
     <button
@@ -156,7 +157,7 @@ const CarpoolPage = () => {
 
   return (
     <>
-
+      <Header />
       <div className="flex flex-col min-h-screen">
         <main className="flex-1 pt-20">
           <section className="bg-muted/30 dark:bg-muted/5 py-12">
@@ -236,7 +237,7 @@ const CarpoolPage = () => {
           </section>
         </main>
       </div>
-
+      <Footer />
     </>
   );
 };

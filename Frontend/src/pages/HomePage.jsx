@@ -1,4 +1,6 @@
 import React from 'react';
+import Footer from '../Components/layout/Footer'
+import Header from '../Components/layout/Header';
 import Hero from '../Components/Home/Hero';
 import Features from '../Components/Home/Features';
 import HowItWorks from '../Components/Home/HowItWorks';
@@ -117,7 +119,7 @@ const CTA = () => {
 const HomePage = () => {
   return (
     <div className="flex flex-col min-h-screen">
-     
+      <Header />
       
       <main className="flex-grow">
         <Hero />
@@ -127,6 +129,7 @@ const HomePage = () => {
         <CTA />
       </main>
       
+      <Footer />
     </div>
   );
 };
