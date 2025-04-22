@@ -121,7 +121,7 @@ const Dashboard = () => {
   
   return (
     <div className="flex flex-col min-h-screen">
-      
+
       <main className="flex-1 pt-20">
         {/* User Profile Section */}
         <section className="bg-muted/30 dark:bg-muted/5 py-12">
