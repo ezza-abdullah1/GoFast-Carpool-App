@@ -4,6 +4,7 @@ import { MapPin, Calendar, Clock, Car, Users, Star, MessageCircle, Plus } from '
 import Button from '../Components/ui/compatibility-button';
 import CarpoolPost from '../Components/FindCarpool/CarpoolPost';
 import CarpoolForm from '../Components/FindCarpool/CarpoolForm';
+import { cn } from '../lib/utils';
 
 
 const Dashboard = () => {
