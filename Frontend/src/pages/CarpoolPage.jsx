@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import CarpoolPost from "../Components/FindCarpool/CarpoolPost";
 import CarpoolSearch from "../Components/FindCarpool/CarpoolSearch";
+
 import axios from "axios";
 
 const CarpoolPage = () => {
@@ -38,6 +39,7 @@ const CarpoolPage = () => {
 
   return (
     <>
+
       <div className="flex flex-col min-h-screen">
         <main className="flex-1 pt-20">
           <section className="bg-muted/30 dark:bg-muted/5 py-12">
@@ -75,6 +77,7 @@ const CarpoolPage = () => {
           </section>
         </main>
       </div>
+   
     </>
   );
 };
