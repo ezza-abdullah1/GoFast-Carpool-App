@@ -4,9 +4,7 @@ import { MapPin, Calendar, Clock, Car, Users, Star, MessageCircle, Plus } from '
 import Button from '../Components/ui/compatibility-button';
 import CarpoolPost from '../Components/FindCarpool/CarpoolPost';
 import CarpoolForm from '../Components/FindCarpool/CarpoolForm';
-import Header from '../Components/layout/Header';
-import Footer from '../Components/layout/Footer';
-import { cn } from '../lib/utils';
+
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
@@ -123,7 +121,6 @@ const Dashboard = () => {
   
   return (
     <div className="flex flex-col min-h-screen">
-      <Header />
       
       <main className="flex-1 pt-20">
         {/* User Profile Section */}
