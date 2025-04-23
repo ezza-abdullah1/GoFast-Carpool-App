@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CalendarIcon, Clock, Car, Users, MapPin, Plus, Check } from 'lucide-react';
+import { CalendarIcon, Clock, Car, Users, MapPin, Check } from 'lucide-react';
 import Button from '../ui/compatibility-button';
 import { cn } from '../../lib/utils';
 
@@ -84,7 +84,7 @@ const CarpoolForm = () => {
         <div className="flex gap-3 mb-6">
           <Button
             variant={offeringRide ? "primary" : "outline"}
-            className="flex-1"
+            className={offeringRide?"bg-blue-500 text-white flex-1":" flex-1"}
             onClick={() => setOfferingRide(true)}
           >
             <Car className="mr-2 h-5 w-5" />
@@ -92,7 +92,7 @@ const CarpoolForm = () => {
           </Button>
           <Button
             variant={!offeringRide ? "primary" : "outline"}
-            className="flex-1"
+            className={!offeringRide?"bg-blue-500 text-white flex-1":"flex-1"}
             onClick={() => setOfferingRide(false)}
           >
             <Users className="mr-2 h-5 w-5" />

@@ -32,7 +32,7 @@ const CarpoolPost = ({
     } else {
       setButtonText("Show Route");
     }
-  }, [location.pathname]); 
+  }, [location.pathname]);
 
   const handleRequestSeat = () => {
     setMapModalOpen(true);
@@ -194,37 +194,30 @@ const CarpoolPost = ({
 
           {/* Actions - Using identical styling for both buttons */}
           {variant === "default" && (
-            <div className="mt-4 flex gap-3 items-center">
-              <div className="flex-1">
-                <button
-                  onClick={handleRequestSeat}
-                  className="w-full h-[44px] px-5 text-base bg-blue-500 text-white rounded-[12px] border-none flex items-center justify-center cursor-pointer transition-colors duration-200 hover:bg-blue-600"
-                >
-                  {buttonText}
-                </button>
-              </div>
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+              <button
+                onClick={handleRequestSeat}
+                className="flex-grow sm:flex-grow-0 h-[44px] px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600"
+              >
+                {buttonText}
+              </button>
 
-              <div className="flex-1">
-                <button
-                  className="w-full h-[44px] px-5 text-base bg-blue-500 text-white rounded-[12px] border-none flex items-center justify-center cursor-pointer transition-colors duration-200 hover:bg-blue-600"
-                >
-                  <MessageCircle className="mr-2 h-4 w-4" />
-                  Message
-                </button>
-              </div>
+              <button
+                className="flex-grow sm:flex-grow-0 h-[44px] px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600"
+              >
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Message
+              </button>
 
               {(schedule.recurring || preferences.length > 0) && (
                 <button
                   onClick={toggleExpand}
                   aria-label={isExpanded ? "Show less" : "Show more"}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
+                  className="border-none h-[44px] px-2 text-sm bg-white text-black rounded-xl border hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className={cn(
-                      "h-5 w-5 transition-transform duration-200",
-                      isExpanded && "rotate-180"
-                    )}
+                    className={cn("h-5 w-5 transition-transform duration-200", isExpanded && "rotate-180")}
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -232,12 +225,15 @@ const CarpoolPost = ({
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
-                    <polyline points="6 9 12 15 18 9"></polyline>
+                    <polyline points="6 9 12 15 18 9" />
                   </svg>
                 </button>
               )}
-              <MapModal open={mapModalOpen} onOpenChange={setMapModalOpen}  />
+
+
+              <MapModal open={mapModalOpen} onOpenChange={setMapModalOpen} />
             </div>
+
           )}
 
           {variant === "compact" && (
