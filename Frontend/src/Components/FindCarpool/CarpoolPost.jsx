@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Calendar,
   Clock,
@@ -7,8 +7,10 @@ import {
   Star,
   MessageCircle,
 } from "lucide-react";
-import Button from "../ui/compatibility-button";
 import { cn } from "../../lib/utils";
+import MapModal from "./MapModel";
+import { useLocation } from 'react-router-dom';
+
 const CarpoolPost = ({
   id,
   driver,
@@ -20,6 +22,21 @@ const CarpoolPost = ({
   className,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [mapModalOpen, setMapModalOpen] = useState(false);
+  const [buttonText, setButtonText] = useState("");
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.pathname === "/carpools") {
+      setButtonText("Request Seat");
+    } else {
+      setButtonText("Show Route");
+    }
+  }, [location.pathname]);
+
+  const handleRequestSeat = () => {
+    setMapModalOpen(true);
+  };
 
   const toggleExpand = () => {
     if (variant === "default") {
@@ -105,7 +122,9 @@ const CarpoolPost = ({
                 </div>
                 <div className="font-medium mt-1">
                   To:{" "}
-                  <span className="text-muted-foreground">{route.dropoff}</span>
+                  <span className="text-muted-foreground">
+                    {route.dropoff}
+                  </span>
                 </div>
               </div>
             </div>
@@ -173,35 +192,32 @@ const CarpoolPost = ({
             </div>
           )}
 
-          {/* Actions */}
+          {/* Actions - Using identical styling for both buttons */}
           {variant === "default" && (
-            <div className="mt-4 flex gap-3">
-              <Button
-                variant="outline"
-                className="flex-1 bg-primary text-white"
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+              <button
+                onClick={handleRequestSeat}
+                className="flex-grow sm:flex-grow-0 h-[44px] px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600"
               >
-                Request Seat
-              </Button>
-              <Button
-                variant="outline"
-                className="flex-1 bg-primary text-white"
+                {buttonText}
+              </button>
+
+              <button
+                className="flex-grow sm:flex-grow-0 h-[44px] px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600"
               >
                 <MessageCircle className="mr-2 h-4 w-4" />
                 Message
-              </Button>
+              </button>
+
               {(schedule.recurring || preferences.length > 0) && (
-                <Button
-                  variant="ghost"
-                  size="icon"
+                <button
                   onClick={toggleExpand}
                   aria-label={isExpanded ? "Show less" : "Show more"}
+                  className="border-none h-[44px] px-2 text-sm bg-white text-black rounded-xl border hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className={cn(
-                      "h-5 w-5 transition-transform duration-200",
-                      isExpanded && "rotate-180"
-                    )}
+                    className={cn("h-5 w-5 transition-transform duration-200", isExpanded && "rotate-180")}
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -209,11 +225,15 @@ const CarpoolPost = ({
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
-                    <polyline points="6 9 12 15 18 9"></polyline>
+                    <polyline points="6 9 12 15 18 9" />
                   </svg>
-                </Button>
+                </button>
               )}
+
+
+              <MapModal open={mapModalOpen} onOpenChange={setMapModalOpen} />
             </div>
+
           )}
 
           {variant === "compact" && (
@@ -230,7 +250,15 @@ const CarpoolPost = ({
                 {seats.available} seat{seats.available !== 1 ? "s" : ""}{" "}
                 available
               </div>
-              <Button size="sm">Details</Button>
+              <button
+                style={{
+                  height: "32px",
+                  fontSize: "14px",
+                  padding: "0 12px",
+                }}
+              >
+                Details
+              </button>
             </div>
           )}
         </div>
