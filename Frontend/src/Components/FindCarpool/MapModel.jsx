@@ -81,7 +81,11 @@ const MapModal = ({ open, onOpenChange }) => {
             setError(true);
             setSelectedLatLng(null);
             console.error("Failed to load route", error);
+            if(selectedLatLng){
             setErrorMsg("Invalid location selected. Please try again.");
+            }else{
+                setErrorMsg("Unable to load route. Please try again later.");
+            }
             return null;
         }
     };
