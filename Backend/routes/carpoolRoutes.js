@@ -19,6 +19,6 @@ router.put('/:id', carpoolController.updateCarpool);
 router.delete('/:id', carpoolController.deleteCarpool);
 
 // Search carpools with filters
-router.post('/search', carpoolController.searchCarpools);
+//router.post('/search', carpoolController.searchCarpools);
 
 module.exports = router;
