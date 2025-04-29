@@ -10,7 +10,7 @@ import {
 } from "../ui/dialog";
 import { MapPin } from "lucide-react";
 import { useLocation } from "react-router-dom";
-import AlertBox from "../ui/AlertBox"; 
+import AlertBox from "../ui/AlertBox";
 
 const decodePolyline = (polyline) => {
     let index = 0, lat = 0, lng = 0, coordinates = [];
@@ -79,13 +79,11 @@ const MapModal = ({ open, onOpenChange }) => {
         } catch (error) {
             setConfirmEnabled(false);
             setError(true);
-            setSelectedLatLng(null);
+
             console.error("Failed to load route", error);
-            if(selectedLatLng){
-            setErrorMsg("Invalid location selected. Please try again.");
-            }else{
-                setErrorMsg("Unable to load route. Please try again later.");
-            }
+
+            setErrorMsg("Unable to load route. Please try again later.");
+            setSelectedLatLng(null);
             return null;
         }
     };
@@ -170,9 +168,9 @@ const MapModal = ({ open, onOpenChange }) => {
         <>
 
             <Dialog open={open} onOpenChange={onOpenChange}>
-        
+
                 <DialogContent className="max-w-2xl p-0">
-                {error && <AlertBox message={errorMsg} onClose={() => setError(false)} />}
+                    {error && <AlertBox message={errorMsg} onClose={() => setError(false)} />}
                     <DialogHeader className="px-6 pt-6">
                         <DialogTitle>
                             <span className="flex items-center gap-2">
