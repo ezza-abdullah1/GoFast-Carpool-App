@@ -47,12 +47,12 @@ const CarpoolPost = ({
   return (
     <div
       className={cn(
-        "bg-card border border-border rounded-xl overflow-hidden transition-all duration-300 hover:shadow-md",
+        "bg-card dark:bg-primary-900/5 border border-border rounded-xl overflow-hidden transition-all duration-300 hover:shadow-md",
         variant === "compact" ? "p-4" : "p-5",
         className
       )}
     >
-      <div className="flex gap-4">
+      <div className="flex gap-4 ">
         {/* Avatar */}
         <div className="flex-shrink-0">
           <div className="h-12 w-12 rounded-full bg-primary-100 dark:bg-primary-900/40 overflow-hidden flex items-center justify-center">
@@ -197,13 +197,13 @@ const CarpoolPost = ({
             <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
               <button
                 onClick={handleRequestSeat}
-                className="flex-grow sm:flex-grow-0 h-[44px] px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600"
+                className="flex-grow sm:flex-grow-0 h-[44px]  dark:bg-button-dark dark:hover:bg-button-hover dark:text-white px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600"
               >
                 {buttonText}
               </button>
 
               <button
-                className="flex-grow sm:flex-grow-0 h-[44px] px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600"
+                className="flex-grow sm:flex-grow-0 h-[44px] px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600  dark:bg-button-dark dark:hover:bg-button-hover dark:text-white"
               >
                 <MessageCircle className="mr-2 h-4 w-4" />
                 Message
@@ -213,7 +213,8 @@ const CarpoolPost = ({
                 <button
                   onClick={toggleExpand}
                   aria-label={isExpanded ? "Show less" : "Show more"}
-                  className="border-none h-[44px] px-2 text-sm bg-white text-black rounded-xl border hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className="border-none h-[44px] px-2 text-sm bg-inherit text-black dark:text-white rounded-xl dark:hover:bg-button-hover/60 transition-colors"
+
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

@@ -188,7 +188,7 @@ const CarpoolSearch = ({ onSearch, className }) => {
                     id="search-seats"
                     value={minSeats}
                     onChange={(e) => setMinSeats(e.target.value)}
-                    className="input-base pl-10 bg-background text-foreground dark:bg-muted dark:text-white"
+                    className="input-base pl-10 bg-background text-foreground :bg-mutedarkd dark:text-white"
                   >
                     {[1, 2, 3, 4, 5].map((num) => (
                       <option key={num} value={num}>
@@ -227,7 +227,7 @@ const CarpoolSearch = ({ onSearch, className }) => {
             <Button
               type="submit"
               variant="outline"
-              className="flex-1 bg-primary text-white"
+              className="flex-1 bg-primary text-white dark:bg-muted dark:hover:bg-button-hover dark:text-white"
             >
               <Search className="mr-2 h-8 w-3" />
               Search
@@ -238,10 +238,10 @@ const CarpoolSearch = ({ onSearch, className }) => {
               date ||
               time ||
               selectedFilters.length > 0) && (
-              <Button type="button" variant="outline" onClick={clearFilters}>
-                Clear
-              </Button>
-            )}
+                <Button type="button" variant="outline" onClick={clearFilters}>
+                  Clear
+                </Button>
+              )}
           </div>
         </form>
       </div>
