@@ -1,24 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Filter, MapPin, SlidersHorizontal, Car } from "lucide-react";
 import CarpoolPost from "../Components/FindCarpool/CarpoolPost";
 import CarpoolSearch from "../Components/FindCarpool/CarpoolSearch";
-import Header from "../Components/layout/Header";
-import Footer from "../Components/layout/Footer";
+
 import axios from "axios";
 
-const Button = ({ children, onClick, className }) => {
-  return (
-    <button
-      onClick={onClick}
-      className={`px-4 py-2 rounded-md bg-primary text-white hover:bg-primary-dark focus:outline-none transition-colors ${className}`}
-    >
-      {children}
-    </button>
-  );
-};
-
 const CarpoolPage = () => {
-  const [viewMode, setViewMode] = useState("list");
   const [carpools, setCarpools] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -53,7 +39,6 @@ const CarpoolPage = () => {
 
   return (
     <>
-      <Header />
 
       <div className="flex flex-col min-h-screen">
         <main className="flex-1 pt-20">
@@ -75,59 +60,24 @@ const CarpoolPage = () => {
                   <span className="font-medium text-foreground">{carpools.length}</span>{" "}
                   carpools available
                 </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                      viewMode === "list"
-                        ? "bg-primary text-white"
-                        : "bg-muted text-muted-foreground hover:bg-muted/80"
-                    }`}
-                    onClick={() => setViewMode("list")}
-                  >
-                    <SlidersHorizontal className="h-4 w-4" />
-                    List View
-                  </button>
-                  <button
-                    className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                      viewMode === "map"
-                        ? "bg-primary text-white"
-                        : "bg-muted text-muted-foreground hover:bg-muted/80"
-                    }`}
-                    onClick={() => setViewMode("map")}
-                  >
-                    <MapPin className="h-4 w-4" />
-                    Map View
-                  </button>
-                </div>
               </div>
 
               {loading ? (
                 <div className="text-center text-muted-foreground">Loading...</div>
               ) : error ? (
                 <div className="text-center text-red-500">{error}</div>
-              ) : viewMode === "list" ? (
+              ) : (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 animate-fade-in">
                   {carpools.map((carpool) => (
                     <CarpoolPost key={carpool.id} {...carpool} />
                   ))}
-                </div>
-              ) : (
-                <div className="rounded-xl overflow-hidden border border-border h-[700px] bg-card animate-fade-in">
-                  <div className="h-full flex items-center justify-center bg-muted/30 dark:bg-muted/10">
-                    <div className="text-center p-8">
-                      <Car className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                      <h3 className="text-lg font-medium mb-2">Map View Coming...</h3>
-                    </div>
-                  </div>
                 </div>
               )}
             </div>
           </section>
         </main>
       </div>
-
-      <Footer />
+   
     </>
   );
 };

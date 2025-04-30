@@ -1,16 +1,16 @@
 import React from 'react';
 import { useState } from 'react';
-import { MapPin, Calendar, Clock, Car, Users, Star, MessageCircle, Plus } from 'lucide-react';
+import { Clock, Car, Users, Star, MessageCircle, Plus } from 'lucide-react';
 import Button from '../Components/ui/compatibility-button';
 import CarpoolPost from '../Components/FindCarpool/CarpoolPost';
 import CarpoolForm from '../Components/FindCarpool/CarpoolForm';
-
 import { cn } from '../lib/utils';
+
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
   const [showCarpoolForm, setShowCarpoolForm] = useState(false);
-  
+
   // Sample user data
   const user = {
     name: 'Ahmed Khan',
@@ -23,7 +23,7 @@ const Dashboard = () => {
     totalSavings: 4500,
     co2Saved: 120,
   };
-  
+
   // Sample data for upcoming rides
   const upcomingRides = [
     {
@@ -49,7 +49,7 @@ const Dashboard = () => {
       preferences: ['Female riders only'],
     }
   ];
-  
+
   // Sample data for ride history
   const rideHistory = [
     {
@@ -93,7 +93,7 @@ const Dashboard = () => {
       },
     }
   ];
-  
+
   // Sample data for ride offers
   const rideOffers = [
     {
@@ -119,11 +119,10 @@ const Dashboard = () => {
       preferences: ['No smoking', 'Music lovers welcome'],
     }
   ];
-  
+
   return (
     <div className="flex flex-col min-h-screen">
-  
-      
+
       <main className="flex-1 pt-20">
         {/* User Profile Section */}
         <section className="bg-muted/30 dark:bg-muted/5 py-12">
@@ -135,7 +134,7 @@ const Dashboard = () => {
                   {user.name.charAt(0)}
                 </span>
               </div>
-              
+
               {/* User Info */}
               <div className="md:flex-1 text-center md:text-left">
                 <h1 className="text-2xl font-bold">{user.name}</h1>
@@ -145,7 +144,7 @@ const Dashboard = () => {
                   <span className="font-medium">{user.rating.toFixed(1)}</span>
                   <span className="text-muted-foreground text-sm">({user.ridesOffered + user.ridesTaken} rides)</span>
                 </div>
-                
+
                 <div className="flex flex-wrap justify-center md:justify-start gap-4">
                   <div className="text-center">
                     <p className="text-lg font-bold">{user.ridesOffered}</p>
@@ -155,20 +154,26 @@ const Dashboard = () => {
                     <p className="text-lg font-bold">{user.ridesTaken}</p>
                     <p className="text-xs text-muted-foreground">Rides Taken</p>
                   </div>
-                  <div className="text-center">
+                  {/* <div className="text-center">
                     <p className="text-lg font-bold">₨{user.totalSavings}</p>
                     <p className="text-xs text-muted-foreground">Total Savings</p>
                   </div>
                   <div className="text-center">
                     <p className="text-lg font-bold">{user.co2Saved}kg</p>
                     <p className="text-xs text-muted-foreground">CO₂ Saved</p>
-                  </div>
+                  </div> */}
                 </div>
               </div>
-              
+
               {/* Actions */}
               <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setShowCarpoolForm(!showCarpoolForm)}>
+
+                <Button
+                  size="sm"
+                  className="bg-blue-500 text-white rounded-full px-4 py-1.5 text-sm hover:bg-blue-600 active:bg-blue-700"
+                  variant="outline"
+                  onClick={() => setShowCarpoolForm(!showCarpoolForm)}
+                >
                   {showCarpoolForm ? (
                     <>Cancel</>
                   ) : (
@@ -178,6 +183,7 @@ const Dashboard = () => {
                     </>
                   )}
                 </Button>
+
                 <Button>
                   <MessageCircle className="mr-2 h-4 w-4" />
                   Messages
@@ -186,7 +192,7 @@ const Dashboard = () => {
             </div>
           </div>
         </section>
-        
+
         {/* Carpool Form (Conditional) */}
         {showCarpoolForm && (
           <section className="py-8">
@@ -195,7 +201,7 @@ const Dashboard = () => {
             </div>
           </section>
         )}
-        
+
         {/* Rides Section */}
         <section className="py-12">
           <div className="container mx-auto px-4">
@@ -235,7 +241,7 @@ const Dashboard = () => {
                 My Ride Offers
               </button>
             </div>
-            
+
             {/* Tab Content */}
             <div className="animate-fade-in">
               {activeTab === 'upcoming' && (
@@ -259,7 +265,7 @@ const Dashboard = () => {
                   )}
                 </div>
               )}
-              
+
               {activeTab === 'history' && (
                 <div>
                   <h2 className="text-xl font-semibold mb-6">Your Ride History</h2>
@@ -281,7 +287,7 @@ const Dashboard = () => {
                   )}
                 </div>
               )}
-              
+
               {activeTab === 'offers' && (
                 <div>
                   <h2 className="text-xl font-semibold mb-6">Your Ride Offers</h2>
@@ -298,7 +304,7 @@ const Dashboard = () => {
                       <p className="text-muted-foreground mb-6">
                         You haven't offered any rides yet. Share your journey with others!
                       </p>
-                      <Button onClick={() => setShowCarpoolForm(true)}>
+                      <Button  onClick={() => setShowCarpoolForm(true)}>
                         <Plus className="mr-2 h-4 w-4" />
                         Offer a Ride
                       </Button>
@@ -310,8 +316,8 @@ const Dashboard = () => {
           </div>
         </section>
       </main>
-      
-    </div>
+
+    </div >
   );
 };
 

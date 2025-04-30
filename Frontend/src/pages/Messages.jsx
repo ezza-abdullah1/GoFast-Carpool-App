@@ -128,7 +128,7 @@ const Messages = () => {
   
   return (
     <div className="flex flex-col min-h-screen">
-   
+
       <main className="flex-1 pt-16">
         <div className="h-[calc(100vh-64px)] flex">
           {/* Contacts Sidebar */}
