@@ -27,6 +27,10 @@ module.exports = {
         display: ["SF Pro Display", "Inter", "system-ui", "sans-serif"],
       },
       colors: {
+        button: {
+          dark: "hsl(222,47%,11%)",
+          hover: "hsl(222,48%,17%)",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -144,8 +148,7 @@ module.exports = {
         glass: "0 4px 30px rgba(0, 0, 0, 0.1)",
         elevated:
           "0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01)",
-        card:
-          "0 2px 8px -1px rgba(0, 0, 0, 0.03), 0 4px 6px -2px rgba(0, 0, 0, 0.01)",
+        card: "0 2px 8px -1px rgba(0, 0, 0, 0.03), 0 4px 6px -2px rgba(0, 0, 0, 0.01)",
       },
       backdropBlur: {
         xs: "2px",

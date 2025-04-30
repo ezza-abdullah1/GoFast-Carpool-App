@@ -170,7 +170,7 @@ const Dashboard = () => {
 
                 <Button
                   size="sm"
-                  className="bg-blue-500 text-white rounded-full px-4 py-1.5 text-sm hover:bg-blue-600 active:bg-blue-700"
+                  className="bg-blue-500 dark:bg-muted  dark:hover:bg-button-hover dark:text-white text-white rounded-full px-4 py-1.5 text-sm hover:bg-blue-600 active:bg-blue-700"
                   variant="outline"
                   onClick={() => setShowCarpoolForm(!showCarpoolForm)}
                 >
