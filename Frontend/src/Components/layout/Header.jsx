@@ -3,12 +3,18 @@ import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, User, Moon, Sun, Car } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { cn } from '../../lib/utils';
+import { useNavigate } from 'react-router-dom';
+import SignIn from '../Authentication/SignIn';
+import SignUp from '../Authentication/SignUp';
+
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -103,14 +109,24 @@ const Header = () => {
               {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </button>
             
-            <Button variant="outline" size="sm">
+            {/* <Button variant="outline" size="sm">
               <User className="mr-2 h-4 w-4" />
               Sign In
             </Button>
             
             <Button  size="sm" className="dark:bg-muted  dark:hover:bg-button-hover dark:text-white">
               Get Started
-            </Button>
+            </Button> */}
+
+<Button variant="outline" size="sm" onClick={() => navigate('/SignIn')}>
+  <User className="mr-2 h-4 w-4" />
+  Sign In
+</Button>
+
+<Button size="sm" onClick={() => navigate('/SignUp')}>
+  Get Started
+</Button>
+
           </div>
 
           {/* Mobile Menu Button */}
