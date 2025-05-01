@@ -45,7 +45,21 @@
     
     --radius: 0.75rem;
   }
- 
+  /* Logo styling */
+.logo {
+    font-size: 2rem; /* Adjust size */
+    font-weight: bold;
+    color: #4CAF50; /* Change color */
+    display: flex;
+    align-items: center;
+}
+
+.logo svg {
+    width: 32px;
+    height: 32px;
+    margin-right: 10px; /* Space between the icon and text */
+}
+
   .dark {
     --background: 222 47% 11%;
     --foreground: 210 40% 98%;
