@@ -1,0 +1,26 @@
+{
+  "name": "nuces-carpool-app",
+  "version": "1.0.0",
+  "description": "The purpose of this project is to create a web application that connects FAST NUCES students for carpooling. This platform helps reduce transportation costs, promotes eco-friendly travel, and builds a stronger student community. Access is restricted to verified university emails to ensure safety and trust.",
+  "homepage": "https://github.com/ezza-abdullah1/GoFast-Carpool-App#readme",
+  "bugs": {
+    "url": "https://github.com/ezza-abdullah1/GoFast-Carpool-App/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ezza-abdullah1/GoFast-Carpool-App.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd Backend && npm run dev",
+    "client": "cd Frontend && npm start",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

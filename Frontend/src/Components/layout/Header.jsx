@@ -114,7 +114,7 @@ const Header = () => {
               Sign In
             </Button>
             
-            <Button size="sm">
+            <Button  size="sm" className="dark:bg-muted  dark:hover:bg-button-hover dark:text-white">
               Get Started
             </Button> */}
 
