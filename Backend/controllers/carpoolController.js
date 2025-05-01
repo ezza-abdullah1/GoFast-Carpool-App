@@ -12,7 +12,7 @@ let carpools = [
       dropoff: 'Gulistan-e-Johar',
     },
     schedule: {
-      date: '2025-04-21',
+      date: '2025-05-21',
       time: '4:30 pm',
       recurring: ['Monday', 'Wednesday', 'Friday'],
     },
@@ -35,7 +35,7 @@ let carpools = [
       dropoff: 'FAST NUCES Main Campus',
     },
     schedule: {
-      date: '2025-04-22',
+      date: '2025-05-22',
       time: '8:15 am',
       recurring: ['Monday', 'Tuesday', 'Wednesday', 'Thursday'],
     },
@@ -58,7 +58,7 @@ let carpools = [
       dropoff: 'FAST NUCES Main Campus',
     },
     schedule: {
-      date: '2025-04-23',
+      date: '2025-05-23',
       time: '9:00 am',
       recurring: ['Tuesday'],
     },
@@ -81,7 +81,7 @@ let carpools = [
       dropoff: 'FAST NUCES Main Campus',
     },
     schedule: {
-      date: '2025-04-21',
+      date: '2025-05-21',
       time: '8:00 am',
       recurring: ['Friday'],
     },
@@ -250,87 +250,3 @@ exports.deleteCarpool = (req, res) => {
   }
 };
 
-// Search carpools with filters
-exports.searchCarpools = (req, res) => {
-  try {
-    const { pickup, dropoff, date, time, minSeats, filters } = req.body;
-
-    let filteredCarpools = [...carpools];
-
-    // Filter by pickup location
-    if (pickup) {
-      filteredCarpools = filteredCarpools.filter(c =>
-        c.route.pickup.toLowerCase().includes(pickup.toLowerCase())
-      );
-    }
-
-    // Filter by dropoff location
-    if (dropoff) {
-      filteredCarpools = filteredCarpools.filter(c =>
-        c.route.dropoff.toLowerCase().trim().includes(dropoff.toLowerCase().trim())
-      );
-    }
-
-    // Filter by date
-    if (date) {
-      filteredCarpools = filteredCarpools.filter(c =>
-        c.schedule.date === date
-      );
-    }
-
-    // Helper to convert "4:00 pm" to minutes since midnight
-    function convert12HourToMinutes(time12h) {
-      const [time, modifier] = time12h.toLowerCase().split(' ');
-      let [hours, minutes] = time.split(':').map(Number);
-      if (modifier === 'pm' && hours !== 12) hours += 12;
-      if (modifier === 'am' && hours === 12) hours = 0;
-      return hours * 60 + minutes;
-    }
-
-    // Helper to convert "HH:mm" (like 08:30) to minutes since midnight
-    function convert24HourToMinutes(time24h) {
-      const [hours, minutes] = time24h.split(':').map(Number);
-      return hours * 60 + minutes;
-    }
-
-    // Filter by time (within ±30 minutes range)
-    if (time) {
-      const targetMinutes = convert24HourToMinutes(time);
-      filteredCarpools = filteredCarpools.filter(c => {
-        const carpoolMinutes = convert12HourToMinutes(c.schedule.time);
-        return Math.abs(carpoolMinutes - targetMinutes) <= 30;
-      });
-    }
-
-    // Filter by minimum seats
-    if (minSeats) {
-      filteredCarpools = filteredCarpools.filter(c =>
-        c.seats.available >= minSeats
-      );
-    }
-
-    // Apply additional filters
-    if (filters && filters.length > 0) {
-      filteredCarpools = filteredCarpools.filter(c => {
-        if (filters.includes('Female drivers only') && c.driver.gender !== 'female') {
-          return false;
-        }
-
-        if (filters.includes('Male drivers only') && c.driver.gender !== 'male') {
-          return false;
-        }
-
-        if (filters.includes('No smoking') &&
-          (!c.preferences || !c.preferences.includes('No smoking'))) {
-          return false;
-        }
-
-        return true;
-      });
-    }
-
-    res.status(200).json(filteredCarpools);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
