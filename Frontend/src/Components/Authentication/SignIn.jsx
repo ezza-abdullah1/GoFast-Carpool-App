@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import {signIn} from "./redux/userSlice"
 
 const SignIn = ({ onSwitchToSignUp, onClose }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '' });
+  const dispatch = useDispatch();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -12,6 +15,7 @@ const SignIn = ({ onSwitchToSignUp, onClose }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    dispatch(signIn(formData)); // Save in Redux store
     console.log('Sign In Submitted:', formData);
   };
 
@@ -51,7 +55,7 @@ const SignIn = ({ onSwitchToSignUp, onClose }) => {
               />
             </div>
           </div>
-          
+
           <div className="mb-6">
             <label htmlFor="password" className="block mb-2 font-medium">Password</label>
             <div className="relative">
@@ -80,18 +84,18 @@ const SignIn = ({ onSwitchToSignUp, onClose }) => {
               <a href="#" className="text-sm text-blue-500 hover:underline">Forgot password?</a>
             </div>
           </div>
-          
+
           <button
             type="submit"
             className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             Sign In
           </button>
-          
+
           <div className="mt-4 text-center">
             <p className="text-gray-600 dark:text-gray-300">
-              Don't have an account? 
-              <button 
+              Don't have an account?
+              <button
                 type="button"
                 className="text-blue-500 ml-1 font-medium hover:underline"
                 onClick={handleSwitchToSignUp}
