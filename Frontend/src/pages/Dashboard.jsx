@@ -154,14 +154,7 @@ const Dashboard = () => {
                     <p className="text-lg font-bold">{user.ridesTaken}</p>
                     <p className="text-xs text-muted-foreground">Rides Taken</p>
                   </div>
-                  {/* <div className="text-center">
-                    <p className="text-lg font-bold">₨{user.totalSavings}</p>
-                    <p className="text-xs text-muted-foreground">Total Savings</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-lg font-bold">{user.co2Saved}kg</p>
-                    <p className="text-xs text-muted-foreground">CO₂ Saved</p>
-                  </div> */}
+               
                 </div>
               </div>
 
@@ -294,7 +287,7 @@ const Dashboard = () => {
                   {rideOffers.length > 0 ? (
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                       {rideOffers.map((ride) => (
-                        <CarpoolPost key={ride.id} {...ride} />
+                        <CarpoolPost key={ride.id} {...ride} offerRide={true} />
                       ))}
                     </div>
                   ) : (

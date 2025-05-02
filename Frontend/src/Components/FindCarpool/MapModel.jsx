@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import axios from "axios";
 import {
     Dialog,
     DialogContent,
@@ -11,36 +10,9 @@ import {
 import { MapPin } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import AlertBox from "../ui/AlertBox";
+import { decodePolyline, fetchRouteFromORS, drawRoute, getUpdatedRoute } from "../UtilsFunctions/MapUtils";
 
-// Utility: decode OpenRouteService encoded polyline
-const decodePolyline = (polyline) => {
-    let index = 0, lat = 0, lng = 0, coordinates = [];
-    while (index < polyline.length) {
-        let b, shift = 0, result = 0;
-        do {
-            b = polyline.charCodeAt(index++) - 63;
-            result |= (b & 0x1f) << shift;
-            shift += 5;
-        } while (b >= 0x20);
-        const dlat = (result & 1) ? ~(result >> 1) : (result >> 1);
-        lat += dlat;
-
-        shift = 0;
-        result = 0;
-        do {
-            b = polyline.charCodeAt(index++) - 63;
-            result |= (b & 0x1f) << shift;
-            shift += 5;
-        } while (b >= 0x20);
-        const dlng = (result & 1) ? ~(result >> 1) : (result >> 1);
-        lng += dlng;
-
-        coordinates.push([lat / 1e5, lng / 1e5]);
-    }
-    return coordinates;
-};
-
-const MapModal = ({ open, onOpenChange }) => {
+const MapModal = ({ open, onOpenChange, offerRide }) => {
     const mapRef = useRef(null);
     const mapInstanceRef = useRef(null);
     const routeLayerRef = useRef(null);
@@ -59,40 +31,12 @@ const MapModal = ({ open, onOpenChange }) => {
         [74.303364, 31.4810999],
     ];
 
-    const fetchRouteFromORS = async (coordinates) => {
-        try {
-            const response = await axios.post("http://localhost:5000/api/map/directions", { coordinates });
-            return response.data;
-        } catch (error) {
-            console.error("API call failed:", error);
-            setError(true);
-            setErrorMsg("Unable to load route. Please try again later.");
-            setConfirmEnabled(false);
-            setSelectedLatLng(null);
-            throw error;
-        }
+    const handleAcceptRide = () => {
+        console.log("Ride accepted");
     };
 
-    const drawRoute = async (map, coordinates) => {
-        try {
-            const response = await fetchRouteFromORS(coordinates);
-            const geometry = response.routes[0].geometry;
-            const decoded = decodePolyline(geometry);
-            const routeLine = window.L.polyline(decoded, { color: "blue" }).addTo(map);
-            map.fitBounds(routeLine.getBounds());
-            setError(false);
-            return routeLine;
-        } catch {
-            return null;
-        }
-    };
-
-    const getUpdatedRoute = (customStop, baseRoute) => {
-        if (!customStop) return baseRoute;
-        const newStop = [customStop[1], customStop[0]];
-        const updatedRoute = [...baseRoute];
-        updatedRoute.splice(-1, 0, newStop);
-        return updatedRoute;
+    const handleDeclineRide = () => {
+        console.log("Ride declined");
     };
 
     useEffect(() => {
@@ -111,12 +55,10 @@ const MapModal = ({ open, onOpenChange }) => {
 
             L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18 }).addTo(map);
 
-            // Static route markers
             L.marker([31.5395453, 74.3016998]).addTo(map).bindPopup("🟢 Start");
             L.marker([31.5181999, 74.2926025]).addTo(map).bindPopup("🟡 Stop");
             L.marker([31.4810999, 74.303364]).addTo(map).bindPopup("🔴 Destination");
 
-            // Enable search and click-based routing
             if (buttonFlag) {
                 L.Control.geocoder({
                     collapsed: false,
@@ -138,17 +80,18 @@ const MapModal = ({ open, onOpenChange }) => {
                     if (markerRef.current) {
                         map.removeLayer(markerRef.current);
                     }
+
                     markerRef.current = L.marker([lat, lng]).addTo(map).bindPopup("🟣 Your Stop").openPopup();
 
                     const updatedRoute = getUpdatedRoute([lat, lng], baseRoute);
                     if (routeLayerRef.current) {
                         map.removeLayer(routeLayerRef.current);
                     }
-                    routeLayerRef.current = await drawRoute(map, updatedRoute);
+                    routeLayerRef.current = await drawRoute(map, updatedRoute, setError, setErrorMsg, setConfirmEnabled, setSelectedLatLng);
                 });
             }
 
-            routeLayerRef.current = await drawRoute(map, baseRoute);
+            routeLayerRef.current = await drawRoute(map, baseRoute, setError, setErrorMsg, setConfirmEnabled, setSelectedLatLng);
         }, 100);
     }, [open, buttonFlag]);
 
@@ -182,18 +125,35 @@ const MapModal = ({ open, onOpenChange }) => {
                         className="rounded-lg w-full h-[350px] mb-4 border border-dashed border-input"
                     />
                     <DialogClose asChild>
-                        {buttonFlag && (
-                            <button
-                                className={`mt-2 px-4 py-2 bg-primary text-white rounded shadow ${
-                                    confirmEnabled
-                                        ? "hover:bg-primary/90"
-                                        : "opacity-50 cursor-not-allowed"
-                                }`}
-                                disabled={!confirmEnabled}
-                            >
-                                Confirm Location
-                            </button>
-                        )}
+                        <>
+                            {buttonFlag && (
+                                <button
+                                    className={`mt-2 px-4 py-2 bg-primary  text-white rounded shadow ${confirmEnabled ? "hover:bg-primary/90" : "opacity-50 cursor-not-allowed"
+                                        }`}
+                                    disabled={!confirmEnabled}
+                                >
+                                    Confirm Location
+                                </button>
+                            )}
+                            {offerRide && (
+                                <><div className="mt-2 flex space-x-2">
+                                    <button
+                                        className="px-4 py-2 mr-6 bg-primary  dark:bg-primary-900/20 dark:text-white  dark:hover:bg-button-hover/60 transition-colors text-white rounded shadow hover:bg-primary/90"
+                                        onClick={handleAcceptRide}
+                                    >
+                                        Accept
+                                    </button>
+                                    <button
+                                        className="px-4 py-2 bg-red-600  dark:text-white  dark:bg-button-dark dark:hover:bg-button-hover  text-white rounded shadow hover:bg-red-700"
+                                        onClick={handleDeclineRide}
+                                    >
+                                        Decline
+                                    </button>
+                                </div>
+
+                                </>
+                            )}
+                        </>
                     </DialogClose>
                 </div>
             </DialogContent>
