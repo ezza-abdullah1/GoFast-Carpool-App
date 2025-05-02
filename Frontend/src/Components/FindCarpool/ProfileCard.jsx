@@ -80,7 +80,7 @@ const ProfileCard = ({ profileId, open, onOpenChange, className }) => {
                     </div>
 
                     <div className="w-full border-t border-border mt-6 pt-4">
-                        <Button className="w-full flex-1 bg-primary text-sm h-10 dark:bg-button-dark dark:hover:bg-button-hover text-white dark:text-white">
+                        <Button variant="outline" className="w-full flex-1 bg-primary text-sm h-10 dark:bg-button-dark dark:hover:bg-button-hover text-white dark:text-white">
                             Message
                         </Button>
                     </div>

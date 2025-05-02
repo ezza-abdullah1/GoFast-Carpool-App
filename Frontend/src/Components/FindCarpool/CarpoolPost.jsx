@@ -8,7 +8,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
-import MapModal from "./MapModel";
+import MapModal from "../MapModal/MapModel";
 import ProfileCard from "./ProfileCard";
 import { useLocation } from "react-router-dom";
 
@@ -21,7 +21,7 @@ const CarpoolPost = ({
   preferences = [],
   variant = "default",
   className,
-  offerRide,
+  activeTab,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [mapModalOpen, setMapModalOpen] = useState(false);
@@ -209,7 +209,7 @@ const CarpoolPost = ({
                 </button>
               )}
 
-              <MapModal open={mapModalOpen} onOpenChange={setMapModalOpen} offerRide={offerRide} />
+              <MapModal open={mapModalOpen} onOpenChange={setMapModalOpen} activeTab={activeTab} />
             </div>
           )}
 
