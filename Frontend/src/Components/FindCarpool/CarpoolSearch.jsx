@@ -227,9 +227,9 @@ const CarpoolSearch = ({ onSearch, className }) => {
             <Button
               type="submit"
               variant="outline"
-              className="flex-1 bg-primary text-white dark:bg-muted dark:hover:bg-button-hover dark:text-white"
+              className="flex-1 bg-primary text-sm h-10  dark:text-white  dark:bg-button-dark dark:hover:bg-button-hover text-white "
             >
-              <Search className="mr-2 h-8 w-3" />
+              <Search className="mr-2 h-8 w-4" />
               Search
             </Button>
 

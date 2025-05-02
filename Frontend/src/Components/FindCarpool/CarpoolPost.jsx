@@ -9,7 +9,8 @@ import {
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import MapModal from "./MapModel";
-import { useLocation } from 'react-router-dom';
+import ProfileCard from "./ProfileCard";
+import { useLocation } from "react-router-dom";
 
 const CarpoolPost = ({
   id,
@@ -20,18 +21,16 @@ const CarpoolPost = ({
   preferences = [],
   variant = "default",
   className,
+  offerRide,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [mapModalOpen, setMapModalOpen] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [buttonText, setButtonText] = useState("");
   const location = useLocation();
 
   useEffect(() => {
-    if (location.pathname === "/carpools") {
-      setButtonText("Request Seat");
-    } else {
-      setButtonText("Show Route");
-    }
+    setButtonText(location.pathname === "/carpools" ? "Request Seat" : "Show Route");
   }, [location.pathname]);
 
   const handleRequestSeat = () => {
@@ -39,9 +38,7 @@ const CarpoolPost = ({
   };
 
   const toggleExpand = () => {
-    if (variant === "default") {
-      setIsExpanded(!isExpanded);
-    }
+    if (variant === "default") setIsExpanded(!isExpanded);
   };
 
   return (
@@ -52,9 +49,12 @@ const CarpoolPost = ({
         className
       )}
     >
-      <div className="flex gap-4 ">
+      <div className="flex gap-4">
         {/* Avatar */}
-        <div className="flex-shrink-0">
+        <div
+          onClick={() => setProfileModalOpen(true)}
+          className="cursor-pointer flex-shrink-0"
+        >
           <div className="h-12 w-12 rounded-full bg-primary-100 dark:bg-primary-900/40 overflow-hidden flex items-center justify-center">
             {driver?.image ? (
               <img
@@ -74,7 +74,12 @@ const CarpoolPost = ({
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between">
             <div>
-              <h3 className="text-lg font-semibold truncate">{driver.name}</h3>
+              <h3
+                className="text-lg font-semibold truncate cursor-pointer"
+                onClick={() => setProfileModalOpen(true)}
+              >
+                {driver.name}
+              </h3>
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
                 <span className="flex items-center">
                   <Star
@@ -109,12 +114,7 @@ const CarpoolPost = ({
           {/* Route */}
           <div className={cn("mt-3", variant === "compact" && "text-sm")}>
             <div className="flex items-start gap-2">
-              <MapPin
-                className={cn(
-                  "h-5 w-5 text-primary mt-0.5",
-                  variant === "compact" && "h-4 w-4"
-                )}
-              />
+              <MapPin className={cn("h-5 w-5 text-primary mt-0.5", variant === "compact" && "h-4 w-4")} />
               <div className="flex-1">
                 <div className="font-medium">
                   From:{" "}
@@ -122,88 +122,67 @@ const CarpoolPost = ({
                 </div>
                 <div className="font-medium mt-1">
                   To:{" "}
-                  <span className="text-muted-foreground">
-                    {route.dropoff}
-                  </span>
+                  <span className="text-muted-foreground">{route.dropoff}</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Schedule */}
-          <div
-            className={cn(
-              "mt-3 grid",
-              variant === "default" ? "grid-cols-2" : "grid-cols-1 text-sm"
-            )}
-          >
+          <div className={cn("mt-3 grid", variant === "default" ? "grid-cols-2" : "grid-cols-1 text-sm")}>
             <div className="flex items-center gap-2">
-              <Calendar
-                className={cn(
-                  "h-5 w-5 text-primary",
-                  variant === "compact" && "h-4 w-4"
-                )}
-              />
+              <Calendar className={cn("h-5 w-5 text-primary", variant === "compact" && "h-4 w-4")} />
               <span>{schedule.date}</span>
             </div>
             <div className="flex items-center gap-2">
-              <Clock
-                className={cn(
-                  "h-5 w-5 text-primary",
-                  variant === "compact" && "h-4 w-4"
-                )}
-              />
+              <Clock className={cn("h-5 w-5 text-primary", variant === "compact" && "h-4 w-4")} />
               <span>{schedule.time}</span>
             </div>
           </div>
 
-          {/* Recurring schedule */}
-          {schedule.recurring &&
-            schedule.recurring.length > 0 &&
-            isExpanded && (
-              <div className="mt-3">
-                <div className="flex flex-wrap gap-2">
-                  {schedule.recurring.map((day, index) => (
-                    <span
-                      key={index}
-                      className="bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-secondary-300 px-2.5 py-0.5 rounded-full text-xs font-medium"
-                    >
-                      {day}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
+          {/* Recurring Days */}
+          {schedule.recurring?.length > 0 && isExpanded && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {schedule.recurring.map((day, idx) => (
+                <span
+                  key={idx}
+                  className="bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-secondary-300 px-2.5 py-0.5 rounded-full text-xs font-medium"
+                >
+                  {day}
+                </span>
+              ))}
+            </div>
+          )}
 
           {/* Preferences */}
           {preferences.length > 0 && (isExpanded || variant === "compact") && (
             <div className="mt-3">
               <div className="text-sm font-medium mb-1">Preferences:</div>
               <div className="flex flex-wrap gap-2">
-                {preferences.map((preference, index) => (
+                {preferences.map((pref, idx) => (
                   <span
-                    key={index}
+                    key={idx}
                     className="bg-accent text-accent-foreground px-2.5 py-0.5 rounded-full text-xs font-medium"
                   >
-                    {preference}
+                    {pref}
                   </span>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Actions - Using identical styling for both buttons */}
+          {/* Actions */}
           {variant === "default" && (
             <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
               <button
                 onClick={handleRequestSeat}
-                className="flex-grow sm:flex-grow-0 h-[44px]  dark:bg-button-dark dark:hover:bg-button-hover dark:text-white px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600"
+                className="flex-grow sm:flex-grow-0 h-[44px] px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600 dark:bg-button-dark dark:hover:bg-button-hover dark:text-white"
               >
                 {buttonText}
               </button>
 
               <button
-                className="flex-grow sm:flex-grow-0 h-[44px] px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600  dark:bg-button-dark dark:hover:bg-button-hover dark:text-white"
+                className="flex-grow sm:flex-grow-0 h-[44px] px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600 dark:bg-button-dark dark:hover:bg-button-hover dark:text-white"
               >
                 <MessageCircle className="mr-2 h-4 w-4" />
                 Message
@@ -214,7 +193,6 @@ const CarpoolPost = ({
                   onClick={toggleExpand}
                   aria-label={isExpanded ? "Show less" : "Show more"}
                   className="border-none h-[44px] px-2 text-sm bg-inherit text-black dark:text-white rounded-xl dark:hover:bg-button-hover/60 transition-colors"
-
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -231,12 +209,11 @@ const CarpoolPost = ({
                 </button>
               )}
 
-
-              <MapModal open={mapModalOpen} onOpenChange={setMapModalOpen} />
+              <MapModal open={mapModalOpen} onOpenChange={setMapModalOpen} offerRide={offerRide} />
             </div>
-
           )}
 
+          {/* Compact Variant */}
           {variant === "compact" && (
             <div className="mt-3 flex items-center justify-between">
               <div
@@ -264,6 +241,13 @@ const CarpoolPost = ({
           )}
         </div>
       </div>
+
+      <ProfileCard
+        profileId={driver.id || id}
+        open={profileModalOpen}
+        onOpenChange={setProfileModalOpen}
+      />
+
     </div>
   );
 };
