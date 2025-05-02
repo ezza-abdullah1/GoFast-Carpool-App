@@ -75,13 +75,14 @@ const MapModal = ({ open, onOpenChange, activeTab }) => {
                 </DialogHeader>
 
                 <div className="flex flex-col md:flex-row gap-4 px-6 pb-6 pt-2">
-                    {activeTab === "upcoming" && (
+                    {activeTab !== "offer" && (
                         <StopsSidebar
                             stops={stops}
                             setStops={setStops}
                             stopMarkersRef={stopMarkersRef}
                             mapInstanceRef={mapInstanceRef}
                             routeLayerRef={routeLayerRef}
+                            activeTab={activeTab}
                         />
                     )}
 

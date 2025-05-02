@@ -6,6 +6,7 @@ const StopsSidebar = ({
     stopMarkersRef,
     mapInstanceRef,
     routeLayerRef,
+    activeTab
 }) => {
     return (
         <div className="w-full md:w-1/3 border border-muted p-3 rounded-lg bg-muted/50 overflow-y-auto max-h-[400px]">
@@ -25,6 +26,7 @@ const StopsSidebar = ({
                                     {stop.lat.toFixed(4)}, {stop.lng.toFixed(4)}
                                 </div>
                             </div>
+                            {activeTab === "upcoming" && 
                             <button
                                 className="text-red-500 hover:text-red-700"
                                 onClick={() => {
@@ -42,7 +44,7 @@ const StopsSidebar = ({
                                 }}
                             >
                                 ✖
-                            </button>
+                            </button>}
                         </li>
                     ))}
             </ul>

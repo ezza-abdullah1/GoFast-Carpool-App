@@ -11,7 +11,7 @@ import { cn } from "../../lib/utils";
 import MapModal from "../MapModal/MapModel";
 import ProfileCard from "./ProfileCard";
 import { useLocation } from "react-router-dom";
-
+import RatingModal from "./RatingModal";
 const CarpoolPost = ({
   id,
   driver,
@@ -27,7 +27,16 @@ const CarpoolPost = ({
   const [mapModalOpen, setMapModalOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [buttonText, setButtonText] = useState("");
+  const [ratingModalOpen, setRatingModalOpen] = useState(false);
+
   const location = useLocation();
+  const handleClick = () => {
+    if (activeTab === "history") {
+      setRatingModalOpen(true);
+    } else {
+      // handle message functionality
+    }
+  };
 
   useEffect(() => {
     setButtonText(location.pathname === "/carpools" ? "Request Seat" : "Show Route");
@@ -173,21 +182,33 @@ const CarpoolPost = ({
 
           {/* Actions */}
           {variant === "default" && (
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+            <div className="mt-4 flex flex-wrap items-center justify-around gap-2">
               <button
                 onClick={handleRequestSeat}
                 className="flex-grow sm:flex-grow-0 h-[44px] px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600 dark:bg-button-dark dark:hover:bg-button-hover dark:text-white"
               >
+                {buttonText !== "Request Seat" && <MapPin className="h-4 w-4" />}
                 {buttonText}
               </button>
 
               <button
                 className="flex-grow sm:flex-grow-0 h-[44px] px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600 dark:bg-button-dark dark:hover:bg-button-hover dark:text-white"
+                onClick={handleClick}
               >
-                <MessageCircle className="mr-2 h-4 w-4" />
-                Message
+                {activeTab !== "history" ? (
+                  <>
+                    <MessageCircle className="h-4 w-4" />
+                    Message
+                  </>
+                ) : (
+                  <>
+                    <Star className="h-4 w-4" />
+                    Rate Ride
+                  </>
+                )}
               </button>
 
+              {console.log("Recurring:", schedule.recurring, "Preferences:", preferences, "Variant:", variant)}
               {(schedule.recurring || preferences.length > 0) && (
                 <button
                   onClick={toggleExpand}
@@ -241,13 +262,21 @@ const CarpoolPost = ({
           )}
         </div>
       </div>
-
-      <ProfileCard
-        profileId={driver.id || id}
-        open={profileModalOpen}
-        onOpenChange={setProfileModalOpen}
+      <RatingModal
+        open={ratingModalOpen}
+        onOpenChange={setRatingModalOpen}
+        onSubmit={(stars) => {
+          console.log(`Rated with ${stars} stars`);
+          // Add API call or state update here
+        }}
       />
-
+      {profileModalOpen &&
+        <ProfileCard
+          profileId={driver.id || id}
+          open={profileModalOpen}
+          onOpenChange={setProfileModalOpen}
+        />
+      }
     </div>
   );
 };
