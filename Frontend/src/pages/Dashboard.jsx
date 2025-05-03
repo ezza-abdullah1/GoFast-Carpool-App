@@ -243,7 +243,7 @@ const Dashboard = () => {
                   {upcomingRides.length > 0 ? (
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                       {upcomingRides.map((ride) => (
-                        <CarpoolPost key={ride.id} {...ride} />
+                        <CarpoolPost key={ride.id} {...ride} activeTab={activeTab} />
                       ))}
                     </div>
                   ) : (
@@ -265,7 +265,7 @@ const Dashboard = () => {
                   {rideHistory.length > 0 ? (
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                       {rideHistory.map((ride) => (
-                        <CarpoolPost key={ride.id} {...ride} />
+                        <CarpoolPost key={ride.id} {...ride} activeTab={activeTab}/>
                       ))}
                     </div>
                   ) : (
@@ -287,7 +287,7 @@ const Dashboard = () => {
                   {rideOffers.length > 0 ? (
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                       {rideOffers.map((ride) => (
-                        <CarpoolPost key={ride.id} {...ride} offerRide={true} />
+                        <CarpoolPost key={ride.id} {...ride} offerRide={true}activeTab={activeTab} />
                       ))}
                     </div>
                   ) : (
