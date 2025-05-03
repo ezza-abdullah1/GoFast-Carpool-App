@@ -13,6 +13,7 @@ import AlertBox from "../ui/AlertBox";
 
 import MapContainer from "./MapContainer";
 import FooterActions from "./FooterActions";
+import UpcomingRideActions from "./UpcomingRideActions";
 import StopsSidebar from "./StopsSideBar";
 import { Loader2 } from "lucide-react";
 import Button from "../ui/Button";
@@ -129,6 +130,19 @@ const MapModal = ({ open, onOpenChange, activeTab }) => {
                                 </div>
                             </DialogClose>
                         )}
+                        {
+                            noFooter && (
+                                <DialogClose asChild>
+                                    <div>
+                                        <UpcomingRideActions
+                                            activeTab={activeTab}
+                                        />
+                                    </div>
+                                </DialogClose>
+                            )
+                        }
+                        
+
                     </div>
                 </div>
             </DialogContent>
