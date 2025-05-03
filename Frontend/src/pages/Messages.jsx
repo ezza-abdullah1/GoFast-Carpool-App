@@ -1,134 +1,157 @@
-import React, { useState } from 'react';
-import { Search, MoreVertical, PhoneCall, Video, Send, MapPin, Calendar, Clock, Users } from 'lucide-react';
+// frontend/src/pages/Messages.jsx
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import socket from '../contexts/socket';
+
+import {
+  Search, MoreVertical, PhoneCall, Video, Send,
+  MapPin, Calendar, Clock, Users
+} from 'lucide-react';
 import Button from '../Components/ui/compatibility-button';
+import { cn } from '../lib/utils';
 
-import { cn } from '../lib/utils'; // Fixed import path to match Dashboard component
+// Add API base URL - make sure this matches your backend
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-const Messages = () => {
-  const [activeContactId, setActiveContactId] = useState('1');
+// Configure axios defaults
+axios.defaults.baseURL = API_URL;
+
+export default function Messages() {
+  const [contacts, setContacts] = useState([]);
+  const [activeId, setActiveId] = useState(null);
   const [messageText, setMessageText] = useState('');
-  
-  // Sample contacts data
-  const contacts = [
-    {
-      id: '1',
-      name: 'Sara Malik',
-      lastMessage: 'Sure, I can pick you up at 8:15 AM.',
-      lastSeen: 'Online',
-      isOnline: true,
-      unreadCount: 2,
-    },
-    {
-      id: '2',
-      name: 'Ahmed Khan',
-      lastMessage: 'Are you still offering the ride tomorrow?',
-      lastSeen: '2 hours ago',
-      isOnline: false,
-      unreadCount: 0,
-    },
-    {
-      id: '3',
-      name: 'Bilal Ahmed',
-      lastMessage: 'Thanks for the ride today!',
-      lastSeen: '1 day ago',
-      isOnline: false,
-      unreadCount: 0,
-    },
-    {
-      id: '4',
-      name: 'Ayesha Tariq',
-      lastMessage: 'I\'m running 5 minutes late. Sorry!',
-      lastSeen: '3 days ago',
-      isOnline: false,
-      unreadCount: 0,
-    },
-    {
-      id: '5',
-      name: 'Usman Ali',
-      lastMessage: 'Where should we meet exactly?',
-      lastSeen: '1 week ago',
-      isOnline: false,
-      unreadCount: 0,
-    }
-  ];
-  
-  // Find active contact
-  const activeContact = contacts.find(contact => contact.id === activeContactId);
-  
-  // Sample messages data for Sara Malik (id: '1')
-  const messages = [
-    {
-      id: '1',
-      senderId: '1',
-      text: 'Hi! I saw your carpool post for tomorrow morning.',
-      timestamp: '10:30 AM',
-      isRead: true,
-    },
-    {
-      id: '2',
-      senderId: 'me',
-      text: 'Yes, I\'m going to FAST at 8:30 AM. Do you need a ride?',
-      timestamp: '10:32 AM',
-      isRead: true,
-    },
-    {
-      id: '3',
-      senderId: '1',
-      text: 'That would be perfect! I have a class at 9:00 AM.',
-      timestamp: '10:35 AM',
-      isRead: true,
-    },
-    {
-      id: '4',
-      senderId: 'me',
-      text: 'Great! Where should I pick you up?',
-      timestamp: '10:38 AM',
-      isRead: true,
-    },
-    {
-      id: '5',
-      senderId: '1',
-      text: 'I live in North Nazimabad, Block A. There\'s a cafe called "Morning Brew" at the corner. Would that work as a meeting point?',
-      timestamp: '10:40 AM',
-      isRead: true,
-    },
-    {
-      id: '6',
-      senderId: 'me',
-      text: 'Yes, I know that cafe. I can be there at 8:15 AM. Does that work for you?',
-      timestamp: '10:45 AM',
-      isRead: true,
-    },
-    {
-      id: '7',
-      senderId: '1',
-      text: 'Sure, I can pick you up at 8:15 AM.',
-      timestamp: 'Just now',
-      isRead: false,
-    },
-  ];
-  
-  // Sample ride details
+  const [messages, setMessages] = useState([]);
+  const [socketConnected, setSocketConnected] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const rideDetails = {
     date: 'Tomorrow, May 15, 2023',
     time: '8:15 AM',
     pickup: 'Morning Brew Cafe, North Nazimabad',
     dropoff: 'FAST NUCES Main Campus',
-    seats: 1,
+    seats: 1
   };
-  
-  const handleSendMessage = (e) => {
+
+  // Socket connection handling
+  useEffect(() => {
+    socket.on('connect', () => {
+      console.log('Socket connected');
+      setSocketConnected(true);
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Socket disconnected');
+      setSocketConnected(false);
+    });
+
+    socket.on('connect_error', (err) => {
+      console.error('Socket connection error:', err);
+      setError('Could not connect to messaging service');
+    });
+
+    return () => {
+      socket.off('connect');
+      socket.off('disconnect');
+      socket.off('connect_error');
+    };
+  }, []);
+
+  // Load contacts once
+  useEffect(() => {
+    setLoading(true);
+    axios.get('/api/contacts')
+      .then(res => {
+        console.log('Contacts response:', res.data);
+        // Handle both array format and object format with contacts property
+        const contactsArray = Array.isArray(res.data) ? res.data : res.data.contacts || [];
+        setContacts(contactsArray);
+        if (contactsArray.length > 0) {
+          setActiveId(contactsArray[0].id);
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Error loading contacts:', err);
+        setError('Failed to load contacts');
+        setLoading(false);
+      });
+  }, []);
+
+  // When active contact changes: fetch messages + join socket
+  useEffect(() => {
+    if (!activeId) return;
+    
+    setLoading(true);
+    axios.get(`/api/messages/${activeId}`)
+      .then(res => {
+        console.log('Messages loaded:', res.data);
+        setMessages(res.data || []);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Error loading messages:', err);
+        setError('Failed to load messages');
+        setLoading(false);
+      });
+
+    // Join conversation room
+    socket.emit('join', activeId);
+    
+    // Listen for new messages
+    const handleNewMessage = (msg) => {
+      console.log('New message received:', msg);
+      if (msg.conversationId === activeId) {
+        setMessages(prev => [...prev, msg]);
+      }
+    };
+    
+    socket.on('newMessage', handleNewMessage);
+    
+    return () => {
+      socket.off('newMessage', handleNewMessage);
+    };
+  }, [activeId]);
+
+  const handleSend = async (e) => {
     e.preventDefault();
-    if (messageText.trim()) {
-      // In a real app, this would send the message to the backend
-      console.log('Sending message:', messageText);
+    if (!messageText.trim() || !activeId) return;
+    
+    try {
+      const response = await axios.post('/api/messages', {
+        conversationId: activeId,
+        senderId: 'me',
+        text: messageText.trim()
+      });
+      
+      console.log('Message sent:', response.data);
+      
+      // Optimistically add to UI (in case socket is slow)
+      setMessages(prev => [...prev, response.data]);
       setMessageText('');
+    } catch (err) {
+      console.error('Error sending message:', err);
+      setError('Failed to send message');
     }
   };
-  
+
+  const activeContact = contacts.find(c => c.id === activeId);
+
+  if (loading && contacts.length === 0) {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  }
+
+  if (error && contacts.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen">
+        <p className="text-red-500 mb-4">{error}</p>
+        <Button onClick={() => window.location.reload()}>Try Again</Button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
-
       <main className="flex-1 pt-16">
         <div className="h-[calc(100vh-64px)] flex">
           {/* Contacts Sidebar */}
@@ -136,7 +159,7 @@ const Messages = () => {
             <div className="p-4 border-b border-border">
               <h2 className="text-lg font-semibold">Messages</h2>
               <div className="mt-2 relative">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground pointer-events-none">
                   <Search className="h-4 w-4" />
                 </div>
                 <input
@@ -146,53 +169,40 @@ const Messages = () => {
                 />
               </div>
             </div>
-            
             <div className="flex-1 overflow-y-auto">
-              {contacts.map((contact) => (
+              {contacts.map(contact => (
                 <button
                   key={contact.id}
                   className={cn(
-                    "w-full text-left p-4 border-b border-border transition-colors hover:bg-muted/50",
-                    activeContactId === contact.id && "bg-muted"
+                    "w-full text-left p-4 border-b border-border hover:bg-muted/50",
+                    activeId === contact.id && "bg-muted"
                   )}
-                  onClick={() => setActiveContactId(contact.id)}
+                  onClick={() => setActiveId(contact.id)}
                 >
                   <div className="flex items-start gap-3">
                     <div className="relative flex-shrink-0">
                       <div className="h-10 w-10 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center overflow-hidden">
-                        {contact.image ? (
-                          <img
-                            src={contact.image}
-                            alt={contact.name}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <span className="text-lg font-semibold text-primary-600 dark:text-primary-300">
-                            {contact.name.charAt(0)}
-                          </span>
-                        )}
+                        <span className="text-lg font-semibold text-primary-600 dark:text-primary-300">
+                          {contact.name.charAt(0)}
+                        </span>
                       </div>
                       {contact.isOnline && (
-                        <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-card"></span>
+                        <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-card" />
                       )}
                     </div>
-                    
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between">
                         <p className="font-medium truncate">{contact.name}</p>
                         <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
                           {contact.lastSeen === 'Online' ? (
                             <span className="text-green-500">●</span>
-                          ) : (
-                            contact.lastSeen
-                          )}
+                          ) : contact.lastSeen}
                         </span>
                       </div>
                       <p className="text-sm text-muted-foreground truncate mt-1">
                         {contact.lastMessage}
                       </p>
                     </div>
-                    
                     {contact.unreadCount > 0 && (
                       <div className="ml-2 flex-shrink-0 bg-primary text-white rounded-full h-5 min-w-5 flex items-center justify-center text-xs font-medium">
                         {contact.unreadCount}
@@ -203,7 +213,7 @@ const Messages = () => {
               ))}
             </div>
           </div>
-          
+
           {/* Chat Area */}
           <div className="flex-1 flex flex-col">
             {activeContact ? (
@@ -213,23 +223,14 @@ const Messages = () => {
                   <div className="flex items-center gap-3">
                     <div className="relative">
                       <div className="h-10 w-10 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center overflow-hidden">
-                        {activeContact.image ? (
-                          <img
-                            src={activeContact.image}
-                            alt={activeContact.name}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <span className="text-lg font-semibold text-primary-600 dark:text-primary-300">
-                            {activeContact.name.charAt(0)}
-                          </span>
-                        )}
+                        <span className="text-lg font-semibold text-primary-600 dark:text-primary-300">
+                          {activeContact.name.charAt(0)}
+                        </span>
                       </div>
                       {activeContact.isOnline && (
-                        <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-card"></span>
+                        <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-card" />
                       )}
                     </div>
-                    
                     <div>
                       <h3 className="font-medium">{activeContact.name}</h3>
                       <p className="text-xs text-muted-foreground">
@@ -237,20 +238,19 @@ const Messages = () => {
                       </p>
                     </div>
                   </div>
-                  
                   <div className="flex items-center gap-1">
-                    <button className="p-2 rounded-full hover:bg-muted transition-colors">
+                    <button className="p-1 rounded-full hover:bg-muted transition-colors">
                       <PhoneCall className="h-5 w-5 text-muted-foreground" />
                     </button>
-                    <button className="p-2 rounded-full hover:bg-muted transition-colors">
+                    <button className="p-1 rounded-full hover:bg-muted transition-colors">
                       <Video className="h-5 w-5 text-muted-foreground" />
                     </button>
-                    <button className="p-2 rounded-full hover:bg-muted transition-colors">
+                    <button className="p-1 rounded-full hover:bg-muted transition-colors">
                       <MoreVertical className="h-5 w-5 text-muted-foreground" />
                     </button>
                   </div>
                 </div>
-                
+
                 {/* Messages */}
                 <div className="flex-1 p-4 overflow-y-auto bg-muted/20 dark:bg-muted/5">
                   {/* Ride Details Card */}
@@ -259,7 +259,6 @@ const Messages = () => {
                       <h4 className="font-medium">Ride Details</h4>
                       <Button variant="outline" size="sm">View Ride</Button>
                     </div>
-                    
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -282,78 +281,78 @@ const Messages = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Message Bubbles */}
                   <div className="space-y-4">
-                    {messages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={cn(
-                          "flex",
-                          message.senderId === 'me' ? "justify-end" : "justify-start"
-                        )}
-                      >
+                    {messages.length > 0 ? (
+                      messages.map(msg => (
                         <div
+                          key={msg.id}
                           className={cn(
-                            "max-w-xs sm:max-w-md rounded-2xl px-4 py-2",
-                            message.senderId === 'me'
-                              ? "bg-primary text-white rounded-tr-none"
-                              : "bg-card border border-border rounded-tl-none"
+                            "flex",
+                            msg.senderId === 'me' ? "justify-end" : "justify-start"
                           )}
                         >
-                          <p>{message.text}</p>
-                          <div
-                            className={cn(
+                          <div className={cn(
+                            "max-w-xs sm:max-w-md rounded-2xl px-4 py-2",
+                            msg.senderId === 'me'
+                              ? "bg-primary text-white rounded-tr-none"
+                              : "bg-card border border-border rounded-tl-none"
+                          )}>
+                            <p>{msg.text}</p>
+                            <div className={cn(
                               "text-xs mt-1 flex justify-end",
-                              message.senderId === 'me' ? "text-primary-100" : "text-muted-foreground"
-                            )}
-                          >
-                            {message.timestamp}
+                              msg.senderId === 'me'
+                                ? "text-primary-100"
+                                : "text-muted-foreground"
+                            )}>
+                              {msg.timestamp}
+                            </div>
                           </div>
                         </div>
+                      ))
+                    ) : loading ? (
+                      <div className="flex justify-center p-4">Loading messages...</div>
+                    ) : (
+                      <div className="flex justify-center p-4 text-muted-foreground">
+                        No messages yet. Start the conversation!
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
-                
-                {/* Message Input */}
+
+                {/* Input */}
                 <div className="p-4 border-t border-border bg-card">
-                  <form onSubmit={handleSendMessage} className="flex gap-2">
+                  <form onSubmit={handleSend} className="flex gap-2">
                     <input
                       type="text"
                       placeholder="Type a message..."
                       value={messageText}
-                      onChange={(e) => setMessageText(e.target.value)}
+                      onChange={e => setMessageText(e.target.value)}
                       className="input-base flex-1"
+                      disabled={!socketConnected}
                     />
-                    <Button type="submit" size="icon">
+                    <Button 
+                      type="submit" 
+                      size="icon"
+                      disabled={!socketConnected || !messageText.trim()}
+                    >
                       <Send className="h-5 w-5" />
                     </Button>
                   </form>
+                  {!socketConnected && (
+                    <p className="text-xs text-red-500 mt-2">
+                      Disconnected from messaging service. Reconnecting...
+                    </p>
+                  )}
                 </div>
               </>
             ) : (
               <div className="flex-1 flex items-center justify-center bg-muted/20 dark:bg-muted/5">
-                <div className="text-center p-8">
-                  <div className="h-16 w-16 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center mx-auto mb-4">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-primary-600 dark:text-primary-300"
-                    >
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                    </svg>
-                  </div>
+                <div className="text-center p-4">
                   <h3 className="text-lg font-medium mb-2">No conversation selected</h3>
-                  <p className="text-muted-foreground mb-6 max-w-md">
-                    Select a contact from the list to start a conversation or coordinate your carpool.
+                  <p className="text-muted-foreground">
+                    Select a contact to start messaging
                   </p>
                 </div>
               </div>
@@ -361,11 +360,6 @@ const Messages = () => {
           </div>
         </div>
       </main>
-      
     </div>
   );
-};
-
-
-
-export default Messages;
+}
