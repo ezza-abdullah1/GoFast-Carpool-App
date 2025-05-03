@@ -28,9 +28,10 @@ module.exports = {
       },
       colors: {
         button: {
-          dark: "hsl(222,47%,11%)",
-          hover: "hsl(222,48%,17%)",
+          dark: "hsl(var(--primary-200))",
+          hover: "hsl(222, 48%, 17%)",
         },
+        
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
