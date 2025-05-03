@@ -1,53 +1,45 @@
-// 2. Update socket.js - Improve socket initialization with better CORS
-// Update your socket.js file in the backend
-
+// backend/socket.js
 const socketIo = require("socket.io");
 let io;
 
 exports.init = (server, corsOptions) => {
   io = socketIo(server, { 
-    cors: corsOptions || { 
-      origin: "*",
-      methods: ["GET", "POST"],
-      credentials: true
-    },
-    transports: ['websocket', 'polling'], // Enable multiple transports
-    pingTimeout: 30000, // Increase timeout
-    pingInterval: 10000 // Ping more frequently
+    cors: corsOptions || { origin: "*", methods: ["GET", "POST"], credentials: true },
+    transports: ['websocket','polling'],
+    pingTimeout: 30000,
+    pingInterval: 10000
   });
-  
-  io.on("connection", socket => {
+
+  io.on("connection", (socket) => {
     console.log("Client connected:", socket.id);
-    
-    // Notify the client that connection is established
-    socket.emit("connected", { status: "connected" });
-    
-    socket.on("join", conversationId => {
-      console.log(`Client ${socket.id} joined conversation: ${conversationId}`);
+
+    socket.on("join", (conversationId) => {
+      console.log(`Socket ${socket.id} joining room ${conversationId}`);
       socket.join(conversationId);
-      // Confirm the join to the client
-      socket.emit("joined", { conversationId });
     });
-    
+
+    // Listen for sendMessage and broadcast only to others
+    socket.on("sendMessage", (msg) => {
+      const { conversationId } = msg;
+      console.log(`Received sendMessage from ${socket.id} for room ${conversationId}`);
+      socket.broadcast
+        .to(conversationId)
+        .emit("newMessage", msg);
+    });
+
     socket.on("disconnect", () => {
       console.log("Client disconnected:", socket.id);
     });
-    
-    socket.on("error", (error) => {
-      console.error("Socket error:", error);
+
+    socket.on("error", (err) => {
+      console.error("Socket error:", err);
     });
   });
-  
-  io.on("connect_error", (err) => {
-    console.error("Socket.IO connection error:", err);
-  });
-  
+
   return io;
 };
 
 exports.getIO = () => {
-  if (!io) {
-    throw new Error("Socket.io not initialized");
-  }
+  if (!io) throw new Error("Socket.io not initialized");
   return io;
 };

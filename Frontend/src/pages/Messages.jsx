@@ -1,6 +1,3 @@
-// 4. Update frontend/src/pages/Messages.jsx
-// This version uses the socket context for better state management
-
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useSocket } from '../contexts/socket'; // Import the socket hook
@@ -27,6 +24,7 @@ export default function Messages() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [joinedRoom, setJoinedRoom] = useState(false);
+  const [pendingMessages, setPendingMessages] = useState({}); // Track pending messages
 
   const rideDetails = {
     date: 'Tomorrow, May 15, 2023',
@@ -104,8 +102,23 @@ export default function Messages() {
     
     const handleNewMessage = (msg) => {
       console.log('New message received:', msg);
+      
+      // Check if the message is one we already added optimistically
+      const pendingKey = `${msg.id}`;
+      
       if (msg.conversationId === activeId) {
-        setMessages(prev => [...prev, msg]);
+        if (pendingMessages[pendingKey]) {
+          // This is a message we already added - remove from pending
+          console.log('Confirmed message delivery:', pendingKey);
+          setPendingMessages(prev => {
+            const updated = {...prev};
+            delete updated[pendingKey];
+            return updated;
+          });
+        } else {
+          // This is truly a new message from someone else
+          setMessages(prev => [...prev, msg]);
+        }
       }
     };
     
@@ -114,13 +127,30 @@ export default function Messages() {
     return () => {
       socket.off('newMessage', handleNewMessage);
     };
-  }, [isConnected, activeId, socket]);
+  }, [isConnected, activeId, socket, pendingMessages]);
 
   const handleSend = (e) => {
     e.preventDefault();
     if (!messageText.trim() || !activeId || !isConnected) return;
     
     console.log('Sending message to conversation:', activeId);
+    
+    // Create a temporary ID for optimistic update
+    const tempId = `temp-${Date.now()}`;
+    
+    // Create the message object for optimistic UI update
+    const newMessage = {
+      id: tempId,
+      conversationId: activeId,
+      senderId: 'me',
+      text: messageText.trim(),
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      pending: true // Mark as pending until confirmed
+    };
+    
+    // Add to UI immediately (optimistic update)
+    setMessages(prev => [...prev, newMessage]);
+    setMessageText('');
     
     axios.post('/api/messages', {
       conversationId: activeId,
@@ -129,13 +159,30 @@ export default function Messages() {
     })
     .then(response => {
       console.log('Message sent successfully:', response.data);
-      // Add message to UI immediately (optimistic update)
-      setMessages(prev => [...prev, response.data]);
-      setMessageText('');
+      
+      // Add the real message ID to our pending messages map
+      setPendingMessages(prev => ({
+        ...prev,
+        [response.data.id]: tempId
+      }));
+      
+      // Update the temporary message with the real message ID and remove pending state
+      setMessages(prev => prev.map(msg => 
+        msg.id === tempId 
+          ? {...response.data, pending: false} 
+          : msg
+      ));
     })
     .catch(err => {
       console.error('Error sending message:', err);
       setError('Failed to send message: ' + (err.message || 'Unknown error'));
+      
+      // Mark the message as failed
+      setMessages(prev => prev.map(msg => 
+        msg.id === tempId 
+          ? {...msg, failed: true, pending: false} 
+          : msg
+      ));
     });
   };
 
@@ -323,6 +370,12 @@ export default function Messages() {
                                 : "text-muted-foreground"
                             )}>
                               {msg.timestamp}
+                              {msg.pending && (
+                                <span className="ml-2">⏳</span>
+                              )}
+                              {msg.failed && (
+                                <span className="ml-2 text-red-300">❌</span>
+                              )}
                             </div>
                           </div>
                         </div>

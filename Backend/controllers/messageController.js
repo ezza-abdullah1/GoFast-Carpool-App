@@ -40,24 +40,20 @@ exports.getMessages = (req, res) => {
 exports.postMessage = (req, res) => {
   const { conversationId, senderId, text } = req.body;
   const newMsg = {
-    id: Date.now().toString(),
+    id:        Date.now().toString(),
+    conversationId,
     senderId,
     text,
     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   };
-  
+
   let convo = messages.find(c => c.conversationId === conversationId);
   if (!convo) {
     convo = { conversationId, history: [] };
     messages.push(convo);
   }
-  
   convo.history.push(newMsg);
-  
-  // Check if io is available before emitting
-  if (req.io) {
-    req.io.to(conversationId).emit('newMessage', { ...newMsg, conversationId });
-  }
-  
+
+  // Respond with the full message object
   res.status(201).json(newMsg);
 };
