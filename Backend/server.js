@@ -1,10 +1,18 @@
 const express  = require("express");
 const cors     = require("cors");
 const morgan   = require("morgan");
+const dotenv = require("dotenv");
+const connectDB = require("./config/db");
+
 const http     = require("http");
 
 const carpoolRoutes = require("./routes/carpoolRoutes");
 const mapRoutes     = require("./routes/mapRoutes");
+const authRoutes = require("./routes/auth");
+
+dotenv.config();
+connectDB();
+
 const apiRoutes     = require("./routes/index.js");            // <-- our new index.js
 const { init: initSocket } = require("./socket");     // create this file as below
 
@@ -14,7 +22,6 @@ const io     = initSocket(server);
 
 const PORT = process.env.PORT || 5000;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
@@ -32,7 +39,6 @@ app.use("/api/map",      mapRoutes);
 // New messaging API
 app.use("/api", apiRoutes);
 
-// Root route
 app.get("/", (req, res) => {
   res.send("Carpool API is running");
 });

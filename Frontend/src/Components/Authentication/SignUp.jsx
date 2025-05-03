@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, User, Lock } from 'lucide-react';
+import axios from 'axios';
+
 
 const SignUp = ({ onSwitchToSignIn, onClose }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -18,10 +20,15 @@ const SignUp = ({ onSwitchToSignIn, onClose }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    // Add your form submission logic here
+    try {
+      const res = await axios.post("http://localhost:5000/api/auth/signup", formData);
+      alert(res.data.message);
+      onClose(); // Optionally close modal
+    } catch (error) {
+      alert(error.response?.data?.error || "Signup failed. Try again.");
+    }
   };
 
   const handleSwitchToSignIn = (e) => {
