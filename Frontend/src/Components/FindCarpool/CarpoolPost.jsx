@@ -6,6 +6,7 @@ import {
   Users,
   Star,
   MessageCircle,
+  X,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import MapModal from "../MapModal/MapModel";
@@ -45,10 +46,14 @@ const CarpoolPost = ({
   const handleRequestSeat = () => {
     setMapModalOpen(true);
   };
+  const handleCancel = () => {
+    console.log("Ride canceled");
+  };
 
   const toggleExpand = () => {
     if (variant === "default") setIsExpanded(!isExpanded);
   };
+
 
   return (
     <div
@@ -183,6 +188,20 @@ const CarpoolPost = ({
           {/* Actions */}
           {variant === "default" && (
             <div className="mt-4 flex flex-wrap items-center justify-around gap-2">
+              {activeTab === "upcoming" && (
+              <button
+              onClick={handleCancel}
+              className="flex-grow sm:flex-grow-0 h-[44px] w-[44px] px-4 text-sm bg-red-600 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-red-700 relative group"
+            >
+              <X className="h-4 w-4" />
+            
+              {/* Hover text */}
+              <span className="absolute bottom-[50px] left-1/2 transform -translate-x-1/2 hidden group-hover:block bg-white text-black text-sm text-center px-2 py-1 rounded-md">
+                Cancel Ride
+              </span>
+            </button>
+            
+              )}
               <button
                 onClick={handleRequestSeat}
                 className="flex-grow sm:flex-grow-0 h-[44px] px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600 dark:bg-button-dark dark:hover:bg-button-hover dark:text-white"
@@ -207,6 +226,7 @@ const CarpoolPost = ({
                   </>
                 )}
               </button>
+              
 
               {console.log("Recurring:", schedule.recurring, "Preferences:", preferences, "Variant:", variant)}
               {(schedule.recurring || preferences.length > 0) && (
