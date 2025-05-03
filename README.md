@@ -124,6 +124,10 @@ FAST NUCES students face high travel costs and inefficient commuting due to a la
 
 ---
 
+## How to run
+
+'npm run start' from main folder
+
 ## 🏁 Conclusion
 
 GoFAST is designed to improve the daily commute for FAST NUCES students by making it easier to share rides. With a focus on trust, convenience, and sustainability, it creates a connected and eco-conscious student community.
