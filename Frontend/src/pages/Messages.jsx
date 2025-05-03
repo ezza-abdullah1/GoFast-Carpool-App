@@ -1,7 +1,9 @@
-// frontend/src/pages/Messages.jsx
+// 4. Update frontend/src/pages/Messages.jsx
+// This version uses the socket context for better state management
+
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import socket from '../contexts/socket';
+import { useSocket } from '../contexts/socket'; // Import the socket hook
 
 import {
   Search, MoreVertical, PhoneCall, Video, Send,
@@ -17,13 +19,14 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 axios.defaults.baseURL = API_URL;
 
 export default function Messages() {
+  const { socket, isConnected, connectError, reconnect } = useSocket();
   const [contacts, setContacts] = useState([]);
   const [activeId, setActiveId] = useState(null);
   const [messageText, setMessageText] = useState('');
   const [messages, setMessages] = useState([]);
-  const [socketConnected, setSocketConnected] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [joinedRoom, setJoinedRoom] = useState(false);
 
   const rideDetails = {
     date: 'Tomorrow, May 15, 2023',
@@ -33,38 +36,16 @@ export default function Messages() {
     seats: 1
   };
 
-  // Socket connection handling
-  useEffect(() => {
-    socket.on('connect', () => {
-      console.log('Socket connected');
-      setSocketConnected(true);
-    });
-
-    socket.on('disconnect', () => {
-      console.log('Socket disconnected');
-      setSocketConnected(false);
-    });
-
-    socket.on('connect_error', (err) => {
-      console.error('Socket connection error:', err);
-      setError('Could not connect to messaging service');
-    });
-
-    return () => {
-      socket.off('connect');
-      socket.off('disconnect');
-      socket.off('connect_error');
-    };
-  }, []);
-
   // Load contacts once
   useEffect(() => {
     setLoading(true);
+    console.log('Fetching contacts from:', `${API_URL}/api/contacts`);
+    
     axios.get('/api/contacts')
       .then(res => {
         console.log('Contacts response:', res.data);
         // Handle both array format and object format with contacts property
-        const contactsArray = Array.isArray(res.data) ? res.data : res.data.contacts || [];
+        const contactsArray = Array.isArray(res.data) ? res.data : (res.data.contacts || []);
         setContacts(contactsArray);
         if (contactsArray.length > 0) {
           setActiveId(contactsArray[0].id);
@@ -73,12 +54,33 @@ export default function Messages() {
       })
       .catch(err => {
         console.error('Error loading contacts:', err);
-        setError('Failed to load contacts');
+        setError('Failed to load contacts: ' + (err.message || 'Unknown error'));
         setLoading(false);
       });
   }, []);
 
-  // When active contact changes: fetch messages + join socket
+  // Join room effect - separate from message loading
+  useEffect(() => {
+    if (!activeId || !isConnected) return;
+    
+    console.log('Joining room for conversation:', activeId);
+    socket.emit('join', activeId);
+    
+    // Listen for join confirmation
+    const handleJoined = (data) => {
+      console.log('Joined room:', data);
+      setJoinedRoom(true);
+    };
+    
+    socket.on('joined', handleJoined);
+    
+    return () => {
+      socket.off('joined', handleJoined);
+      setJoinedRoom(false);
+    };
+  }, [activeId, isConnected, socket]);
+
+  // Load messages when active contact changes
   useEffect(() => {
     if (!activeId) return;
     
@@ -91,14 +93,15 @@ export default function Messages() {
       })
       .catch(err => {
         console.error('Error loading messages:', err);
-        setError('Failed to load messages');
+        setError('Failed to load messages: ' + (err.message || 'Unknown error'));
         setLoading(false);
       });
-
-    // Join conversation room
-    socket.emit('join', activeId);
+  }, [activeId]);
+  
+  // Listen for new messages - separate effect for socket events
+  useEffect(() => {
+    if (!isConnected || !activeId) return;
     
-    // Listen for new messages
     const handleNewMessage = (msg) => {
       console.log('New message received:', msg);
       if (msg.conversationId === activeId) {
@@ -111,34 +114,35 @@ export default function Messages() {
     return () => {
       socket.off('newMessage', handleNewMessage);
     };
-  }, [activeId]);
+  }, [isConnected, activeId, socket]);
 
-  const handleSend = async (e) => {
+  const handleSend = (e) => {
     e.preventDefault();
-    if (!messageText.trim() || !activeId) return;
+    if (!messageText.trim() || !activeId || !isConnected) return;
     
-    try {
-      const response = await axios.post('/api/messages', {
-        conversationId: activeId,
-        senderId: 'me',
-        text: messageText.trim()
-      });
-      
-      console.log('Message sent:', response.data);
-      
-      // Optimistically add to UI (in case socket is slow)
+    console.log('Sending message to conversation:', activeId);
+    
+    axios.post('/api/messages', {
+      conversationId: activeId,
+      senderId: 'me',
+      text: messageText.trim()
+    })
+    .then(response => {
+      console.log('Message sent successfully:', response.data);
+      // Add message to UI immediately (optimistic update)
       setMessages(prev => [...prev, response.data]);
       setMessageText('');
-    } catch (err) {
+    })
+    .catch(err => {
       console.error('Error sending message:', err);
-      setError('Failed to send message');
-    }
+      setError('Failed to send message: ' + (err.message || 'Unknown error'));
+    });
   };
 
   const activeContact = contacts.find(c => c.id === activeId);
 
   if (loading && contacts.length === 0) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+    return <div className="flex items-center justify-center h-screen">Loading contacts...</div>;
   }
 
   if (error && contacts.length === 0) {
@@ -152,6 +156,18 @@ export default function Messages() {
 
   return (
     <div className="flex flex-col min-h-screen">
+      {!isConnected && (
+        <div className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 px-4 py-2 text-center">
+          <span>Connection to messaging service lost. </span>
+          <button 
+            onClick={reconnect}
+            className="underline font-medium hover:text-yellow-900 dark:hover:text-yellow-100"
+          >
+            Reconnect
+          </button>
+        </div>
+      )}
+      
       <main className="flex-1 pt-16">
         <div className="h-[calc(100vh-64px)] flex">
           {/* Contacts Sidebar */}
@@ -326,23 +342,28 @@ export default function Messages() {
                   <form onSubmit={handleSend} className="flex gap-2">
                     <input
                       type="text"
-                      placeholder="Type a message..."
+                      placeholder={isConnected ? "Type a message..." : "Reconnecting..."}
                       value={messageText}
                       onChange={e => setMessageText(e.target.value)}
                       className="input-base flex-1"
-                      disabled={!socketConnected}
+                      disabled={!isConnected}
                     />
                     <Button 
                       type="submit" 
                       size="icon"
-                      disabled={!socketConnected || !messageText.trim()}
+                      disabled={!isConnected || !messageText.trim()}
                     >
                       <Send className="h-5 w-5" />
                     </Button>
                   </form>
-                  {!socketConnected && (
+                  {!isConnected && (
                     <p className="text-xs text-red-500 mt-2">
                       Disconnected from messaging service. Reconnecting...
+                    </p>
+                  )}
+                  {connectError && (
+                    <p className="text-xs text-red-500 mt-2">
+                      Error: {connectError}
                     </p>
                   )}
                 </div>
