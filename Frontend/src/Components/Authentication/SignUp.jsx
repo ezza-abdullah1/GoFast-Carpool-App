@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, User, Lock } from 'lucide-react';
 
-const SignUp = ({ onSwitchToSignIn }) => {
+const SignUp = ({ onSwitchToSignIn, onClose }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
@@ -24,12 +24,17 @@ const SignUp = ({ onSwitchToSignIn }) => {
     // Add your form submission logic here
   };
 
+  const handleSwitchToSignIn = (e) => {
+    e.preventDefault();
+    onSwitchToSignIn();
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="bg-white rounded-lg w-full max-w-md mx-4">
-        <div className="flex justify-between items-center p-4 border-b">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg w-full max-w-md mx-4 dark:bg-gray-800 dark:text-white">
+        <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
           <h2 className="text-xl font-bold">Create Account</h2>
-          <button className="text-gray-500 hover:text-gray-700">
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -49,7 +54,7 @@ const SignUp = ({ onSwitchToSignIn }) => {
                 id="fullName"
                 name="fullName"
                 placeholder="Your full name"
-                className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 value={formData.fullName}
                 onChange={handleChange}
                 required
@@ -63,16 +68,16 @@ const SignUp = ({ onSwitchToSignIn }) => {
               <select
                 id="department"
                 name="department"
-                className="w-full px-3 py-2 border rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 value={formData.department}
                 onChange={handleChange}
                 required
               >
-                <option value="" disabled selected>Select your department</option>
-                <option value="cs">Computer Science</option>
-                <option value="eng">Engineering</option>
-                <option value="business">Business</option>
-                <option value="arts">Arts</option>
+                <option value="" disabled>Select your Department</option>
+                <option value="cs">CS</option>
+                <option value="eng">EE</option>
+                <option value="business">Management</option>
+                <option value="civil">Civil</option>
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -93,13 +98,13 @@ const SignUp = ({ onSwitchToSignIn }) => {
                 id="email"
                 name="email"
                 placeholder="yourname@nu.edu.pk"
-                className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 value={formData.email}
                 onChange={handleChange}
                 required
               />
             </div>
-            <p className="mt-1 text-sm text-gray-500">Must be a valid FAST NUCES email ending with @nu.edu.pk</p>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Must be a valid FAST NUCES email ending with @nu.edu.pk</p>
           </div>
           
           <div className="mb-6">
@@ -113,7 +118,7 @@ const SignUp = ({ onSwitchToSignIn }) => {
                 id="password"
                 name="password"
                 placeholder="Create a strong password"
-                className="w-full pl-10 pr-10 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-10 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 value={formData.password}
                 onChange={handleChange}
                 required
@@ -126,7 +131,7 @@ const SignUp = ({ onSwitchToSignIn }) => {
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
-            <p className="mt-1 text-sm text-gray-500">Password must be at least 8 characters long</p>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Password must be at least 8 characters long</p>
           </div>
           
           <button
@@ -137,12 +142,12 @@ const SignUp = ({ onSwitchToSignIn }) => {
           </button>
           
           <div className="mt-4 text-center">
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-300">
               Already have an account? 
               <button 
                 type="button"
-                className="text-blue-500 ml-1 font-medium"
-                onClick={onSwitchToSignIn}
+                className="text-blue-500 ml-1 font-medium hover:underline"
+                onClick={handleSwitchToSignIn}
               >
                 Sign in
               </button>

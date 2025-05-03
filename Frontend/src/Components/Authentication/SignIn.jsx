@@ -1,73 +1,73 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import { useDispatch } from 'react-redux';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import {signIn} from "./redux/userSlice"
 
-const SignIn = ({ onSwitchToSignUp }) => {
+const SignIn = ({ onSwitchToSignUp, onClose }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
+  const [formData, setFormData] = useState({ email: '', password: '' });
+  const dispatch = useDispatch();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Sign in submitted:', formData, 'Remember me:', rememberMe);
-    // Add your sign in logic here
+    dispatch(signIn(formData)); // Save in Redux store
+    console.log('Sign In Submitted:', formData);
+  };
+
+  const handleSwitchToSignUp = (e) => {
+    e.preventDefault();
+    onSwitchToSignUp();
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="bg-white rounded-lg w-full max-w-md mx-4">
-        <div className="flex justify-between items-center p-4 border-b">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg w-full max-w-md mx-4 dark:bg-gray-800 dark:text-white">
+        <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
           <h2 className="text-xl font-bold">Sign In</h2>
-          <button className="text-gray-500 hover:text-gray-700">
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
           </button>
         </div>
-        
         <form onSubmit={handleSubmit} className="p-4">
           <div className="mb-4">
-            <label htmlFor="signInEmail" className="block mb-2 font-medium">University Email</label>
+            <label htmlFor="email" className="block mb-2 font-medium">University Email</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500">
                 <Mail size={20} />
               </div>
               <input
                 type="email"
-                id="signInEmail"
+                id="email"
                 name="email"
                 placeholder="yourname@nu.edu.pk"
-                className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 value={formData.email}
                 onChange={handleChange}
                 required
               />
             </div>
           </div>
-          
-          <div className="mb-4">
-            <label htmlFor="signInPassword" className="block mb-2 font-medium">Password</label>
+
+          <div className="mb-6">
+            <label htmlFor="password" className="block mb-2 font-medium">Password</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500">
                 <Lock size={20} />
               </div>
               <input
                 type={showPassword ? "text" : "password"}
-                id="signInPassword"
+                id="password"
                 name="password"
                 placeholder="Enter your password"
-                className="w-full pl-10 pr-10 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-10 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 value={formData.password}
                 onChange={handleChange}
                 required
@@ -80,38 +80,25 @@ const SignIn = ({ onSwitchToSignUp }) => {
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
-          </div>
-          
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center">
-              <input
-                id="rememberMe"
-                type="checkbox"
-                className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                checked={rememberMe}
-                onChange={() => setRememberMe(!rememberMe)}
-              />
-              <label htmlFor="rememberMe" className="ml-2 text-sm text-gray-600">
-                Remember me
-              </label>
+            <div className="flex justify-end mt-1">
+              <a href="#" className="text-sm text-blue-500 hover:underline">Forgot password?</a>
             </div>
-            <a href="#" className="text-sm text-blue-500 hover:underline">Forgot password?</a>
           </div>
-          
+
           <button
             type="submit"
             className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             Sign In
           </button>
-          
+
           <div className="mt-4 text-center">
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-300">
               Don't have an account?
-              <button 
+              <button
                 type="button"
-                className="text-blue-500 ml-1 font-medium"
-                onClick={onSwitchToSignUp}
+                className="text-blue-500 ml-1 font-medium hover:underline"
+                onClick={handleSwitchToSignUp}
               >
                 Sign up
               </button>
