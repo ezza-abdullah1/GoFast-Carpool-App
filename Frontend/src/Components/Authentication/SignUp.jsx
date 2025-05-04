@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, User, Lock } from 'lucide-react';
 import axios from 'axios';
 
-
 const SignUp = ({ onSwitchToSignIn, onClose }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     department: '',
     email: '',
-    password: ''
+    password: '',
+    gender: '' // Added gender field
   });
 
   const handleChange = (e) => {
@@ -68,7 +68,7 @@ const SignUp = ({ onSwitchToSignIn, onClose }) => {
               />
             </div>
           </div>
-          
+
           <div className="mb-4">
             <label htmlFor="department" className="block mb-2 font-medium">Department</label>
             <div className="relative">
@@ -93,7 +93,32 @@ const SignUp = ({ onSwitchToSignIn, onClose }) => {
               </div>
             </div>
           </div>
-          
+
+          {/* Gender field */}
+          <div className="mb-4">
+            <label htmlFor="gender" className="block mb-2 font-medium">Gender</label>
+            <div className="relative">
+              <select
+                id="gender"
+                name="gender"
+                className="w-full px-3 py-2 border rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                value={formData.gender}
+                onChange={handleChange}
+                required
+              >
+                <option value="" disabled>Select your gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+            </div>
+          </div>
+
           <div className="mb-4">
             <label htmlFor="email" className="block mb-2 font-medium">University Email</label>
             <div className="relative">
@@ -113,7 +138,7 @@ const SignUp = ({ onSwitchToSignIn, onClose }) => {
             </div>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Must be a valid FAST NUCES email ending with @nu.edu.pk</p>
           </div>
-          
+
           <div className="mb-6">
             <label htmlFor="password" className="block mb-2 font-medium">Password</label>
             <div className="relative">
@@ -140,14 +165,14 @@ const SignUp = ({ onSwitchToSignIn, onClose }) => {
             </div>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Password must be at least 8 characters long</p>
           </div>
-          
+
           <button
             type="submit"
             className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             Create Account
           </button>
-          
+
           <div className="mt-4 text-center">
             <p className="text-gray-600 dark:text-gray-300">
               Already have an account? 

@@ -19,7 +19,22 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: 8
-  }
+  },
+  gender: {
+   type: String,
+   required: true
+  },
+  rating: { 
+    type: Number,
+     default: 0 
+    },
+  rides_taken:
+   { type: Number, 
+    default: 0 
+  },
+  rides_offered:
+   { type: Number,
+     default: 0 }
 });
 
 module.exports = mongoose.model("User", userSchema);
