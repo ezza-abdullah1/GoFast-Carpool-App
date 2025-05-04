@@ -7,9 +7,11 @@ import Messages from "./pages/Messages";
 import Layout from "./Components/layout/Layout";
 import SignIn from "./Components/Authentication/SignIn";
 import SignUp from "./Components/Authentication/SignUp";
+import { SocketProvider } from "./contexts/socket";
 
 function App() {
   return (
+    <SocketProvider>
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<HomePage />} />
@@ -24,6 +26,7 @@ function App() {
 
       <Route path="*" element={<NotFound />} />
     </Routes>
+    </SocketProvider>
   );
 }
 
