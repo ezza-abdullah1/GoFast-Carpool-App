@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { Eye, EyeOff, Mail, User, Lock } from 'lucide-react';
 import axios from 'axios';
 
@@ -9,7 +10,7 @@ const SignUp = ({ onSwitchToSignIn, onClose }) => {
     department: '',
     email: '',
     password: '',
-    gender: '' // Added gender field
+    gender: '' 
   });
 
   const handleChange = (e) => {
@@ -22,12 +23,23 @@ const SignUp = ({ onSwitchToSignIn, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Validate form fields
+    if (formData.fullName.length < 7) {
+      toast.error("Full Name must be at least 7 characters long.");
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      toast.error("Password must be at least 8 characters long.");
+      return;
+    }
+
     try {
       const res = await axios.post("http://localhost:5000/api/auth/signup", formData);
-      alert(res.data.message);
+      toast.success("Account created successfully! Please log in.");
       onClose(); // Optionally close modal
     } catch (error) {
-      alert(error.response?.data?.error || "Signup failed. Try again.");
+      toast.error(error.response?.data?.error || "Signup failed. Try again.");
     }
   };
 
@@ -65,6 +77,7 @@ const SignUp = ({ onSwitchToSignIn, onClose }) => {
                 value={formData.fullName}
                 onChange={handleChange}
                 required
+                minLength={7}
               />
             </div>
           </div>
@@ -129,14 +142,14 @@ const SignUp = ({ onSwitchToSignIn, onClose }) => {
                 type="email"
                 id="email"
                 name="email"
-                placeholder="yourname@nu.edu.pk"
+                placeholder="e.g. l217654e@lhr.nu.edu.pk"
                 className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 value={formData.email}
                 onChange={handleChange}
                 required
               />
             </div>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Must be a valid FAST NUCES email ending with @nu.edu.pk</p>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Must be a valid FAST NUCES email ending with @lhr.nu.edu.pk</p>
           </div>
 
           <div className="mb-6">
@@ -154,6 +167,7 @@ const SignUp = ({ onSwitchToSignIn, onClose }) => {
                 value={formData.password}
                 onChange={handleChange}
                 required
+                minLength={8}
               />
               <button
                 type="button"

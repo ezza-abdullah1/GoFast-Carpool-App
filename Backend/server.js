@@ -10,6 +10,8 @@ const http     = require("http");
 
 const carpoolRoutes = require("./routes/carpoolRoutes");
 const mapRoutes     = require("./routes/mapRoutes");
+const signinRoutes = require("./controllers/signinController");
+
 
 dotenv.config();
 connectDB();
@@ -38,10 +40,10 @@ app.use((req, _, next) => {
 // Your existing routes
 app.use("/api/carpools", carpoolRoutes);
 app.use("/api/map",      mapRoutes);
-//Signup
-// app.use("/api", routes);
+app.use("/api/auth", signinRoutes);
 
-// New messaging API
+
+// New messaging API+ auth
 app.use("/api", apiRoutes);
 
 app.get("/", (req, res) => {

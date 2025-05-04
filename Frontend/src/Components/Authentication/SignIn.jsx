@@ -1,22 +1,30 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import {signIn} from "./redux/userSlice"
+import { signIn } from "./redux/userSlice";
+import { toast } from 'react-hot-toast';
 
 const SignIn = ({ onSwitchToSignUp, onClose }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '' });
   const dispatch = useDispatch();
 
+  const { error, loading, currentUser } = useSelector(state => state.user);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    dispatch(signIn(formData)); // Save in Redux store
-    console.log('Sign In Submitted:', formData);
+    const response = await dispatch(signIn(formData));
+    if (response.meta.requestStatus === "fulfilled") {
+      toast.success(`Welcome, ${response.payload.fullName}`);
+      onClose(); // optionally close modal
+    } else {
+      toast.error(response.payload || "Sign In failed");
+    }
   };
 
   const handleSwitchToSignUp = (e) => {
@@ -87,9 +95,10 @@ const SignIn = ({ onSwitchToSignUp, onClose }) => {
 
           <button
             type="submit"
+            disabled={loading}
             className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
-            Sign In
+            {loading ? 'Signing In...' : 'Sign In'}
           </button>
 
           <div className="mt-4 text-center">

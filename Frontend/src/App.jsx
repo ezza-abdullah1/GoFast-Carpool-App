@@ -8,10 +8,17 @@ import Layout from "./Components/layout/Layout";
 import SignIn from "./Components/Authentication/SignIn";
 import SignUp from "./Components/Authentication/SignUp";
 import { SocketProvider } from "./contexts/socket";
+import { Toaster } from "react-hot-toast";
+import { Provider } from "react-redux";
+import store from "./Components/Authentication/redux/store"; 
+
 
 function App() {
   return (
+    <Provider store={store}>
+
     <SocketProvider>
+    <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<HomePage />} />
@@ -27,6 +34,8 @@ function App() {
       <Route path="*" element={<NotFound />} />
     </Routes>
     </SocketProvider>
+    </Provider>
+
   );
 }
 
