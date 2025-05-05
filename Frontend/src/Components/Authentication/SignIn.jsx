@@ -16,16 +16,22 @@ const SignIn = ({ onSwitchToSignUp, onClose }) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await dispatch(signIn(formData));
+    const response = await dispatch(signIn(formData));  // Dispatch the signIn action
     if (response.meta.requestStatus === "fulfilled") {
-      toast.success(`Welcome, ${response.payload.fullName}`);
-      onClose(); // optionally close modal
+      toast.success('Logged in successfully');
+      
+      // Fetch user details once logged in and store in Redux
+      dispatch(fetchUserDetails(response.payload.email));
+
+      onClose();  // Close modal after login
     } else {
-      toast.error(response.payload || "Sign In failed");
+      toast.error(response.payload || 'Sign in failed');
     }
   };
+  
 
   const handleSwitchToSignUp = (e) => {
     e.preventDefault();
