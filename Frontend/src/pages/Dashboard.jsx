@@ -5,6 +5,8 @@ import CarpoolPost from '../Components/FindCarpool/CarpoolPost';
 import CarpoolForm from '../Components/FindCarpool/CarpoolForm';
 import { cn } from '../lib/utils';
 import { useSelector } from 'react-redux';
+import { AiOutlineExclamationCircle } from 'react-icons/ai';
+
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
@@ -12,15 +14,35 @@ const Dashboard = () => {
   const { userDetails, loading, error } = useSelector((state) => state.user);  // Get user details from Redux
 
   if (loading) {
-    return <div>Loading...</div>;  // Show loading spinner or message while fetching data
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <RingLoader color="#3498db" size={60} />
+      </div> 
+    );
   }
 
   if (error) {
-    return <div>{error}</div>;  // Display error message if there's an issue fetching user details
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-center bg-red-200 p-8 rounded-lg shadow-md">
+          <AiOutlineExclamationCircle size={40} className="text-red-600 mb-4" />
+          <h2 className="text-xl text-red-600 font-semibold">{error}</h2>
+          <p className="text-sm text-gray-600">Something went wrong. Please try again later.</p>
+        </div>
+      </div> 
+    );
   }
 
   if (!userDetails) {
-    return <div>No user details available</div>;  // Handle case where user details are not available
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-center bg-yellow-100 p-8 rounded-lg shadow-md">
+          <AiOutlineExclamationCircle size={40} className="text-yellow-600 mb-4" />
+          <h2 className="text-xl text-yellow-600 font-semibold">No user details available</h2>
+          <p className="text-sm text-gray-600">Please make sure you're logged in.</p>
+        </div>
+      </div> // Styled empty state message with an icon
+    );
   }
 
   // Sample data for upcoming rides
@@ -39,7 +61,6 @@ const Dashboard = () => {
       schedule: {
         date: 'Tomorrow',
         time: '8:15 AM',
-        recurring: ['Monday', 'Tuesday', 'Wednesday', 'Thursday'],
       },
       seats: {
         total: 3,
@@ -109,7 +130,6 @@ const Dashboard = () => {
       schedule: {
         date: 'Tomorrow',
         time: '4:30 PM',
-        recurring: ['Monday', 'Wednesday', 'Friday'],
       },
       seats: {
         total: 4,
