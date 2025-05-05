@@ -1,28 +1,27 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Clock, Car, Users, Star, MessageCircle, Plus } from 'lucide-react';
 import Button from '../Components/ui/compatibility-button';
 import CarpoolPost from '../Components/FindCarpool/CarpoolPost';
 import CarpoolForm from '../Components/FindCarpool/CarpoolForm';
 import { cn } from '../lib/utils';
-
+import { useSelector } from 'react-redux';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
   const [showCarpoolForm, setShowCarpoolForm] = useState(false);
+  const { userDetails, loading, error } = useSelector((state) => state.user);  // Get user details from Redux
 
-  // Sample user data
-  const user = {
-    name: 'Ahmed Khan',
-    email: 'ahmed.khan@nu.edu.pk',
-    department: 'Computer Science',
-    batch: '2020',
-    rating: 4.8,
-    ridesOffered: 24,
-    ridesTaken: 12,
-    totalSavings: 4500,
-    co2Saved: 120,
-  };
+  if (loading) {
+    return <div>Loading...</div>;  // Show loading spinner or message while fetching data
+  }
+
+  if (error) {
+    return <div>{error}</div>;  // Display error message if there's an issue fetching user details
+  }
+
+  if (!userDetails) {
+    return <div>No user details available</div>;  // Handle case where user details are not available
+  }
 
   // Sample data for upcoming rides
   const upcomingRides = [
@@ -47,7 +46,7 @@ const Dashboard = () => {
         available: 0,
       },
       preferences: ['Female riders only'],
-    }
+    },
   ];
 
   // Sample data for ride history
@@ -91,7 +90,7 @@ const Dashboard = () => {
         total: 3,
         available: 0,
       },
-    }
+    },
   ];
 
   // Sample data for ride offers
@@ -99,9 +98,9 @@ const Dashboard = () => {
     {
       id: '4',
       driver: {
-        name: user.name,
-        rating: user.rating,
-        department: user.department,
+        name: userDetails.fullName,  // Use fullName from userDetails
+        rating: userDetails.rating,
+        department: userDetails.department,
       },
       route: {
         pickup: 'FAST NUCES Main Campus',
@@ -117,12 +116,11 @@ const Dashboard = () => {
         available: 2,
       },
       preferences: ['No smoking', 'Music lovers welcome'],
-    }
+    },
   ];
 
   return (
     <div className="flex flex-col min-h-screen">
-
       <main className="flex-1 pt-20">
         {/* User Profile Section */}
         <section className="bg-muted/30 dark:bg-muted/5 py-12">
@@ -131,39 +129,37 @@ const Dashboard = () => {
               {/* User Avatar */}
               <div className="h-24 w-24 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center flex-shrink-0 border-4 border-white dark:border-black">
                 <span className="text-4xl font-bold text-primary-600 dark:text-primary-300">
-                  {user.name.charAt(0)}
+                  {userDetails.fullName.charAt(0)} {/* User's first character of full name */}
                 </span>
               </div>
 
               {/* User Info */}
               <div className="md:flex-1 text-center md:text-left">
-                <h1 className="text-2xl font-bold">{user.name}</h1>
-                <p className="text-muted-foreground mb-2">{user.department}, {user.batch}</p>
+                <h1 className="text-2xl font-bold">{userDetails.fullName}</h1> {/* Display full name */}
+                <p className="text-muted-foreground mb-2">{userDetails.department.toUpperCase()}</p> {/* Display department and batch */}
                 <div className="flex items-center justify-center md:justify-start gap-1 mb-4">
                   <Star className="h-4 w-4 text-yellow-500" fill="currentColor" />
-                  <span className="font-medium">{user.rating.toFixed(1)}</span>
-                  <span className="text-muted-foreground text-sm">({user.ridesOffered + user.ridesTaken} rides)</span>
+                  <span className="font-medium">{userDetails.rating.toFixed(1)}</span> {/* Display rating */}
+                  <span className="text-muted-foreground text-sm">({userDetails.rides_offered + userDetails.rides_taken} rides)</span> {/* Display number of rides */}
                 </div>
 
                 <div className="flex flex-wrap justify-center md:justify-start gap-4">
                   <div className="text-center">
-                    <p className="text-lg font-bold">{user.ridesOffered}</p>
+                    <p className="text-lg font-bold">{userDetails.rides_offered}</p> {/* Display rides offered */}
                     <p className="text-xs text-muted-foreground">Rides Offered</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-lg font-bold">{user.ridesTaken}</p>
+                    <p className="text-lg font-bold">{userDetails.rides_taken}</p> {/* Display rides taken */}
                     <p className="text-xs text-muted-foreground">Rides Taken</p>
                   </div>
-               
                 </div>
               </div>
 
               {/* Actions */}
               <div className="flex gap-3">
-
                 <Button
                   size="sm"
-                  className="bg-blue-500 dark:bg-muted  dark:hover:bg-button-hover dark:text-white text-white rounded-full px-4 py-1.5 text-sm hover:bg-blue-600 active:bg-blue-700"
+                  className="bg-blue-500 dark:bg-muted dark:hover:bg-button-hover dark:text-white text-white rounded-full px-4 py-1.5 text-sm hover:bg-blue-600 active:bg-blue-700"
                   variant="outline"
                   onClick={() => setShowCarpoolForm(!showCarpoolForm)}
                 >
@@ -231,7 +227,7 @@ const Dashboard = () => {
                 )}
                 onClick={() => setActiveTab('offers')}
               >
-                My Ride Offers
+                Pending Requests
               </button>
             </div>
 
@@ -265,7 +261,7 @@ const Dashboard = () => {
                   {rideHistory.length > 0 ? (
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                       {rideHistory.map((ride) => (
-                        <CarpoolPost key={ride.id} {...ride} activeTab={activeTab}/>
+                        <CarpoolPost key={ride.id} {...ride} activeTab={activeTab} />
                       ))}
                     </div>
                   ) : (
@@ -283,11 +279,11 @@ const Dashboard = () => {
 
               {activeTab === 'offers' && (
                 <div>
-                  <h2 className="text-xl font-semibold mb-6">Your Ride Offers</h2>
+                  <h2 className="text-xl font-semibold mb-6">Pending Requests</h2>
                   {rideOffers.length > 0 ? (
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                       {rideOffers.map((ride) => (
-                        <CarpoolPost key={ride.id} {...ride} offerRide={true}activeTab={activeTab} />
+                        <CarpoolPost key={ride.id} {...ride} offerRide={true} activeTab={activeTab} />
                       ))}
                     </div>
                   ) : (
@@ -297,7 +293,7 @@ const Dashboard = () => {
                       <p className="text-muted-foreground mb-6">
                         You haven't offered any rides yet. Share your journey with others!
                       </p>
-                      <Button  onClick={() => setShowCarpoolForm(true)}>
+                      <Button onClick={() => setShowCarpoolForm(true)}>
                         <Plus className="mr-2 h-4 w-4" />
                         Offer a Ride
                       </Button>
@@ -309,8 +305,7 @@ const Dashboard = () => {
           </div>
         </section>
       </main>
-
-    </div >
+    </div>
   );
 };
 
