@@ -34,7 +34,10 @@ const userSchema = new mongoose.Schema({
   },
   rides_offered:
    { type: Number,
-     default: 0 }
+     default: 0 },
+     resetPasswordToken: String,
+     resetPasswordExpires: Date,
+
 });
 
 module.exports = mongoose.model("User", userSchema);
