@@ -6,7 +6,7 @@ import axios from 'axios';
 export const signIn = createAsyncThunk("user/signIn", async (data, thunkAPI) => {
   try {
     const response = await axios.post("/api/auth/signin", data);
-    
+    sessionStorage.setItem("token", response.data.token); 
     console.log("User data from backend:", response.data.user);  // Log the user data from the backend
 
     // Dispatch the user data to Redux store

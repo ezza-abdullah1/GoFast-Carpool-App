@@ -3,6 +3,7 @@ import CarpoolPost from "../Components/FindCarpool/CarpoolPost";
 import CarpoolSearch from "../Components/FindCarpool/CarpoolSearch";
 
 import axios from "axios";
+import axiosInstance from "../Components/Authentication/redux/axiosInstance";
 
 const CarpoolPage = () => {
   const [carpools, setCarpools] = useState([]);
@@ -13,7 +14,7 @@ const CarpoolPage = () => {
     const fetchCarpools = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("http://localhost:5000/api/carpools");
+        const response = await axiosInstance.get("http://localhost:5000/api/carpools");
         setCarpools(response.data);
       } catch (err) {
         setError("Failed to fetch carpools");
@@ -29,7 +30,7 @@ const CarpoolPage = () => {
   const handleSearch = async (filters) => {
     console.log("Search filters:", filters);
     try {
-      const response = await axios.post("http://localhost:5000/api/carpools/search", filters);
+      const response = await axiosInstance.post("http://localhost:5000/api/carpools/search", filters);
       setCarpools(response.data);
     } catch (error) {
       console.error("Search failed", error);
