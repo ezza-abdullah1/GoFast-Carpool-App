@@ -56,9 +56,8 @@ const MapModal = ({ open, rideId, onOpenChange, activeTab }) => {
             return;
         }
 
-        console.log("Selected LatLng:", lat, lng);
         let locationName = await getLocationName(lat, lng);
-console.log("Location Name:", locationName);
+
         const stopData = {
             rideId,
             userId: userDetails.id,
@@ -69,13 +68,13 @@ console.log("Location Name:", locationName);
             },
             status: "pending",
         };
-        console.log("Stop Data:", stopData);
+    
         axiosInstance.post(`http://localhost:5000/api/stop`, stopData)
             .then(() => {
                 toast.success("Request sent");
             })
             .catch((error) => {
-                console.error("Error saving stop:", error);
+            
                 toast.error("Error sending request");
             });
     };

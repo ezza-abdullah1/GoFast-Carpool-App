@@ -18,7 +18,7 @@ const CarpoolPage = () => {
         setCarpools(response.data);
       } catch (err) {
         setError("Failed to fetch carpools");
-        console.error(err);
+        
       } finally {
         setLoading(false);
       }
@@ -28,12 +28,12 @@ const CarpoolPage = () => {
   }, []);
 
   const handleSearch = async (filters) => {
-    console.log("Search filters:", filters);
+
     try {
       const response = await axiosInstance.post("http://localhost:5000/api/carpools/search", filters);
       setCarpools(response.data);
     } catch (error) {
-      console.error("Search failed", error);
+
       setError("Search failed");
     }
   };

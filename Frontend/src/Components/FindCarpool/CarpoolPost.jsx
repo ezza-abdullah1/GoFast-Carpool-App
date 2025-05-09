@@ -228,7 +228,6 @@ const CarpoolPost = ({
               </button>
               
 
-              {console.log("Recurring:", schedule.recurring, "Preferences:", preferences, "Variant:", variant)}
               {(schedule.recurring || preferences.length > 0) && (
                 <button
                   onClick={toggleExpand}
