@@ -12,7 +12,7 @@ const carpoolRoutes = require("./routes/carpoolRoutes");
 const mapRoutes     = require("./routes/mapRoutes");
 const signinRoutes = require("./controllers/signinController");
 const stopsRoutes = require("./routes/stopRoutes.js");  
-
+const userRoutes = require("./routes/userRoutes.js"); 
 dotenv.config();
 connectDB();
 
@@ -43,6 +43,7 @@ app.use("/api/carpools", carpoolRoutes);
 app.use("/api/map",      mapRoutes);
 app.use("/api/auth", signinRoutes);
 app.use("/api/stop",stopsRoutes);
+app.use("/api/user",userRoutes );
 
 // New messaging API+ auth
 app.use("/api", apiRoutes);

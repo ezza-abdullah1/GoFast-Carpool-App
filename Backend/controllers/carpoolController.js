@@ -13,6 +13,7 @@ exports.getAllCarpools = async (req, res) => {
     const formattedCarpools = carpools.map(carpool => ({
       id: carpool._id.toString(),
       driver: {
+        id: carpool.userId._id.toString(),
         name: carpool.userId.fullName,
         gender: carpool.userId.gender,
         rating: carpool.userId.rating,
@@ -58,6 +59,7 @@ exports.getCarpoolById = async (req, res) => {
     const formattedCarpool = {
       id: carpool._id.toString(),
       driver: {
+        id: carpool.userId._id.toString(),
         name: carpool.userId.fullName,
         gender: carpool.userId.gender,
         rating: carpool.userId.rating,

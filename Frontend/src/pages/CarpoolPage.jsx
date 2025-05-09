@@ -15,6 +15,7 @@ const CarpoolPage = () => {
       try {
         setLoading(true);
         const response = await axiosInstance.get("http://localhost:5000/api/carpools");
+    
         setCarpools(response.data);
       } catch (err) {
         setError("Failed to fetch carpools");
