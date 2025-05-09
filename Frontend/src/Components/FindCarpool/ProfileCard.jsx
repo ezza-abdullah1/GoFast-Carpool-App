@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Star, User, MessageCircle } from "lucide-react";
+import { Star, User } from "lucide-react";
 import Button from "../ui/compatibility-button";
 import { cn } from "../../lib/utils";
 import {
@@ -8,27 +8,33 @@ import {
     DialogHeader,
     DialogTitle,
 } from "../ui/dialog";
+import axiosInstance from "../Authentication/redux/axiosInstance";
 
 const ProfileCard = ({ profileId, open, onOpenChange, className }) => {
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        setLoading(true);
-        setTimeout(() => {
-            const mockProfile = {
-                name: "Ali Raza",
-                rating: 4.7,
-                department: "Computer Science",
-                batch: "Batch 2022",
-                image: "https://randomuser.me/api/portraits/men/32.jpg",
-                ridesOffered: 12,
-                ridesTaken: 7,
-            };
-            setProfile(mockProfile);
-            setLoading(false);
-        }, 1000);
+        const fetchProfile = async () => {
+            try {
+                setLoading(true);
+
+                const response = await axiosInstance.get(`http://localhost:5000/api/user/${profileId}`);
+                setProfile(response.data);
+
+            } catch (error) {
+                console.error("Error fetching profile:", error);
+                setProfile(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (profileId) {
+            fetchProfile();
+        }
     }, [profileId]);
+
 
     if (loading) {
         return (
@@ -60,8 +66,8 @@ const ProfileCard = ({ profileId, open, onOpenChange, className }) => {
 
                     </div>
 
-                    <h3 className="text-xl font-semibold">{profile.name}</h3>
-                    <p className="text-muted-foreground">{profile.department} • {profile.batch}</p>
+                    <h3 className="text-xl font-semibold">{profile.fullName}</h3>
+                    <p className="text-muted-foreground">{profile.department} • {profile.email}</p>
 
                     <div className="flex items-center mt-2">
                         <Star className="h-5 w-5 text-yellow-500 mr-1" fill="currentColor" />
@@ -70,11 +76,11 @@ const ProfileCard = ({ profileId, open, onOpenChange, className }) => {
 
                     <div className="grid grid-cols-2 gap-6 mt-6 w-full max-w-xs">
                         <div className="text-center">
-                            <p className="text-2xl font-bold">{profile.ridesOffered || 0}</p>
+                            <p className="text-2xl font-bold">{profile.rides_Offered || 0}</p>
                             <p className="text-sm text-muted-foreground">Rides Offered</p>
                         </div>
                         <div className="text-center">
-                            <p className="text-2xl font-bold">{profile.ridesTaken || 0}</p>
+                            <p className="text-2xl font-bold">{profile.rides_Taken || 0}</p>
                             <p className="text-sm text-muted-foreground">Rides Taken</p>
                         </div>
                     </div>

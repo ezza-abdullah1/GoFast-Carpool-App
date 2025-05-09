@@ -291,7 +291,7 @@ const CarpoolPost = ({
       />
       {profileModalOpen &&
         <ProfileCard
-          profileId={driver.id || id}
+          profileId={driver.id}
           open={profileModalOpen}
           onOpenChange={setProfileModalOpen}
         />
