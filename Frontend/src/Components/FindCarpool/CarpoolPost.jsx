@@ -228,7 +228,6 @@ const CarpoolPost = ({
               </button>
               
 
-              {console.log("Recurring:", schedule.recurring, "Preferences:", preferences, "Variant:", variant)}
               {(schedule.recurring || preferences.length > 0) && (
                 <button
                   onClick={toggleExpand}
@@ -250,7 +249,7 @@ const CarpoolPost = ({
                 </button>
               )}
 
-              <MapModal open={mapModalOpen} onOpenChange={setMapModalOpen} activeTab={activeTab} />
+              <MapModal open={mapModalOpen} rideId={id} onOpenChange={setMapModalOpen} activeTab={activeTab} />
             </div>
           )}
 

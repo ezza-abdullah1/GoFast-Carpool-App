@@ -1,9 +1,10 @@
 // actions/userActions.js
-import axios from 'axios';
+
+import axiosInstance from './axiosInstance';
 
 export const fetchUserDetails = (email) => async (dispatch) => {
   try {
-    const response = await axios.get(`/api/user/details?email=${email}`);  // Fetch user data by email
+    const response = await axiosInstance.get(`/api/user/details?email=${email}`);  // Fetch user data by email
     dispatch({
       type: 'SET_USER_DETAILS',
       payload: response.data,  // This is the user data returned from the API
