@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
     Dialog,
     DialogContent,
@@ -18,32 +18,72 @@ import StopsSidebar from "./StopsSideBar";
 import { Loader2 } from "lucide-react";
 import { useSelector } from "react-redux";
 import axiosInstance from "../Authentication/redux/axiosInstance";
-
 import { getLocationName } from "../UtilsFunctions/LocationName";
 
-const MapModal = ({ open, rideId, onOpenChange, activeTab }) => {
+const MapModal = ({ open, rideId, onOpenChange, activeTab, route, stop }) => {
     const mapRef = useRef(null);
     const mapInstanceRef = useRef(null);
     const routeLayerRef = useRef(null);
     const markerRef = useRef(null);
     const stopMarkersRef = useRef([]);
     const { userDetails } = useSelector((state) => state.user);
-
-
-    const [stops, setStops] = useState([
-        { lat: 31.5395453, lng: 74.3016998, label: "Start" },
-        { lat: 31.5181999, lng: 74.2926025, label: "Stop" },
-        { lat: 31.4810999, lng: 74.303364, label: "Destination" },
-    ]);
-
     const [selectedLatLng, setSelectedLatLng] = useState(null);
     const [confirmEnabled, setConfirmEnabled] = useState(false);
     const [buttonFlag, setButtonFlag] = useState(false);
     const [errorMsg, setErrorMsg] = useState("");
     const [error, setError] = useState(false);
     const [loading, setLoading] = useState(false);
-
     const location = useLocation();
+
+    const [stops, setStops] = useState([]);
+   
+
+    const convertAllToStops = useCallback((router, stops) => {
+        const result = [];
+
+        if (router?.pickup) {
+            const lat = router.pickup.latitude ?? 31.5395453;
+            const lng = router.pickup.longitude ?? 74.3016998;
+            result.push({
+                lat,
+                lng,
+                label: "Start",
+            });
+        }
+
+        if (Array.isArray(stops)) {
+            stops.forEach((stop) => {
+                const lat = stop?.location?.latitude;
+                const lng = stop?.location?.longitude;
+                const id = stop?._id || stop?.id;
+                const name = stop?.location?.name;
+
+                if (lat != null && lng != null) {
+                    result.push({ id, lat, lng, name, label: "Stop" });
+                }
+            });
+        }
+
+        if (router?.dropoff) {
+            const lat = router.dropoff.latitude ?? 31.4810999;
+            const lng = router.dropoff.longitude ?? 74.303364;
+            result.push({
+                lat,
+                lng,
+                label: "Destination",
+            });
+        }
+
+        return result;
+    }, []);
+
+    useEffect(() => {
+        if (open) { // Only process when modal is open
+            const formattedStops = convertAllToStops(route, stop);
+            setStops(formattedStops);
+        }
+    }, [route, stop, convertAllToStops, open]); // Changed dependency from stopEnds to stop
+
     const saveStopRequest = async () => {
         if (!selectedLatLng) {
             toast.error("Please select a location first.");
@@ -68,13 +108,12 @@ const MapModal = ({ open, rideId, onOpenChange, activeTab }) => {
             },
             status: "pending",
         };
-    
-        axiosInstance.post(`http://localhost:5000/api/stop`, stopData)
+
+        axiosInstance.post("/stop", stopData)
             .then(() => {
                 toast.success("Request sent");
             })
-            .catch((error) => {
-            
+            .catch(() => {
                 toast.error("Error sending request");
             });
     };
@@ -91,6 +130,7 @@ const MapModal = ({ open, rideId, onOpenChange, activeTab }) => {
             if (mapRef.current) mapRef.current.innerHTML = "";
         }
     }, [open]);
+
     const noSidebar = activeTab !== "upcoming";
     const noFooter = !buttonFlag && !confirmEnabled && activeTab !== "offers";
 

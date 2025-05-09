@@ -23,6 +23,8 @@ const CarpoolPost = ({
   variant = "default",
   className,
   activeTab,
+  stops
+
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [mapModalOpen, setMapModalOpen] = useState(false);
@@ -40,6 +42,7 @@ const CarpoolPost = ({
   };
 
   useEffect(() => {
+    
     setButtonText(location.pathname === "/carpools" ? "Request Seat" : "Show Route");
   }, [location.pathname]);
 
@@ -249,7 +252,7 @@ const CarpoolPost = ({
                 </button>
               )}
 
-              <MapModal open={mapModalOpen} rideId={id} onOpenChange={setMapModalOpen} activeTab={activeTab} />
+              <MapModal open={mapModalOpen} rideId={id} route={route} stop={stops} onOpenChange={setMapModalOpen} activeTab={activeTab} />
             </div>
           )}
 

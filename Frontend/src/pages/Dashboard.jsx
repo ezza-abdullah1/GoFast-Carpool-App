@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Clock, Car, Users, Star, MessageCircle, Plus } from 'lucide-react';
 import Button from '../Components/ui/compatibility-button';
 import CarpoolPost from '../Components/FindCarpool/CarpoolPost';
@@ -6,18 +6,87 @@ import CarpoolForm from '../Components/FindCarpool/CarpoolForm';
 import { cn } from '../lib/utils';
 import { useSelector } from 'react-redux';
 import { AiOutlineExclamationCircle } from 'react-icons/ai';
-
+import axiosInstance from '../Components/Authentication/redux/axiosInstance'
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
   const [showCarpoolForm, setShowCarpoolForm] = useState(false);
   const { userDetails, loading, error } = useSelector((state) => state.user);  // Get user details from Redux
+  const [upcomingRides, setUpcomingRides] = useState([]);
+  useEffect(() => {
+    if (!userDetails) return;
+
+    const fetchRides = async () => {
+      try {
+        const { data } = await axiosInstance.get(`/carpools/upcomingRides/${userDetails.id}`);
+
+        const ridesWithUsers = await Promise.all(
+          data.map(async (ride) => {
+            let userInfo;
+            if (ride.userId !== userDetails.id) {
+              const res = await axiosInstance.get(`/user/${ride.userId}`);
+              userInfo = res.data;
+            } else {
+              userInfo = userDetails;
+            }
+            return { ...ride, userDetails: userInfo };
+          })
+        );
+        const transformed = ridesWithUsers.map(transformRideToUIFormat);
+        setUpcomingRides(transformed);
+        console.log('Upcoming rides:', ridesWithUsers);
+        console.log('Transformed rides:', transformed);
+      } catch (error) {
+        console.error('Error fetching upcoming rides:', error);
+      }
+    };
+
+    fetchRides();
+  }, [userDetails, activeTab]);
+  const transformRideToUIFormat = useCallback((ride) => {
+    const isValidDate = (dateStr) => {
+      const parsed = new Date(dateStr);
+      return !isNaN(parsed.getTime());
+    };
+
+    return {
+      id: ride._id,
+      driver: {
+        name: ride.userDetails?.fullName ?? 'Unknown',
+        rating: ride.userDetails?.rating ?? 0,
+        department: ride.userDetails?.department ?? 'N/A',
+      },
+      route: {
+        pickup: ride.pickup?.name ?? '',
+        dropoff: ride.dropoff?.name ?? '',
+      },
+      schedule: {
+        date: isValidDate(ride.date)
+          ? new Date(ride.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+          : 'Invalid date',
+        time: ride.time ?? 'N/A',
+      },
+      seats: {
+        total: ride.numberOfSeats ?? 0,
+        available: Math.max(0, (ride.numberOfSeats ?? 0) - (ride.stops?.length ?? 0)),
+      },
+      preferences: Array.isArray(ride.preferences) ? ride.preferences : [],
+      stops: Array.isArray(ride.stops)
+        ? ride.stops.map((stop) => ({
+          id: stop._id,
+          userId: stop.userId,
+          location: stop.location,
+          status: stop.status,
+        }))
+        : [],
+    };
+  });
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <RingLoader color="#3498db" size={60} />
-      </div> 
+      </div>
     );
   }
 
@@ -29,7 +98,7 @@ const Dashboard = () => {
           <h2 className="text-xl text-red-600 font-semibold">{error}</h2>
           <p className="text-sm text-gray-600">Something went wrong. Please try again later.</p>
         </div>
-      </div> 
+      </div>
     );
   }
 
@@ -41,34 +110,11 @@ const Dashboard = () => {
           <h2 className="text-xl text-yellow-600 font-semibold">No user details available</h2>
           <p className="text-sm text-gray-600">Please make sure you're logged in.</p>
         </div>
-      </div> // Styled empty state message with an icon
+      </div>
     );
   }
 
-  // Sample data for upcoming rides
-  const upcomingRides = [
-    {
-      id: '1',
-      driver: {
-        name: 'Sara Malik',
-        rating: 4.9,
-        department: 'Electrical Engineering',
-      },
-      route: {
-        pickup: 'North Nazimabad',
-        dropoff: 'FAST NUCES Main Campus',
-      },
-      schedule: {
-        date: 'Tomorrow',
-        time: '8:15 AM',
-      },
-      seats: {
-        total: 3,
-        available: 0,
-      },
-      preferences: ['Female riders only'],
-    },
-  ];
+
 
   // Sample data for ride history
   const rideHistory = [
