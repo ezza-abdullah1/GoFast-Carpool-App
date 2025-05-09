@@ -1,252 +1,382 @@
-let carpools = [
-  {
-    id: '1',
-    driver: {
-      name: 'Ahmed Khan',
-      gender: 'male',
-      rating: 4.8,
-      department: 'Computer Science',
-    },
-    route: {
-      pickup: 'FAST NUCES Main Campus',
-      dropoff: 'Gulistan-e-Johar',
-    },
-    schedule: {
-      date: '2025-05-21',
-      time: '4:30 pm',
-      recurring: ['Monday', 'Wednesday', 'Friday'],
-    },
-    seats: {
-      total: 4,
-      available: 2,
-    },
-    preferences: ['No smoking', 'Music lovers welcome'],
-  },
-  {
-    id: '2',
-    driver: {
-      name: 'Sara Malik',
-      gender: 'female',
-      rating: 4.9,
-      department: 'Electrical Engineering',
-    },
-    route: {
-      pickup: 'North Nazimabad',
-      dropoff: 'FAST NUCES Main Campus',
-    },
-    schedule: {
-      date: '2025-05-22',
-      time: '8:15 am',
-      recurring: ['Monday', 'Tuesday', 'Wednesday', 'Thursday'],
-    },
-    seats: {
-      total: 3,
-      available: 1,
-    },
-    preferences: ['Female riders only'],
-  },
-  {
-    id: '3',
-    driver: {
-      name: 'Bilal Haider',
-      gender: 'male',
-      rating: 3.2,
-      department: 'Business Administration',
-    },
-    route: {
-      pickup: 'Gulshan-e-Iqbal',
-      dropoff: 'FAST NUCES Main Campus',
-    },
-    schedule: {
-      date: '2025-05-23',
-      time: '9:00 am',
-      recurring: ['Tuesday'],
-    },
-    seats: {
-      total: 4,
-      available: 0,
-    },
-    preferences: ['No smoking'],
-  },
-  {
-    id: '4',
-    driver: {
-      name: 'Zoya Rehman',
-      gender: 'female',
-      rating: 5.0,
-      department: 'Software Engineering',
-    },
-    route: {
-      pickup: 'DHA Phase 6',
-      dropoff: 'FAST NUCES Main Campus',
-    },
-    schedule: {
-      date: '2025-05-21',
-      time: '8:00 am',
-      recurring: ['Friday'],
-    },
-    seats: {
-      total: 2,
-      available: 2,
-    },
-    preferences: [],
-  },
-  {
-    id: '5',
-    driver: {
-      name: 'Usman Tariq',
-      gender: 'male',
-      rating: 2.5,
-      department: 'Civil Engineering',
-    },
-    route: {
-      pickup: 'Gulistan-e-Johar',
-      dropoff: 'FAST NUCES Main Campus',
-    },
-    schedule: {
-      date: '2025-04-22',
-      time: '8:30 am',
-      recurring: ['Monday', 'Wednesday'],
-    },
-    seats: {
-      total: 3,
-      available: 1,
-    },
-    preferences: ['Music lovers welcome'],
-  },
-  {
-    id: '6',
-    driver: {
-      name: 'Ayesha Tariq',
-      gender: 'female',
-      rating: 4.4,
-      department: 'Mathematics',
-    },
-    route: {
-      pickup: 'FAST NUCES Main Campus',
-      dropoff: 'Clifton',
-    },
-    schedule: {
-      date: '2025-04-22',
-      time: '5:00 pm',
-      recurring: ['Monday', 'Thursday'],
-    },
-    seats: {
-      total: 3,
-      available: 3,
-    },
-    preferences: ['No smoking', 'Female riders only'],
-  },
-  {
-    id: '7',
-    driver: {
-      name: 'Faraz Siddiqui',
-      gender: 'male',
-      rating: 3.9,
-      department: 'Computer Science',
-    },
-    route: {
-      pickup: 'Gulshan-e-Iqbal Block 5',
-      dropoff: 'FAST NUCES Main Campus',
-    },
-    schedule: {
-      date: '2025-04-23',
-      time: '8:00 am',
-      recurring: ['Tuesday', 'Thursday'],
-    },
-    seats: {
-      total: 4,
-      available: 2,
-    },
-    preferences: [],
-  },
-  {
-    id: '8',
-    driver: {
-      name: 'Hania Qureshi',
-      gender: 'female',
-      rating: 4.6,
-      department: 'Architecture',
-    },
-    route: {
-      pickup: 'FAST NUCES Main Campus',
-      dropoff: 'Bahadurabad',
-    },
-    schedule: {
-      date: '2025-04-21',
-      time: '4:30 pm',
-      recurring: ['Wednesday'],
-    },
-    seats: {
-      total: 2,
-      available: 2,
-    },
-    preferences: ['No smoking'],
-  }
-];
+const Ride = require('../models/Ride');
+delete require.cache[require.resolve('../models/User')];
 
 // Get all carpools
-exports.getAllCarpools = (req, res) => {
+exports.getAllCarpools = async (req, res) => {
   try {
-    res.status(200).json(carpools);
+    // Find all active rides and populate the user details
+    const carpools = await Ride.find({ status: 'active' })
+      .populate('userId', 'fullName department email gender rating rides_taken rides_offered')
+      .lean();
+
+    // Format the response to match the structure of the previous hardcoded data
+    const formattedCarpools = carpools.map(carpool => ({
+      id: carpool._id.toString(),
+      driver: {
+        name: carpool.userId.fullName,
+        gender: carpool.userId.gender,
+        rating: carpool.userId.rating,
+        department: carpool.userId.department,
+      },
+      route: {
+        pickup: carpool.pickup.name,
+        dropoff: carpool.dropoff.name,
+      },
+      schedule: {
+        date: carpool.date.toISOString().split('T')[0], // Format as YYYY-MM-DD
+        time: carpool.time,
+        recurring: [], // Your DB doesn't store recurring info, so we'll leave it empty
+      },
+      seats: {
+        total: carpool.numberOfSeats,
+        available: carpool.numberOfSeats - (carpool.seatsTaken || 0),
+      },
+      preferences: carpool.preferences,
+      // Store the original data in a _raw property for reference if needed
+      _raw: carpool
+    }));
+
+    res.status(200).json(formattedCarpools);
   } catch (error) {
+    console.error('Error fetching carpools:', error);
     res.status(500).json({ message: error.message });
   }
 };
 
 // Get a single carpool
-exports.getCarpoolById = (req, res) => {
+exports.getCarpoolById = async (req, res) => {
   try {
-    const carpool = carpools.find(c => c.id === req.params.id);
+    const carpool = await Ride.findById(req.params.id)
+      .populate('userId', 'fullName department email gender rating rides_taken rides_offered')
+      .lean();
+    
     if (!carpool) {
       return res.status(404).json({ message: 'Carpool not found' });
     }
-    res.status(200).json(carpool);
+
+    // Format the carpool data
+    const formattedCarpool = {
+      id: carpool._id.toString(),
+      driver: {
+        name: carpool.userId.fullName,
+        gender: carpool.userId.gender,
+        rating: carpool.userId.rating,
+        department: carpool.userId.department,
+      },
+      route: {
+        pickup: carpool.pickup.name,
+        dropoff: carpool.dropoff.name,
+      },
+      schedule: {
+        date: carpool.date.toISOString().split('T')[0],
+        time: carpool.time,
+        recurring: [],
+      },
+      seats: {
+        total: carpool.numberOfSeats,
+        available: carpool.numberOfSeats - (carpool.seatsTaken || 0),
+      },
+      preferences: carpool.preferences,
+      _raw: carpool
+    };
+
+    res.status(200).json(formattedCarpool);
   } catch (error) {
+    console.error('Error fetching carpool:', error);
     res.status(500).json({ message: error.message });
   }
 };
 
 // Create a new carpool
-exports.createCarpool = (req, res) => {
+exports.createCarpool = async (req, res) => {
   try {
-    const newCarpool = {
-      id: Date.now().toString(),
-      ...req.body
+    const { 
+      userId, 
+      pickup, 
+      dropoff, 
+      numberOfSeats, 
+      date, 
+      time, 
+      preferences 
+    } = req.body;
+
+    // Create a new ride entry
+    const newRide = new Ride({
+      userId,
+      pickup,
+      dropoff,
+      numberOfSeats,
+      date,
+      time,
+      preferences,
+      seatsTaken: 0,
+      status: 'active'
+    });
+
+    // Save the ride
+    const savedRide = await newRide.save();
+    
+    // Update the user's rides_offered count
+    await User.findByIdAndUpdate(userId, { $inc: { rides_offered: 1 } });
+
+    // Fetch the saved ride with user details
+    const populatedRide = await Ride.findById(savedRide._id)
+      .populate('userId', 'fullName department email gender rating rides_taken rides_offered')
+      .lean();
+
+    // Format the response
+    const formattedCarpool = {
+      id: populatedRide._id.toString(),
+      driver: {
+        name: populatedRide.userId.fullName,
+        gender: populatedRide.userId.gender,
+        rating: populatedRide.userId.rating,
+        department: populatedRide.userId.department,
+      },
+      route: {
+        pickup: populatedRide.pickup.name,
+        dropoff: populatedRide.dropoff.name,
+      },
+      schedule: {
+        date: populatedRide.date.toISOString().split('T')[0],
+        time: populatedRide.time,
+        recurring: [],
+      },
+      seats: {
+        total: populatedRide.numberOfSeats,
+        available: populatedRide.numberOfSeats - (populatedRide.seatsTaken || 0),
+      },
+      preferences: populatedRide.preferences,
+      _raw: populatedRide
     };
-    carpools.push(newCarpool);
-    res.status(201).json(newCarpool);
+
+    res.status(201).json(formattedCarpool);
   } catch (error) {
+    console.error('Error creating carpool:', error);
     res.status(400).json({ message: error.message });
   }
 };
 
 // Update a carpool
-exports.updateCarpool = (req, res) => {
+exports.updateCarpool = async (req, res) => {
   try {
-    const index = carpools.findIndex(c => c.id === req.params.id);
-    if (index === -1) {
+    const updates = req.body;
+    
+    // Find and update the ride
+    const updatedRide = await Ride.findByIdAndUpdate(
+      req.params.id,
+      { $set: updates },
+      { new: true }
+    ).populate('userId', 'fullName department email gender rating rides_taken rides_offered')
+    .lean();
+
+    if (!updatedRide) {
       return res.status(404).json({ message: 'Carpool not found' });
     }
-    carpools[index] = { ...carpools[index], ...req.body };
-    res.status(200).json(carpools[index]);
+
+    // Format the response
+    const formattedCarpool = {
+      id: updatedRide._id.toString(),
+      driver: {
+        name: updatedRide.userId.fullName,
+        gender: updatedRide.userId.gender,
+        rating: updatedRide.userId.rating,
+        department: updatedRide.userId.department,
+      },
+      route: {
+        pickup: updatedRide.pickup.name,
+        dropoff: updatedRide.dropoff.name,
+      },
+      schedule: {
+        date: updatedRide.date.toISOString().split('T')[0],
+        time: updatedRide.time,
+        recurring: [],
+      },
+      seats: {
+        total: updatedRide.numberOfSeats,
+        available: updatedRide.numberOfSeats - (updatedRide.seatsTaken || 0),
+      },
+      preferences: updatedRide.preferences,
+      _raw: updatedRide
+    };
+
+    res.status(200).json(formattedCarpool);
   } catch (error) {
+    console.error('Error updating carpool:', error);
     res.status(400).json({ message: error.message });
   }
 };
 
 // Delete a carpool
-exports.deleteCarpool = (req, res) => {
+exports.deleteCarpool = async (req, res) => {
   try {
-    const index = carpools.findIndex(c => c.id === req.params.id);
-    if (index === -1) {
+    // Find the ride first to return it in the response
+    const ride = await Ride.findById(req.params.id)
+      .populate('userId', 'fullName department email gender rating rides_taken rides_offered')
+      .lean();
+    
+    if (!ride) {
       return res.status(404).json({ message: 'Carpool not found' });
     }
-    const deletedCarpool = carpools[index];
-    carpools = carpools.filter(c => c.id !== req.params.id);
-    res.status(200).json(deletedCarpool);
+
+    // Delete the ride
+    await Ride.findByIdAndDelete(req.params.id);
+
+    // Decrement the user's rides_offered count
+    await User.findByIdAndUpdate(ride.userId._id, { $inc: { rides_offered: -1 } });
+
+    // Format the response for the deleted ride
+    const formattedCarpool = {
+      id: ride._id.toString(),
+      driver: {
+        name: ride.userId.fullName,
+        gender: ride.userId.gender,
+        rating: ride.userId.rating,
+        department: ride.userId.department,
+      },
+      route: {
+        pickup: ride.pickup.name,
+        dropoff: ride.dropoff.name,
+      },
+      schedule: {
+        date: ride.date.toISOString().split('T')[0],
+        time: ride.time,
+        recurring: [],
+      },
+      seats: {
+        total: ride.numberOfSeats,
+        available: ride.numberOfSeats - (ride.seatsTaken || 0),
+      },
+      preferences: ride.preferences,
+      _raw: ride
+    };
+
+    res.status(200).json(formattedCarpool);
   } catch (error) {
+    console.error('Error deleting carpool:', error);
     res.status(500).json({ message: error.message });
   }
 };
 
+// Search carpools with filters
+exports.searchCarpools = async (req, res) => {
+  try {
+    const { pickup, dropoff, date, time, minSeats, filters } = req.body;
+
+    // Build the query
+    const query = { status: 'active' };
+
+    // Filter by pickup location
+    if (pickup) {
+      query['pickup.name'] = new RegExp(pickup, 'i');
+    }
+
+    // Filter by dropoff location
+    if (dropoff) {
+      query['dropoff.name'] = new RegExp(dropoff, 'i');
+    }
+
+    // Filter by date
+    if (date) {
+      // Create a date range for the specified date (entire day)
+      const startDate = new Date(date);
+      startDate.setHours(0, 0, 0, 0);
+      
+      const endDate = new Date(date);
+      endDate.setHours(23, 59, 59, 999);
+      
+      query.date = { $gte: startDate, $lte: endDate };
+    }
+
+    // Find rides with the built query
+    let rides = await Ride.find(query)
+      .populate('userId', 'fullName department email gender rating rides_taken rides_offered')
+      .lean();
+
+    // Helper to convert "4:00 pm" to minutes since midnight
+    function convert12HourToMinutes(time12h) {
+      const [time, modifier] = time12h.toLowerCase().split(' ');
+      let [hours, minutes] = time.split(':').map(Number);
+      if (modifier === 'pm' && hours !== 12) hours += 12;
+      if (modifier === 'am' && hours === 12) hours = 0;
+      return hours * 60 + minutes;
+    }
+
+    // Helper to convert "HH:mm" (like 08:30) to minutes since midnight
+    function convert24HourToMinutes(time24h) {
+      const [hours, minutes] = time24h.split(':').map(Number);
+      return hours * 60 + minutes;
+    }
+
+    // Filter by time (±30 minutes range) in JavaScript (since MongoDB doesn't handle time strings well)
+    if (time) {
+      const targetMinutes = convert24HourToMinutes(time);
+      rides = rides.filter(ride => {
+        const rideMinutes = convert12HourToMinutes(ride.time);
+        return Math.abs(rideMinutes - targetMinutes) <= 30;
+      });
+    }
+
+    // Filter by minimum available seats
+    if (minSeats) {
+      rides = rides.filter(ride => {
+        const availableSeats = ride.numberOfSeats - (ride.seatsTaken || 0);
+        return availableSeats >= minSeats;
+      });
+    }
+
+    // Apply additional filters
+    if (filters && filters.length > 0) {
+      rides = rides.filter(ride => {
+        // Female drivers only filter
+        if (filters.includes('Female drivers only') && ride.userId.gender !== 'female') {
+          return false;
+        }
+
+        // Male drivers only filter
+        if (filters.includes('Male drivers only') && ride.userId.gender !== 'male') {
+          return false;
+        }
+
+        // No smoking filter
+        if (filters.includes('No smoking') && 
+            (!ride.preferences || !ride.preferences.includes('No smoking'))) {
+          return false;
+        }
+
+        return true;
+      });
+    }
+
+    // Format the response
+    const formattedCarpools = rides.map(ride => ({
+      id: ride._id.toString(),
+      driver: {
+        name: ride.userId.fullName,
+        gender: ride.userId.gender,
+        rating: ride.userId.rating,
+        department: ride.userId.department,
+      },
+      route: {
+        pickup: ride.pickup.name,
+        dropoff: ride.dropoff.name,
+      },
+      schedule: {
+        date: ride.date.toISOString().split('T')[0],
+        time: ride.time,
+        recurring: [],
+      },
+      seats: {
+        total: ride.numberOfSeats,
+        available: ride.numberOfSeats - (ride.seatsTaken || 0),
+      },
+      preferences: ride.preferences,
+      _raw: ride
+    }));
+
+    res.status(200).json(formattedCarpools);
+  } catch (error) {
+    console.error('Error searching carpools:', error);
+    res.status(500).json({ message: error.message });
+  }
+};

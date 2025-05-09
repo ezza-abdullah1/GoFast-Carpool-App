@@ -1,4 +1,5 @@
 import axios from "axios";
+import axiosInstance from "../Authentication/redux/axiosInstance";
 
 export const decodePolyline = (polyline) => {
     let index = 0, lat = 0, lng = 0, coordinates = [];
@@ -28,7 +29,7 @@ export const decodePolyline = (polyline) => {
 };
 
 export const fetchRouteFromORS = async (coordinates) => {
-    const response = await axios.post("http://localhost:5000/api/map/directions", { coordinates });
+    const response = await axiosInstance.post("http://localhost:5000/api/map/directions", { coordinates });
     return response.data;
 };
 
