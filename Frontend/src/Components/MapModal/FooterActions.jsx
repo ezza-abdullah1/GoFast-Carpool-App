@@ -1,9 +1,11 @@
 import { useEffect } from "react";
 
-const FooterActions = ({ buttonFlag, confirmEnabled, activeTab }) => {
+const FooterActions = ({ buttonFlag, confirmEnabled, activeTab,saveStopRequest }) => {
     const handleAcceptRide = () => console.log("Ride accepted");
     const handleDeclineRide = () => console.log("Ride declined");
-
+const handleRequestRide = () => {
+saveStopRequest();
+}
     return (
         <div className="w-full flex justify-center mt-4">
             {buttonFlag && (
@@ -14,7 +16,7 @@ const FooterActions = ({ buttonFlag, confirmEnabled, activeTab }) => {
                             : "bg-gray-400 cursor-not-allowed"
                     } dark:bg-primary-900/20 dark:text-white dark:hover:bg-button-hover/60 transition-colors text-white rounded shadow`}
                     disabled={!confirmEnabled}
-                    
+                    onClick={handleRequestRide}
                 >
                     Confirm Location
                 </button>

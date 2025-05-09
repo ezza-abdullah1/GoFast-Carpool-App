@@ -250,7 +250,7 @@ const CarpoolPost = ({
                 </button>
               )}
 
-              <MapModal open={mapModalOpen} onOpenChange={setMapModalOpen} activeTab={activeTab} />
+              <MapModal open={mapModalOpen} rideId={id} onOpenChange={setMapModalOpen} activeTab={activeTab} />
             </div>
           )}
 

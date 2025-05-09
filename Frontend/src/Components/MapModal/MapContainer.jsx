@@ -1,6 +1,5 @@
 import React, { useEffect, useCallback } from "react";
 import { drawRoute, getUpdatedRoute } from "../UtilsFunctions/MapUtils";
-import { getLocationName } from "../UtilsFunctions/LocationName"
 const MapContainer = ({
     mapRef,
     mapInstanceRef,
@@ -132,9 +131,9 @@ const MapContainer = ({
             if (!isMapValid(map)) return;
 
             const { lat, lng } = e.latlng;
-            const locationName = await getLocationName(lat, lng);
-console.log(locationName);
-            setSelectedLatLng([lat, lng]);
+           
+            setSelectedLatLng({ lat: e.latlng.lat, lng: e.latlng.lng });
+
             setConfirmEnabled(true);
             setErrorMsg("");
 
