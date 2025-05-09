@@ -14,6 +14,7 @@ const FooterActions = ({ buttonFlag, confirmEnabled, activeTab }) => {
                             : "bg-gray-400 cursor-not-allowed"
                     } dark:bg-primary-900/20 dark:text-white dark:hover:bg-button-hover/60 transition-colors text-white rounded shadow`}
                     disabled={!confirmEnabled}
+                    
                 >
                     Confirm Location
                 </button>
