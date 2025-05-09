@@ -36,9 +36,11 @@ const SignIn = ({ onSwitchToSignUp, onClose }) => {
     }));
   };
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const response = await dispatch(signIn(formData));
+    console.log(response)  // Dispatch the signIn action
     if (response.meta.requestStatus === "fulfilled") {
       toast.success(`Welcome, ${response.payload.fullName}`);
       if (formData.rememberMe) {
@@ -48,9 +50,10 @@ const SignIn = ({ onSwitchToSignUp, onClose }) => {
       }
       onClose();
     } else {
-      toast.error(response.payload || "Sign In failed");
+      toast.error(response.payload || 'Sign in failed');
     }
   };
+  
 
   const handleSwitchToSignUp = (e) => {
     e.preventDefault();

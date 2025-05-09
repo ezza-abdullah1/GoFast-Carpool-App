@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const mapController = require("../controllers/mapController");
-
-router.post("/directions", mapController.getDirections);
+const authMiddleware = require('../middleware/authMiddleware');
+router.post("/directions", authMiddleware , mapController.getDirections);
 
 module.exports = router;
