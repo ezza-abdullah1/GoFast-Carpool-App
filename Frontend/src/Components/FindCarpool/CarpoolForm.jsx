@@ -232,7 +232,7 @@ export default function CarpoolForm( {userId} ) {
     dropoffLocation: null, 
     date: '',
     time: '',
-    seatsTaken: '1',
+   numberOfSeats: '1',
     preferences: [],
     notes: ''
   });

@@ -40,13 +40,7 @@ const Dashboard = () => {
     }
   }, [dispatch, userDetails, activeTab]);
 
-  // if (loading || (ridesLoading && activeTab === 'upcoming')) {
-  //   return (
-  //     <div className="flex justify-center items-center h-screen">
-  //       <RingLoader color="#3498db" size={60} />
-  //     </div>
-  //   );
-  // }
+
 
   if (error || (ridesError && activeTab === 'upcoming')) {
     return (
