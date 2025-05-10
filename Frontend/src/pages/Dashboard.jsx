@@ -9,14 +9,19 @@ import { AiOutlineExclamationCircle } from 'react-icons/ai';
 import { RingLoader } from 'react-spinners';
 import { fetchUpcomingRides } from '../Components/Authentication/redux/upcomingRidesSlice';
 import { fetchPendingRequests } from '../Components/Authentication/redux/pendingRequestSlice';
-
+import { fetchCarpoolHistory } from '../Components/Authentication/redux/carpoolHistorySlice';
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
   const [showCarpoolForm, setShowCarpoolForm] = useState(false);
 
   const dispatch = useDispatch();
   const { rides: pendingRequests, loading: pendingLoading, error: pendingError } = useSelector((state) => state.pendingRequests);
-
+  const {
+    rides: rideHistory,
+    loading: historyLoading,
+    error: historyError,
+  } = useSelector((state) => state.carpoolHistory);
+  useEffect(() => { console.log("RideHistory:", rideHistory) }, [])
   const { userDetails, loading, error } = useSelector((state) => state.user);
   const { rides: upcomingRides, loading: ridesLoading, error: ridesError } = useSelector((state) => state.upcomingRides);
   useEffect(() => {
@@ -25,18 +30,23 @@ const Dashboard = () => {
     }
   }, [dispatch, userDetails, activeTab]);
   useEffect(() => {
+    if (userDetails?.id && activeTab === 'history') {
+      dispatch(fetchCarpoolHistory(userDetails.id));
+    }
+  }, [dispatch, userDetails, activeTab]);
+  useEffect(() => {
     if (userDetails?.id && activeTab === 'upcoming') {
       dispatch(fetchUpcomingRides(userDetails.id));
     }
   }, [dispatch, userDetails, activeTab]);
 
-  if (loading || (ridesLoading && activeTab === 'upcoming')) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <RingLoader color="#3498db" size={60} />
-      </div>
-    );
-  }
+  // if (loading || (ridesLoading && activeTab === 'upcoming')) {
+  //   return (
+  //     <div className="flex justify-center items-center h-screen">
+  //       <RingLoader color="#3498db" size={60} />
+  //     </div>
+  //   );
+  // }
 
   if (error || (ridesError && activeTab === 'upcoming')) {
     return (
@@ -54,7 +64,7 @@ const Dashboard = () => {
 
   if (!userDetails) {
     return (
-      
+
       <div className="flex justify-center items-center h-screen">
         <div className="text-center bg-yellow-100 p-8 rounded-lg shadow-md">
           <AiOutlineExclamationCircle size={40} className="text-yellow-600 mb-4" />
@@ -64,50 +74,6 @@ const Dashboard = () => {
       </div>
     );
   }
-  // Static data (placeholder - replace with API later)
-  const rideHistory = [
-    {
-      id: '2',
-      driver: {
-        name: 'Bilal Ahmed',
-        rating: 4.7,
-        department: 'Business Administration',
-      },
-      route: {
-        pickup: 'DHA Phase 6',
-        dropoff: 'FAST NUCES Main Campus',
-      },
-      schedule: {
-        date: 'Last Friday',
-        time: '9:00 AM',
-      },
-      seats: {
-        total: 4,
-        available: 0,
-      },
-    },
-    {
-      id: '3',
-      driver: {
-        name: 'Ayesha Tariq',
-        rating: 4.6,
-        department: 'Computer Science',
-      },
-      route: {
-        pickup: 'FAST NUCES Main Campus',
-        dropoff: 'Gulshan-e-Iqbal',
-      },
-      schedule: {
-        date: 'Last Wednesday',
-        time: '4:30 PM',
-      },
-      seats: {
-        total: 3,
-        available: 0,
-      },
-    },
-  ];
-
 
 
 
@@ -117,7 +83,7 @@ const Dashboard = () => {
     <div className="flex flex-col min-h-screen">
       <main className="flex-1 pt-20">
         {/* User Profile Section */}
-        
+
         <section className="bg-muted/30 dark:bg-muted/5 py-12">
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
@@ -176,7 +142,7 @@ const Dashboard = () => {
         {showCarpoolForm && (
           <section className="py-8">
             <div className="container mx-auto px-4">
-             <CarpoolForm userId={userDetails.id} />
+              <CarpoolForm userId={userDetails.id} />
             </div>
           </section>
         )}
@@ -207,7 +173,11 @@ const Dashboard = () => {
               {activeTab === 'upcoming' && (
                 <div>
                   <h2 className="text-xl font-semibold mb-6">Your Upcoming Rides</h2>
-                  {upcomingRides.length > 0 ? (
+                  {ridesLoading ? ( // 🌀 Loader Added
+                    <div className="flex justify-center items-center h-40">
+                      <RingLoader color="#3498db" size={40} />
+                    </div>
+                  ) : upcomingRides.length > 0 ? (
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                       {upcomingRides.map((ride) => (
                         <CarpoolPost key={ride.id} {...ride} activeTab={activeTab} />
@@ -228,7 +198,11 @@ const Dashboard = () => {
               {activeTab === 'history' && (
                 <div>
                   <h2 className="text-xl font-semibold mb-6">Your Ride History</h2>
-                  {rideHistory.length > 0 ? (
+                  {historyLoading ? ( // 🌀 Loader Added
+                    <div className="flex justify-center items-center h-40">
+                      <RingLoader color="#3498db" size={40} />
+                    </div>
+                  ) : rideHistory.length > 0 ? (
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                       {rideHistory.map((ride) => (
                         <CarpoolPost key={ride.id} {...ride} activeTab={activeTab} />
@@ -250,7 +224,11 @@ const Dashboard = () => {
               {activeTab === 'offers' && (
                 <div>
                   <h2 className="text-xl font-semibold mb-6">Pending Requests</h2>
-                  {pendingRequests.length > 0 ? (
+                  {pendingLoading ? ( // 🌀 Loader Added
+                    <div className="flex justify-center items-center h-40">
+                      <RingLoader color="#3498db" size={40} />
+                    </div>
+                  ) : pendingRequests.length > 0 ? (
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                       {pendingRequests.map((ride) => (
                         <CarpoolPost key={ride.id} {...ride} offerRide={true} activeTab={activeTab} />
@@ -266,7 +244,7 @@ const Dashboard = () => {
                       <Button onClick={() => setShowCarpoolForm(true)}>
                         <Plus className="mr-2 h-4 w-4" />
                         Offer a Ride
-                        
+
                       </Button>
                     </div>
                   )}

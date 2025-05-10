@@ -4,7 +4,7 @@ const morgan   = require("morgan");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const apiRoutes     = require("./routes/index.js");            // <-- our new index.js
-
+const carpoolHistoryRoutes = require("./routes/carpoolHistoryRoutes.js");
 
 const http     = require("http");
 
@@ -42,6 +42,7 @@ app.use((req, _, next) => {
 app.use("/api/carpools", carpoolRoutes);
 app.use("/api/map",      mapRoutes);
 app.use("/api/auth", signinRoutes);
+app.use("/api/carpools/history",carpoolHistoryRoutes);
 app.use("/api/stop",stopsRoutes);
 app.use("/api/user",userRoutes );
 app.use('/api/', carpoolRoutes);

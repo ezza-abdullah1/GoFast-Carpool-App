@@ -1,8 +1,8 @@
-const express = require("express");
-const carpoolController = require("../controllers/carpoolController");
-const rideOfferController = require("../controllers/offerRideController");
-const authMiddleware = require("../middleware/authMiddleware");
 const pendingRequests = require("../controllers/pendingRequests");
+const express = require('express');
+const carpoolController = require('../controllers/carpoolController');
+const authMiddleware = require('../middleware/authMiddleware');
+const rideOfferController = require ('../controllers/offerRideController')
 const router = express.Router();
 
 // Get all carpools
@@ -40,4 +40,6 @@ router.patch(
   authMiddleware,
   pendingRequests.updateRideStatus
 );
+// Create a new ride offer
+router.post('/rides', authMiddleware, rideOfferController.createRideOffer); 
 module.exports = router;
