@@ -36,10 +36,19 @@ const CarpoolPost = ({
 
 
   const location = useLocation();
+  const handleProfileClick = () => {
+    if (userDetails.id === driver.driverId) {
 
+      toast.error("This is your Profile");
+    }
+    else {
+      setProfileModalOpen(true)
+    }
+  }
   const handleClick = () => {
     if (activeTab === "history") {
-        console.log("Rating modal opened");
+      console.log("Rating modal opened");
+
 
       if (userDetails.id === driver.driverId) {
         console.log("Rating modal opened");
@@ -78,7 +87,7 @@ const CarpoolPost = ({
       <div className="flex gap-4">
         {/* Avatar */}
         <div
-          onClick={() => setProfileModalOpen(true)}
+          onClick={handleProfileClick}
           className="cursor-pointer flex-shrink-0"
         >
           <div className="h-12 w-12 rounded-full bg-primary-100 dark:bg-primary-900/40 overflow-hidden flex items-center justify-center">
@@ -102,7 +111,7 @@ const CarpoolPost = ({
             <div>
               <h3
                 className="text-lg font-semibold truncate cursor-pointer"
-                onClick={() => setProfileModalOpen(true)}
+                onClick={handleProfileClick}
               >
                 {driver.name}
               </h3>
@@ -290,14 +299,14 @@ const CarpoolPost = ({
           )}
         </div>
       </div>
-    
-        <RatingModal
-          open={ratingModalOpen}
-          onOpenChange={setRatingModalOpen}
-          rideId={id}
+
+      <RatingModal
+        open={ratingModalOpen}
+        onOpenChange={setRatingModalOpen}
+        rideId={id}
 
 
-        />
+      />
       {profileModalOpen && (
         <ProfileCard
           profileId={driver.id}
