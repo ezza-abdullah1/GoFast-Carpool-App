@@ -7,7 +7,7 @@ exports.createRideOffer = async (req, res) => {
       userId, 
       pickup, 
       dropoff, 
-      seatsTaken, 
+      numberOfSeats, 
       date, 
       time, 
       preferences 
@@ -17,7 +17,7 @@ exports.createRideOffer = async (req, res) => {
       userId: new mongoose.Types.ObjectId(userId),
       pickup,
       dropoff,
-      seatsTaken,
+      numberOfSeats,
       date,
       time,
       preferences,
@@ -44,7 +44,7 @@ exports.createRideOffer = async (req, res) => {
         pickup: populatedRide.pickup.name,
         dropoff: populatedRide.dropoff.name,
       },
-      seatsTaken: populatedRide.userId.seatsTaken,
+      numberOfSeats: populatedRide.userId.numberOfSeats,
 
       schedule: {
         date: populatedRide.date.toISOString().split('T')[0],  

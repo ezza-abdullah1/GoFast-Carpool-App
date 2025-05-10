@@ -13,6 +13,7 @@ import MapModal from "../MapModal/MapModel";
 import ProfileCard from "./ProfileCard";
 import { useLocation } from "react-router-dom";
 import RatingModal from "./RatingModal";
+
 const CarpoolPost = ({
   id,
   driver,
@@ -24,8 +25,6 @@ const CarpoolPost = ({
   className,
   activeTab,
   stops,
-
-
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [mapModalOpen, setMapModalOpen] = useState(false);
@@ -34,6 +33,7 @@ const CarpoolPost = ({
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
 
   const location = useLocation();
+
   const handleClick = () => {
     if (activeTab === "history") {
       setRatingModalOpen(true);
@@ -43,13 +43,13 @@ const CarpoolPost = ({
   };
 
   useEffect(() => {
-    
     setButtonText(location.pathname === "/carpools" ? "Request Seat" : "Show Route");
   }, [location.pathname]);
 
   const handleRequestSeat = () => {
     setMapModalOpen(true);
   };
+
   const handleCancel = () => {
     console.log("Ride canceled");
   };
@@ -57,7 +57,6 @@ const CarpoolPost = ({
   const toggleExpand = () => {
     if (variant === "default") setIsExpanded(!isExpanded);
   };
-
 
   return (
     <div
@@ -111,7 +110,7 @@ const CarpoolPost = ({
               </div>
             </div>
 
-            {variant === "default" && (
+            {variant === "default" && activeTab !== "history" && (
               <div className="flex items-center text-sm">
                 <span
                   className={cn(
@@ -136,11 +135,11 @@ const CarpoolPost = ({
               <div className="flex-1">
                 <div className="font-medium">
                   From:{" "}
-                  <span className="text-muted-foreground">{route.pickup.name?route.pickup.name:route.pickup}</span>
+                  <span className="text-muted-foreground">{route.pickup.name ? route.pickup.name : route.pickup}</span>
                 </div>
                 <div className="font-medium mt-1">
                   To:{" "}
-                  <span className="text-muted-foreground">{route.dropoff.name?route.dropoff.name:route.dropoff}</span>
+                  <span className="text-muted-foreground">{route.dropoff.name ? route.dropoff.name : route.dropoff}</span>
                 </div>
               </div>
             </div>
@@ -193,18 +192,15 @@ const CarpoolPost = ({
           {variant === "default" && (
             <div className="mt-4 flex flex-wrap items-center justify-around gap-2">
               {activeTab === "upcoming" && (
-              <button
-              onClick={handleCancel}
-              className="flex-grow sm:flex-grow-0 h-[44px] w-[44px] px-4 text-sm bg-red-600 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-red-700 relative group"
-            >
-              <X className="h-4 w-4" />
-            
-              {/* Hover text */}
-              <span className="absolute bottom-[50px] left-1/2 transform -translate-x-1/2 hidden group-hover:block bg-white text-black text-sm text-center px-2 py-1 rounded-md">
-                Cancel Ride
-              </span>
-            </button>
-            
+                <button
+                  onClick={handleCancel}
+                  className="flex-grow sm:flex-grow-0 h-[44px] w-[44px] px-4 text-sm bg-red-600 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-red-700 relative group"
+                >
+                  <X className="h-4 w-4" />
+                  <span className="absolute bottom-[50px] left-1/2 transform -translate-x-1/2 hidden group-hover:block bg-white text-black text-sm text-center px-2 py-1 rounded-md">
+                    Cancel Ride
+                  </span>
+                </button>
               )}
               <button
                 onClick={handleRequestSeat}
@@ -230,7 +226,6 @@ const CarpoolPost = ({
                   </>
                 )}
               </button>
-              
 
               {(schedule.recurring || preferences.length > 0) && (
                 <button
@@ -254,24 +249,7 @@ const CarpoolPost = ({
               )}
 
               <MapModal open={mapModalOpen} rideId={id} route={route} stop={stops} onOpenChange={setMapModalOpen} activeTab={activeTab} />
-            </div>
-          )}
 
-          {/* Compact Variant */}
-          {variant === "compact" && (
-            <div className="mt-3 flex items-center justify-between">
-              <div
-                className={cn(
-                  "flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium",
-                  seats.available > 0
-                    ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300"
-                    : "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300"
-                )}
-              >
-                <Users className="h-3 w-3" />
-                {seats.available} seat{seats.available !== 1 ? "s" : ""}{" "}
-                available
-              </div>
               <button
                 style={{
                   height: "32px",
@@ -283,23 +261,40 @@ const CarpoolPost = ({
               </button>
             </div>
           )}
+
+          {/* Compact Variant */}
+          {variant === "compact" && activeTab !== "history" && (
+            <div className="mt-3 flex items-center justify-between">
+              <div
+                className={cn(
+                  "flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium",
+                  seats.available > 0
+                    ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300"
+                    : "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                )}
+              >
+                <Users className="h-3 w-3" />
+                {seats.available} seat{seats.available !== 1 ? "s" : ""} available
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
       <RatingModal
         open={ratingModalOpen}
         onOpenChange={setRatingModalOpen}
         onSubmit={(stars) => {
           console.log(`Rated with ${stars} stars`);
-          // Add API call or state update here
         }}
       />
-      {profileModalOpen &&
+      {profileModalOpen && (
         <ProfileCard
           profileId={driver.id}
           open={profileModalOpen}
           onOpenChange={setProfileModalOpen}
         />
-      }
+      )}
     </div>
   );
 };
