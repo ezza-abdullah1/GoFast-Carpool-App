@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Clock, Car, Users, Star, MessageCircle, Plus } from 'lucide-react';
 import Button from '../Components/ui/compatibility-button';
 import CarpoolPost from '../Components/FindCarpool/CarpoolPost';
@@ -7,7 +7,7 @@ import { cn } from '../lib/utils';
 import { useSelector, useDispatch } from 'react-redux';
 import { AiOutlineExclamationCircle } from 'react-icons/ai';
 import { RingLoader } from 'react-spinners';
-import { fetchUpcomingRides } from '../Components/Authentication/redux/upcomingRidesSlice';
+import { fetchUpcomingRides, removeUpcomingRide } from '../Components/Authentication/redux/upcomingRidesSlice';
 import { fetchPendingRequests } from '../Components/Authentication/redux/pendingRequestSlice';
 
 const Dashboard = () => {
@@ -19,6 +19,11 @@ const Dashboard = () => {
 
   const { userDetails, loading, error } = useSelector((state) => state.user);
   const { rides: upcomingRides, loading: ridesLoading, error: ridesError } = useSelector((state) => state.upcomingRides);
+  const handleCarpoolCancelled = useCallback((cancelledId) => {
+    dispatch(removeUpcomingRide(cancelledId));
+}, [dispatch]);
+
+
   useEffect(() => {
     if (userDetails?.id && activeTab === 'offers') {
       dispatch(fetchPendingRequests(userDetails.id));
@@ -44,7 +49,7 @@ const Dashboard = () => {
         <div className="text-center bg-red-200 p-8 rounded-lg shadow-md">
           <AiOutlineExclamationCircle size={40} className="text-red-600 mb-4" />
           <h2 className="text-xl text-red-600 font-semibold">
-            {error || ridesError}
+            {error?.message || ridesError?.message || error || ridesError}
           </h2>
           <p className="text-sm text-gray-600">Something went wrong. Please try again later.</p>
         </div>
@@ -210,7 +215,12 @@ const Dashboard = () => {
                   {upcomingRides.length > 0 ? (
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                       {upcomingRides.map((ride) => (
-                        <CarpoolPost key={ride.id} {...ride} activeTab={activeTab} />
+                        <CarpoolPost
+                        key={ride.id}
+                        {...ride}
+                        activeTab={activeTab}
+                        onCarpoolCancelled={handleCarpoolCancelled} // Pass the function here
+                      />
                       ))}
                     </div>
                   ) : (

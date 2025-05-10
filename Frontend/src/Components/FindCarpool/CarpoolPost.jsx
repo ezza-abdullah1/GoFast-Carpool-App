@@ -13,6 +13,7 @@ import MapModal from "../MapModal/MapModel";
 import ProfileCard from "./ProfileCard";
 import { useLocation } from "react-router-dom";
 import RatingModal from "./RatingModal";
+import axiosInstance from "../Authentication/redux/axiosInstance"; 
 const CarpoolPost = ({
   id,
   driver,
@@ -24,6 +25,7 @@ const CarpoolPost = ({
   className,
   activeTab,
   stops,
+  onCarpoolCancelled,
 
 
 }) => {
@@ -32,6 +34,7 @@ const CarpoolPost = ({
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [buttonText, setButtonText] = useState("");
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const location = useLocation();
   const handleClick = () => {
@@ -51,9 +54,13 @@ const CarpoolPost = ({
     setMapModalOpen(true);
   };
   const handleCancel = () => {
-    console.log("Ride canceled");
-  };
-
+  if (window.confirm("Are you sure you want to cancel this ride?")) {
+    console.log("Attempting to cancel carpool with ID (via Redux):", id);
+    if (onCarpoolCancelled) {
+      onCarpoolCancelled(id); // Only dispatch the Redux action
+    }
+  }
+};
   const toggleExpand = () => {
     if (variant === "default") setIsExpanded(!isExpanded);
   };
