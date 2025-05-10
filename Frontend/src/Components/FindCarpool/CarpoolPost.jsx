@@ -13,7 +13,8 @@ import MapModal from "../MapModal/MapModel";
 import ProfileCard from "./ProfileCard";
 import { useLocation } from "react-router-dom";
 import RatingModal from "./RatingModal";
-
+import { useSelector } from "react-redux";
+import toast from "react-hot-toast";
 const CarpoolPost = ({
   id,
   driver,
@@ -31,12 +32,29 @@ const CarpoolPost = ({
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [buttonText, setButtonText] = useState("");
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
+  const { userDetails } = useSelector((state) => state.user || {});
+
 
   const location = useLocation();
+  const handleProfileClick = () => {
+    if (userDetails.id === driver.driverId) {
 
+      toast.error("This is your Profile");
+    }
+    else {
+      setProfileModalOpen(true)
+    }
+  }
   const handleClick = () => {
     if (activeTab === "history") {
-      setRatingModalOpen(true);
+      console.log("Rating modal opened");
+
+
+      if (userDetails.id === driver.driverId) {
+        console.log("Rating modal opened");
+        (toast.error("You cannot rate your own ride"))
+      } else
+        setRatingModalOpen(true);
     } else {
       // handle message functionality
     }
@@ -69,7 +87,7 @@ const CarpoolPost = ({
       <div className="flex gap-4">
         {/* Avatar */}
         <div
-          onClick={() => setProfileModalOpen(true)}
+          onClick={handleProfileClick}
           className="cursor-pointer flex-shrink-0"
         >
           <div className="h-12 w-12 rounded-full bg-primary-100 dark:bg-primary-900/40 overflow-hidden flex items-center justify-center">
@@ -93,7 +111,7 @@ const CarpoolPost = ({
             <div>
               <h3
                 className="text-lg font-semibold truncate cursor-pointer"
-                onClick={() => setProfileModalOpen(true)}
+                onClick={handleProfileClick}
               >
                 {driver.name}
               </h3>
@@ -213,6 +231,7 @@ const CarpoolPost = ({
               <button
                 className="flex-grow sm:flex-grow-0 h-[44px] px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600 dark:bg-button-dark dark:hover:bg-button-hover dark:text-white"
                 onClick={handleClick}
+
               >
                 {activeTab !== "history" ? (
                   <>
@@ -284,15 +303,16 @@ const CarpoolPost = ({
       <RatingModal
         open={ratingModalOpen}
         onOpenChange={setRatingModalOpen}
-        onSubmit={(stars) => {
-          console.log(`Rated with ${stars} stars`);
-        }}
+        rideId={id}
+
+
       />
       {profileModalOpen && (
         <ProfileCard
           profileId={driver.id}
           open={profileModalOpen}
           onOpenChange={setProfileModalOpen}
+
         />
       )}
     </div>

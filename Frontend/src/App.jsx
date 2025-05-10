@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import Dashboard from "./pages/Dashboard";
 import CarpoolPage from "./pages/CarpoolPage";
@@ -7,8 +7,6 @@ import Messages from "./pages/Messages";
 import Layout from "./Components/layout/Layout";
 import SignIn from "./Components/Authentication/SignIn";
 import SignUp from "./Components/Authentication/SignUp";
-import ForgotPasswordModal from "./Components/Authentication/ForgotPasswordModal";
-import ResetPassword from "./Components/Authentication/ResetPassword";
 import { SocketProvider } from "./contexts/socket";
 import { Toaster } from "react-hot-toast";
 import { Provider } from "react-redux";
@@ -21,8 +19,6 @@ function App() {
 
     <SocketProvider>
     <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
-
-    
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<HomePage />} />
@@ -31,9 +27,6 @@ function App() {
         <Route path="messages" element={<Messages />} />
         <Route path="signIn" element={<SignIn/>}/> 
         <Route path= "signUp" element={<SignUp/>}/>
-        <Route path="/forgotPassword" element={<ForgotPasswordModal />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
-
 
 
       </Route>

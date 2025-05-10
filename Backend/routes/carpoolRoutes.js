@@ -22,7 +22,6 @@ router.delete("/:id", authMiddleware, carpoolController.deleteCarpool);
 
 // Search carpools with filters
 router.post("/search", authMiddleware, carpoolController.searchCarpools);
-router.post("/rides", authMiddleware, rideOfferController.createRideOffer);
 
 router.get(
   "/upcomingRides/:id",

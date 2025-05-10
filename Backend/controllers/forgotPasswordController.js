@@ -1,4 +1,3 @@
-//new
 const express = require("express");
 const router = express.Router();
 const crypto = require("crypto");
@@ -8,8 +7,7 @@ const User = require("../models/User");
 const nodemailer = require("nodemailer");
 
 const JWT_SECRET = process.env.JWT_SECRET || "8ae74b4cf76c2e91531a6a5e7ed2ef3a62c4dcaee24d7b176fdfd0ba6c1e9abf";
-const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
-
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
 
 // POST /api/auth/forgot-password
 router.post("/forgot-password", async (req, res) => {
@@ -25,46 +23,28 @@ router.post("/forgot-password", async (req, res) => {
     user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
     await user.save();
 
-   const resetLink = `http://localhost:5173/reset-password/${token}`;
+    const resetLink = `${CLIENT_URL}/reset-password/${token}`;
 
-    // Create Ethereal test account
-    const testAccount = await nodemailer.createTestAccount();
-
-    // Configure Ethereal transporter
+    // Configure your email transporter
     const transporter = nodemailer.createTransport({
-      host: testAccount.smtp.host,
-      port: testAccount.smtp.port,
-      secure: testAccount.smtp.secure,
+      service: "Gmail",
       auth: {
-        user: testAccount.user,
-        pass: testAccount.pass,
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
 
     // Send the email
-    const info = await transporter.sendMail({
-      from: '"NUCES Carpool" <no-reply@nucesapp.com>',
+    await transporter.sendMail({
       to: user.email,
       subject: "Password Reset",
-      html: `
-        <p>You requested a password reset</p>
-        <p>Click this <a href="${resetLink}">link</a> to reset your password</p>
-      `,
+      html: `<p>You requested a password reset</p>
+             <p>Click this <a href="${resetLink}">link</a> to reset your password</p>`,
     });
 
-    // Preview URL (for development only)
-    const previewUrl = nodemailer.getTestMessageUrl(info);
-    console.log("📧 Preview Email URL:", previewUrl);
-
-    res.json({
-      message: "Password reset link sent (preview only)",
-      preview: previewUrl,
-    });
+    res.json({ message: "Password reset link sent to your email" });
   } catch (err) {
     console.error("Forgot Password Error:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
-
-// Export the router
-module.exports = router;

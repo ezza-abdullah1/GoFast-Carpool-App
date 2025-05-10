@@ -30,6 +30,7 @@ const transformRideToUIFormat = (ride) => {
   return {
     id: ride._id,
     driver: {
+      driverId: ride.userDetails?._id,
       name: ride.userDetails?.fullName ?? 'Unknown',
       rating: ride.userDetails?.rating ?? 0,
       department: ride.userDetails?.department ?? 'N/A',
