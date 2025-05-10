@@ -1,5 +1,6 @@
 const express = require("express");
 const carpoolController = require("../controllers/carpoolController");
+const rideOfferController = require("../controllers/offerRideController");
 const authMiddleware = require("../middleware/authMiddleware");
 const pendingRequests = require("../controllers/pendingRequests");
 const router = express.Router();
@@ -21,6 +22,7 @@ router.delete("/:id", authMiddleware, carpoolController.deleteCarpool);
 
 // Search carpools with filters
 router.post("/search", authMiddleware, carpoolController.searchCarpools);
+router.post("/rides", authMiddleware, rideOfferController.createRideOffer);
 
 router.get(
   "/upcomingRides/:id",

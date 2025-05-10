@@ -232,7 +232,7 @@ export default function CarpoolForm( {userId} ) {
     dropoffLocation: null, 
     date: '',
     time: '',
-    seatsTaken: '1',
+   numberOfSeats: '1',
     preferences: [],
     notes: ''
   });
@@ -347,7 +347,7 @@ export default function CarpoolForm( {userId} ) {
           latitude: parseFloat(formData.dropoffLocation.lat), 
           longitude: parseFloat(formData.dropoffLocation.lng) 
         },
-        seatsTaken: parseInt(formData.numberOfSeats),
+        numberOfSeats: parseInt(formData.numberOfSeats),
         date: formData.date,
         time: formData.time,
         preferences: formData.preferences
