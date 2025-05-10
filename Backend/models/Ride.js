@@ -18,7 +18,7 @@ const rideSchema = new mongoose.Schema({
   },
   numberOfSeats: { 
     type: Number,
-    default: 0
+    required: true
   },
   date: {
     type: Date,
@@ -39,4 +39,4 @@ const rideSchema = new mongoose.Schema({
   }
 });
 
-module.exports = mongoose.model("Ride", rideSchema); 
+module.exports = mongoose.models.Ride || mongoose.model('Ride', rideSchema);; 

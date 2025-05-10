@@ -54,6 +54,7 @@ const Dashboard = () => {
 
   if (!userDetails) {
     return (
+      
       <div className="flex justify-center items-center h-screen">
         <div className="text-center bg-yellow-100 p-8 rounded-lg shadow-md">
           <AiOutlineExclamationCircle size={40} className="text-yellow-600 mb-4" />
@@ -116,6 +117,7 @@ const Dashboard = () => {
     <div className="flex flex-col min-h-screen">
       <main className="flex-1 pt-20">
         {/* User Profile Section */}
+        
         <section className="bg-muted/30 dark:bg-muted/5 py-12">
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
@@ -174,7 +176,7 @@ const Dashboard = () => {
         {showCarpoolForm && (
           <section className="py-8">
             <div className="container mx-auto px-4">
-              <CarpoolForm />
+             <CarpoolForm userId={userDetails.id} />
             </div>
           </section>
         )}
@@ -264,6 +266,7 @@ const Dashboard = () => {
                       <Button onClick={() => setShowCarpoolForm(true)}>
                         <Plus className="mr-2 h-4 w-4" />
                         Offer a Ride
+                        
                       </Button>
                     </div>
                   )}

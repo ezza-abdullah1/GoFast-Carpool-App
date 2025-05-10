@@ -44,7 +44,7 @@ app.use("/api/map",      mapRoutes);
 app.use("/api/auth", signinRoutes);
 app.use("/api/stop",stopsRoutes);
 app.use("/api/user",userRoutes );
-
+app.use('/api/', carpoolRoutes);
 // New messaging API+ auth
 app.use("/api", apiRoutes);
 
