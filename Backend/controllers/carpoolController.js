@@ -1,6 +1,7 @@
 const Ride = require("../models/Ride");
 const Stop = require("../models/Stops");
 delete require.cache[require.resolve("../models/User")];
+const User = require("../models/User")
 
 // Get all carpools
 exports.getAllCarpools = async (req, res) => {
@@ -218,10 +219,8 @@ exports.updateCarpool = async (req, res) => {
   }
 };
 
-// Delete a carpool
 exports.deleteCarpool = async (req, res) => {
   try {
-    // Find the ride first to return it in the response
     const ride = await Ride.findById(req.params.id)
       .populate(
         "userId",
@@ -232,16 +231,11 @@ exports.deleteCarpool = async (req, res) => {
     if (!ride) {
       return res.status(404).json({ message: "Carpool not found" });
     }
-
-    // Delete the ride
+   
     await Ride.findByIdAndDelete(req.params.id);
-
-    // Decrement the user's rides_offered count
     await User.findByIdAndUpdate(ride.userId._id, {
       $inc: { rides_offered: -1 },
     });
-
-    // Format the response for the deleted ride
     const formattedCarpool = {
       id: ride._id.toString(),
       driver: {
@@ -269,32 +263,25 @@ exports.deleteCarpool = async (req, res) => {
 
     res.status(200).json(formattedCarpool);
   } catch (error) {
-    console.error("Error deleting carpool:", error);
     res.status(500).json({ message: error.message });
   }
 };
 
-// Search carpools with filters
 exports.searchCarpools = async (req, res) => {
   try {
     const { pickup, dropoff, date, time, minSeats, filters } = req.body;
 
-    // Build the query
     const query = { status: "active" };
 
-    // Filter by pickup location
     if (pickup) {
       query["pickup.name"] = new RegExp(pickup, "i");
     }
 
-    // Filter by dropoff location
     if (dropoff) {
       query["dropoff.name"] = new RegExp(dropoff, "i");
     }
 
-    // Filter by date
     if (date) {
-      // Create a date range for the specified date (entire day)
       const startDate = new Date(date);
       startDate.setHours(0, 0, 0, 0);
 
@@ -304,7 +291,6 @@ exports.searchCarpools = async (req, res) => {
       query.date = { $gte: startDate, $lte: endDate };
     }
 
-    // Find rides with the built query
     let rides = await Ride.find(query)
       .populate(
         "userId",
@@ -312,7 +298,6 @@ exports.searchCarpools = async (req, res) => {
       )
       .lean();
 
-    // Helper to convert "4:00 pm" to minutes since midnight
     function convert12HourToMinutes(time12h) {
       const [time, modifier] = time12h.toLowerCase().split(" ");
       let [hours, minutes] = time.split(":").map(Number);

@@ -13,8 +13,7 @@ import MapModal from "../MapModal/MapModel";
 import ProfileCard from "./ProfileCard";
 import { useLocation } from "react-router-dom";
 import RatingModal from "./RatingModal";
-import { useSelector } from "react-redux";
-import toast from "react-hot-toast";
+import axiosInstance from "../Authentication/redux/axiosInstance"; 
 const CarpoolPost = ({
   id,
   driver,
@@ -26,14 +25,16 @@ const CarpoolPost = ({
   className,
   activeTab,
   stops,
+  onCarpoolCancelled,
+
+
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [mapModalOpen, setMapModalOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [buttonText, setButtonText] = useState("");
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
-  const { userDetails } = useSelector((state) => state.user || {});
-
+  const [errorMessage, setErrorMessage] = useState('');
 
   const location = useLocation();
   const handleProfileClick = () => {
@@ -69,9 +70,13 @@ const CarpoolPost = ({
   };
 
   const handleCancel = () => {
-    console.log("Ride canceled");
-  };
-
+  if (window.confirm("Are you sure you want to cancel this ride?")) {
+    console.log("Attempting to cancel carpool with ID (via Redux):", id);
+    if (onCarpoolCancelled) {
+      onCarpoolCancelled(id); // Only dispatch the Redux action
+    }
+  }
+};
   const toggleExpand = () => {
     if (variant === "default") setIsExpanded(!isExpanded);
   };
