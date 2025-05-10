@@ -419,7 +419,7 @@ exports.searchCarpools = async (req, res) => {
 exports.getUpcomingRides = async (req, res) => {
   const userId = req.params.id;
   try {
-    const ridesAsDriver = await Ride.find({ userId }).lean();
+    const ridesAsDriver = await Ride.find({ userId,status:"active" }).lean();
 
    const stopsAsPassenger = await Stop.find({ userId, status: "accept" }).lean();
 
