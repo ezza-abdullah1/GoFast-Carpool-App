@@ -40,5 +40,4 @@ const userSchema = new mongoose.Schema({
 
 });
 
-const User = mongoose.models.User || mongoose.model("User", userSchema); // Check if model already exists
-module.exports = User;
+module.exports = mongoose.models.User || mongoose.model("User", userSchema);
