@@ -10,16 +10,21 @@ import {
 } from "../ui/dialog";
 import axiosInstance from "../Authentication/redux/axiosInstance";
 
+import { useSelector } from "react-redux";
+
 const ProfileCard = ({ profileId, open, onOpenChange, className }) => {
+    const { userDetails } = useSelector((state) => state.user);
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
-
+    if (profileId === userDetails.id) {
+        return null;
+    }
     useEffect(() => {
         const fetchProfile = async () => {
             try {
                 setLoading(true);
 
-                const response = await axiosInstance.get(`http://localhost:5000/api/user/${profileId}`);
+                const response = await axiosInstance.get(`/user/${profileId}`);
                 setProfile(response.data);
 
             } catch (error) {
@@ -53,6 +58,7 @@ const ProfileCard = ({ profileId, open, onOpenChange, className }) => {
     }
 
     return (
+
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-md">
                 <DialogHeader>
