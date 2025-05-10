@@ -23,7 +23,8 @@ const CarpoolPost = ({
   variant = "default",
   className,
   activeTab,
-  stops
+  stops,
+
 
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -135,11 +136,11 @@ const CarpoolPost = ({
               <div className="flex-1">
                 <div className="font-medium">
                   From:{" "}
-                  <span className="text-muted-foreground">{route.pickup}</span>
+                  <span className="text-muted-foreground">{route.pickup.name}</span>
                 </div>
                 <div className="font-medium mt-1">
                   To:{" "}
-                  <span className="text-muted-foreground">{route.dropoff}</span>
+                  <span className="text-muted-foreground">{route.dropoff.name}</span>
                 </div>
               </div>
             </div>

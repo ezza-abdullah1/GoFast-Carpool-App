@@ -2,6 +2,8 @@ import React, { useState, memo } from "react";
 import { toast } from "react-hot-toast";
 import axiosInstance from "../Authentication/redux/axiosInstance";
 import ConfirmModal from "../ui/comfirmModal";
+import { useDispatch } from "react-redux";
+import { removeStopFromRide } from "../Authentication/redux/upcomingRidesSlice";
 
 const StopsSidebar = memo(({
     stops,
@@ -9,39 +11,43 @@ const StopsSidebar = memo(({
     stopMarkersRef,
     mapInstanceRef,
     routeLayerRef,
-    activeTab
+    activeTab,
+    rideId
 }) => {
     const [showModal, setShowModal] = useState(false);
     const [stopToDeleteIndex, setStopToDeleteIndex] = useState(null);
 
-    const handleConfirmRemove = async () => {
-        const index = stopToDeleteIndex;
-        setShowModal(false);
+const dispatch = useDispatch();
 
-        try {
-            const stop = stops[index];
-            await axiosInstance.delete(`/stop/${stop.id}`);
-            toast.success("Stop removed successfully");
+const handleConfirmRemove = async () => {
+  const index = stopToDeleteIndex;
+  setShowModal(false);
 
-            const updatedStops = stops.filter((_, j) => j !== index);
-            setStops(updatedStops);
-            console.log("delete stop",stop)
-            console.log("Updated stops:", updatedStops);
+  try {
+    const stop = stops[index];
+    await axiosInstance.delete(`/stop/${stop.id}`);
+    toast.success("Stop removed successfully");
 
-            if (stopMarkersRef.current?.[index] && mapInstanceRef.current?.removeLayer) {
-                mapInstanceRef.current.removeLayer(stopMarkersRef.current[index]);
-                stopMarkersRef.current.splice(index, 1);
-            }
+    const updatedStops = stops.filter((_, j) => j !== index);
+    setStops(updatedStops);
 
-            if (routeLayerRef.current && mapInstanceRef.current?.removeLayer) {
-                mapInstanceRef.current.removeLayer(routeLayerRef.current);
-            }
-        } catch (error) {
-            console.error("Failed to remove stop:", error);
-            toast.error("Failed to remove stop. Please try again.");
-        }
-    };
+    // Update Redux ride data
+    dispatch(removeStopFromRide({ rideId, stopId: stop.id }));
 
+
+    if (stopMarkersRef.current?.[index] && mapInstanceRef.current?.removeLayer) {
+      mapInstanceRef.current.removeLayer(stopMarkersRef.current[index]);
+      stopMarkersRef.current.splice(index, 1);
+    }
+
+    if (routeLayerRef.current && mapInstanceRef.current?.removeLayer) {
+      mapInstanceRef.current.removeLayer(routeLayerRef.current);
+    }
+  } catch (error) {
+    console.error("Failed to remove stop:", error);
+    toast.error("Failed to remove stop. Please try again.");
+  }
+};
     const confirmRemoveStop = (index) => {
         setStopToDeleteIndex(index);
         setShowModal(true);

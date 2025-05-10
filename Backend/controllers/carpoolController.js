@@ -389,7 +389,7 @@ exports.getUpcomingRides = async (req, res) => {
   try {
     const ridesAsDriver = await Ride.find({ userId }).lean();
 
-    const stopsAsPassenger = await Stop.find({ userId }).lean();
+    const stopsAsPassenger = await Stop.find({ userId, status: "accept" }).lean();
     const rideIdsFromStops = stopsAsPassenger.map(stop => stop.rideId.toString());
 
     const ridesAsPassenger = await Ride.find({
@@ -400,7 +400,8 @@ exports.getUpcomingRides = async (req, res) => {
 
     const ridesWithStops = await Promise.all(
       allRides.map(async (ride) => {
-        const stops = await Stop.find({ rideId: ride._id }).lean();
+        // Only include accepted stops
+        const stops = await Stop.find({ rideId: ride._id, status: "accept" }).lean();
         return { ...ride, stops };
       })
     );

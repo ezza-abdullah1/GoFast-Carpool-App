@@ -80,6 +80,7 @@ const MapModal = ({ open, rideId, onOpenChange, activeTab, route, stop }) => {
     useEffect(() => {
         if (open) { // Only process when modal is open
             const formattedStops = convertAllToStops(route, stop);
+            console.log("Formatted Stops:", formattedStops);
             setStops(formattedStops);
         }
     }, [route, stop, convertAllToStops, open]); // Changed dependency from stopEnds to stop
@@ -163,6 +164,7 @@ const MapModal = ({ open, rideId, onOpenChange, activeTab, route, stop }) => {
                             mapInstanceRef={mapInstanceRef}
                             routeLayerRef={routeLayerRef}
                             activeTab={activeTab}
+                            rideId={rideId}
                         />
                     )}
 
