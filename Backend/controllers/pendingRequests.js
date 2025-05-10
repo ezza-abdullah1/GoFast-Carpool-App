@@ -13,16 +13,15 @@ exports.getPendingRequests = async (req, res) => {
     const results = [];
 
     for (const ride of ridesAsDriver) {
-      const [acceptedStops, pendingStops] = await Promise.all([
-        Stop.find({ rideId: ride._id, status: "accepted" }).lean(),
-        Stop.find({ rideId: ride._id, status: "pending" }).lean(),
-      ]);
+      const pendingStops = await Stop.find({
+        rideId: ride._id,
+        status: "pending",
+      }).lean();
 
-      // For each pending stop, create a ride copy with all accepted stops + one pending stop
       for (const pendingStop of pendingStops) {
         results.push({
           ...ride,
-          stops: [...acceptedStops, pendingStop],
+          stops: [pendingStop],
         });
       }
     }
