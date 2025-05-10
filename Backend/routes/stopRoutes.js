@@ -4,5 +4,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-router.post('/', authMiddleware,stopController.createStop);
+router.post('/', authMiddleware, stopController.createStop);
+router.delete('/:id', authMiddleware, stopController.deleteStopById);
+
 module.exports = router;

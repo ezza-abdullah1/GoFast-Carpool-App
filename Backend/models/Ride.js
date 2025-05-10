@@ -16,7 +16,7 @@ const rideSchema = new mongoose.Schema({
     latitude: { type: Number, required: true },
     longitude: { type: Number, required: true }
   },
-  seatsTaken: {  // Optional: to track how many seats have been booked
+  numberOfSeats: { 
     type: Number,
     required: true
   },

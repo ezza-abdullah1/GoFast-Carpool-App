@@ -23,6 +23,9 @@ const CarpoolPost = ({
   variant = "default",
   className,
   activeTab,
+  stops,
+
+
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [mapModalOpen, setMapModalOpen] = useState(false);
@@ -40,6 +43,7 @@ const CarpoolPost = ({
   };
 
   useEffect(() => {
+    
     setButtonText(location.pathname === "/carpools" ? "Request Seat" : "Show Route");
   }, [location.pathname]);
 
@@ -132,11 +136,11 @@ const CarpoolPost = ({
               <div className="flex-1">
                 <div className="font-medium">
                   From:{" "}
-                  <span className="text-muted-foreground">{route.pickup}</span>
+                  <span className="text-muted-foreground">{route.pickup.name?route.pickup.name:route.pickup}</span>
                 </div>
                 <div className="font-medium mt-1">
                   To:{" "}
-                  <span className="text-muted-foreground">{route.dropoff}</span>
+                  <span className="text-muted-foreground">{route.dropoff.name?route.dropoff.name:route.dropoff}</span>
                 </div>
               </div>
             </div>
@@ -249,7 +253,7 @@ const CarpoolPost = ({
                 </button>
               )}
 
-              <MapModal open={mapModalOpen} rideId={id} onOpenChange={setMapModalOpen} activeTab={activeTab} />
+              <MapModal open={mapModalOpen} rideId={id} route={route} stop={stops} onOpenChange={setMapModalOpen} activeTab={activeTab} />
             </div>
           )}
 
