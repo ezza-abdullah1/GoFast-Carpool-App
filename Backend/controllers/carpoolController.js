@@ -12,6 +12,7 @@ exports.getAllCarpools = async (req, res) => {
         "fullName department email gender rating rides_taken rides_offered"
       )
       .lean();
+      
 
     // Format the response to match the structure of the previous hardcoded data
     const formattedCarpools = carpools.map((carpool) => ({

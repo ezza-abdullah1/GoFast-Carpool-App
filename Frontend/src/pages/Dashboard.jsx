@@ -8,16 +8,22 @@ import { useSelector, useDispatch } from 'react-redux';
 import { AiOutlineExclamationCircle } from 'react-icons/ai';
 import { RingLoader } from 'react-spinners';
 import { fetchUpcomingRides } from '../Components/Authentication/redux/upcomingRidesSlice';
+import { fetchPendingRequests } from '../Components/Authentication/redux/pendingRequestSlice';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
   const [showCarpoolForm, setShowCarpoolForm] = useState(false);
 
   const dispatch = useDispatch();
+  const { rides: pendingRequests, loading: pendingLoading, error: pendingError } = useSelector((state) => state.pendingRequests);
 
   const { userDetails, loading, error } = useSelector((state) => state.user);
-const { rides: upcomingRides, loading: ridesLoading, error: ridesError } = useSelector((state) => state.upcomingRides);
-
+  const { rides: upcomingRides, loading: ridesLoading, error: ridesError } = useSelector((state) => state.upcomingRides);
+  useEffect(() => {
+    if (userDetails?.id && activeTab === 'offers') {
+      dispatch(fetchPendingRequests(userDetails.id));
+    }
+  }, [dispatch, userDetails, activeTab]);
   useEffect(() => {
     if (userDetails?.id && activeTab === 'upcoming') {
       dispatch(fetchUpcomingRides(userDetails.id));
@@ -101,32 +107,12 @@ const { rides: upcomingRides, loading: ridesLoading, error: ridesError } = useSe
     },
   ];
 
-  const rideOffers = [
-    {
-      id: '4',
-      driver: {
-        name: userDetails.fullName,
-        rating: userDetails.rating,
-        department: userDetails.department,
-      },
-      route: {
-        pickup: 'FAST NUCES Main Campus',
-        dropoff: 'Gulistan-e-Johar',
-      },
-      schedule: {
-        date: 'Tomorrow',
-        time: '4:30 PM',
-      },
-      seats: {
-        total: 4,
-        available: 2,
-      },
-      preferences: ['No smoking', 'Music lovers welcome'],
-    },
-  ];
+
+
+
 
   return (
-  
+
     <div className="flex flex-col min-h-screen">
       <main className="flex-1 pt-20">
         {/* User Profile Section */}
@@ -262,9 +248,9 @@ const { rides: upcomingRides, loading: ridesLoading, error: ridesError } = useSe
               {activeTab === 'offers' && (
                 <div>
                   <h2 className="text-xl font-semibold mb-6">Pending Requests</h2>
-                  {rideOffers.length > 0 ? (
+                  {pendingRequests.length > 0 ? (
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                      {rideOffers.map((ride) => (
+                      {pendingRequests.map((ride) => (
                         <CarpoolPost key={ride.id} {...ride} offerRide={true} activeTab={activeTab} />
                       ))}
                     </div>

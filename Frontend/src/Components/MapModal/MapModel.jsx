@@ -36,7 +36,7 @@ const MapModal = ({ open, rideId, onOpenChange, activeTab, route, stop }) => {
     const location = useLocation();
 
     const [stops, setStops] = useState([]);
-   
+
 
     const convertAllToStops = useCallback((router, stops) => {
         const result = [];
@@ -78,12 +78,12 @@ const MapModal = ({ open, rideId, onOpenChange, activeTab, route, stop }) => {
     }, []);
 
     useEffect(() => {
-        if (open) { // Only process when modal is open
+        if (open) {
             const formattedStops = convertAllToStops(route, stop);
-            console.log("Formatted Stops:", formattedStops);
+
             setStops(formattedStops);
         }
-    }, [route, stop, convertAllToStops, open]); // Changed dependency from stopEnds to stop
+    }, [route, stop, convertAllToStops, open]);
 
     const saveStopRequest = async () => {
         if (!selectedLatLng) {
@@ -209,6 +209,8 @@ const MapModal = ({ open, rideId, onOpenChange, activeTab, route, stop }) => {
                                         confirmEnabled={confirmEnabled}
                                         activeTab={activeTab}
                                         saveStopRequest={saveStopRequest}
+                                        stopid={stop ? stop[0].id : ""}
+                                        rideId={rideId}
                                     />
                                 </div>
                             </DialogClose>
