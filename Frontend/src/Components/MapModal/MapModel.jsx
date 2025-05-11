@@ -10,20 +10,25 @@ import {
 import { MapPin } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import AlertBox from "../ui/AlertBox";
-
+import { toast } from "react-hot-toast";
 import MapContainer from "./MapContainer";
 import FooterActions from "./FooterActions";
 import UpcomingRideActions from "./UpcomingRideActions";
 import StopsSidebar from "./StopsSideBar";
 import { Loader2 } from "lucide-react";
-import Button from "../ui/Button";
+import { useSelector } from "react-redux";
+import axiosInstance from "../Authentication/redux/axiosInstance";
 
-const MapModal = ({ open, onOpenChange, activeTab }) => {
+import { getLocationName } from "../UtilsFunctions/LocationName";
+
+const MapModal = ({ open, rideId, onOpenChange, activeTab }) => {
     const mapRef = useRef(null);
     const mapInstanceRef = useRef(null);
     const routeLayerRef = useRef(null);
     const markerRef = useRef(null);
     const stopMarkersRef = useRef([]);
+    const { userDetails } = useSelector((state) => state.user);
+
 
     const [stops, setStops] = useState([
         { lat: 31.5395453, lng: 74.3016998, label: "Start" },
@@ -39,6 +44,40 @@ const MapModal = ({ open, onOpenChange, activeTab }) => {
     const [loading, setLoading] = useState(false);
 
     const location = useLocation();
+    const saveStopRequest = async () => {
+        if (!selectedLatLng) {
+            toast.error("Please select a location first.");
+            return;
+        }
+
+        const { lat, lng } = selectedLatLng;
+        if (!selectedLatLng || selectedLatLng.lat === undefined || selectedLatLng.lng === undefined) {
+            toast.error("Invalid location selected.");
+            return;
+        }
+
+        let locationName = await getLocationName(lat, lng);
+
+        const stopData = {
+            rideId,
+            userId: userDetails.id,
+            location: {
+                name: locationName,
+                latitude: lat,
+                longitude: lng,
+            },
+            status: "pending",
+        };
+    
+        axiosInstance.post(`http://localhost:5000/api/stop`, stopData)
+            .then(() => {
+                toast.success("Request sent");
+            })
+            .catch((error) => {
+            
+                toast.error("Error sending request");
+            });
+    };
 
     useEffect(() => {
         setButtonFlag(location.pathname === "/carpools");
@@ -57,7 +96,7 @@ const MapModal = ({ open, onOpenChange, activeTab }) => {
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-         <DialogContent className="w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="w-full max-w-3xl max-h-[90vh] overflow-y-auto">
 
                 {error && <AlertBox message={errorMsg} onClose={() => setError(false)} />}
 
@@ -99,8 +138,8 @@ const MapModal = ({ open, onOpenChange, activeTab }) => {
                             </div>
                         )}
 
-                          
-                        
+
+
 
                         <MapContainer
                             setLoading={setLoading}
@@ -117,6 +156,7 @@ const MapModal = ({ open, onOpenChange, activeTab }) => {
                             setErrorMsg={setErrorMsg}
                             buttonFlag={buttonFlag}
                             open={open}
+
                         />
 
                         {!noFooter && (
@@ -126,6 +166,7 @@ const MapModal = ({ open, onOpenChange, activeTab }) => {
                                         buttonFlag={buttonFlag}
                                         confirmEnabled={confirmEnabled}
                                         activeTab={activeTab}
+                                        saveStopRequest={saveStopRequest}
                                     />
                                 </div>
                             </DialogClose>
@@ -141,7 +182,7 @@ const MapModal = ({ open, onOpenChange, activeTab }) => {
                                 </DialogClose>
                             )
                         }
-                        
+
 
                     </div>
                 </div>

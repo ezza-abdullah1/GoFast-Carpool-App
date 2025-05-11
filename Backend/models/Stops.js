@@ -12,7 +12,7 @@ const stopSchema = new mongoose.Schema({
     required: true
   },
   location: {
-    name: { type: String, required: true },
+    name: { type: String, required: true,maxlength: 1000 },
     latitude: { type: Number, required: true },
     longitude: { type: Number, required: true }
   },
