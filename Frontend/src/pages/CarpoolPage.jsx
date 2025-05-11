@@ -15,7 +15,6 @@ const CarpoolPage = () => {
       try {
         setLoading(true);
         const response = await axiosInstance.get("/carpools");
-        // Filter out the logged-in user's carpools
         if (userDetails && userDetails.id) {
           const filteredCarpools = response.data.filter(
             (carpool) => carpool.driver.id !== userDetails.id
@@ -35,23 +34,23 @@ const CarpoolPage = () => {
   }, [userDetails]); 
 
   const handleSearch = async (filters) => {
-    try {
-      const response = await axiosInstance.post(
-        "/carpools/search",
-        filters
+  try {
+    const response = await axiosInstance.post(
+      "/carpools/search",
+      { ...filters } 
+    );
+    if (userDetails && userDetails.id) {
+      const filteredCarpools = response.data.filter(
+        (carpool) => carpool.driver.id !== userDetails.id
       );
-      if (userDetails && userDetails.id) {
-        const filteredCarpools = response.data.filter(
-          (carpool) => carpool.driver.id !== userDetails.id
-        );
-        setCarpools(filteredCarpools);
-      } else {
-        setCarpools(response.data);
-      }
-    } catch (error) {
-      setError("Search failed");
+      setCarpools(filteredCarpools);
+    } else {
+      setCarpools(response.data);
     }
-  };
+  } catch (error) {
+    setError("Search failed");
+  }
+};
 
   return (
     <>

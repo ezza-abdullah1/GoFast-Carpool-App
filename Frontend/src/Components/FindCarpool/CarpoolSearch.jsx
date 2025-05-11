@@ -10,9 +10,11 @@ import {
 } from "lucide-react";
 import Button from "../ui/compatibility-button";
 import { cn } from "../../lib/utils";
+import { useSelector } from "react-redux"; // Import useSelector
 
 const CarpoolSearch = ({ onSearch, className }) => {
   const [isFilterExpanded, setIsFilterExpanded] = useState(false);
+  const { userDetails } = useSelector((state) => state.user); // Get userDetails from Redux
 
   // Search state
   const [pickup, setPickup] = useState("");
@@ -49,7 +51,8 @@ const CarpoolSearch = ({ onSearch, className }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
+    console.log(userDetails?.id)
+    console.log("handleSubmit called with pickup:", pickup, "dropoff:", dropoff);
     onSearch({
       pickup,
       dropoff,
@@ -57,7 +60,9 @@ const CarpoolSearch = ({ onSearch, className }) => {
       time,
       minSeats: parseInt(minSeats),
       filters: selectedFilters,
+      loggedInUserId: userDetails?.id, 
     });
+    
   };
 
   return (
