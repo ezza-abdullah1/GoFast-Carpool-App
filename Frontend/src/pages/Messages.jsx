@@ -39,7 +39,7 @@ export default function Messages() {
     setLoading(true);
     console.log('Fetching contacts from:', `${API_URL}/api/contacts`);
     
-    axios.get('/api/contacts')
+    axios.get('/api/messages/contacts')
       .then(res => {
         console.log('Contacts response:', res.data);
         // Handle both array format and object format with contacts property

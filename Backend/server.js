@@ -37,7 +37,7 @@ app.use((req, _, next) => {
   req.io = io;
   next();
 });
-
+app.use("/api/contacts", apiRoutes);
 // Your existing routes
 app.use("/api/carpools", carpoolRoutes);
 app.use("/api/map",      mapRoutes);
@@ -47,7 +47,7 @@ app.use("/api/stop",stopsRoutes);
 app.use("/api/user",userRoutes );
 app.use('/api/', carpoolRoutes);
 // New messaging API+ auth
-app.use("/api", apiRoutes);
+app.use("/api/messages", apiRoutes);
 
 app.get("/", (req, res) => {
   res.send("Carpool API is running");
