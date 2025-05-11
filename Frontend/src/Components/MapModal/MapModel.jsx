@@ -14,7 +14,7 @@ import { toast } from "react-hot-toast";
 import MapContainer from "./MapContainer";
 import FooterActions from "./FooterActions";
 import UpcomingRideActions from "./UpcomingRideActions";
-import StopsSidebar from "./StopsSideBar";
+import StopsSidebar from "./StopsSidebar";
 import { Loader2 } from "lucide-react";
 import { useSelector } from "react-redux";
 import axiosInstance from "../Authentication/redux/axiosInstance";
@@ -131,7 +131,12 @@ const MapModal = ({ open, rideId, onOpenChange, activeTab, route, stop }) => {
             if (mapRef.current) mapRef.current.innerHTML = "";
         }
     }, [open]);
-
+     const handleRideFinished = (finishedRideId) => {
+    setUpcomingRides((prevRides) =>
+      prevRides.filter((ride) => ride._id !== finishedRideId)
+    );
+    onOpenChange(false); 
+  };
     const noSidebar = activeTab !== "upcoming";
     const noFooter = !buttonFlag && !confirmEnabled && activeTab !== "offers";
 
@@ -220,7 +225,9 @@ const MapModal = ({ open, rideId, onOpenChange, activeTab, route, stop }) => {
                                 <DialogClose asChild>
                                     <div>
                                         <UpcomingRideActions
-                                            activeTab={activeTab}
+                                           activeTab={activeTab}
+                                           rideId={rideId}
+                                           onRideFinished={handleRideFinished}
                                         />
                                     </div>
                                 </DialogClose>
