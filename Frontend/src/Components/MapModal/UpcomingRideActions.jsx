@@ -5,12 +5,15 @@ import axiosInstance from "../Authentication/redux/axiosInstance";
 import { fetchUpcomingRides } from '../Authentication/redux/upcomingRidesSlice';
 import { useDispatch, useSelector } from 'react-redux'; // Import useDispatch and useSelector
 
-const UpcomingRideActions = ({ activeTab, rideId, onRideFinished }) => {
+const UpcomingRideActions = ({ activeTab, rideId, onRideFinished, driver_id }) => {
   const dispatch = useDispatch();
   const { userDetails } = useSelector((state) => state.user);
   const [isFinishing, setIsFinishing] = useState(false);
 
   const handleFinishRide = async () => {
+     if (userDetails.id !== driver_id) {
+            (toast.error("You can finish your own ride only"))}
+    else{
     if (isFinishing) {
       return; // Prevent multiple calls while processing
     }
@@ -39,7 +42,7 @@ const UpcomingRideActions = ({ activeTab, rideId, onRideFinished }) => {
       } finally {
         setIsFinishing(false); // Re-enable the button
       }
-    }
+    }}
   };
 
   return (

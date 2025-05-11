@@ -20,7 +20,7 @@ import { useSelector } from "react-redux";
 import axiosInstance from "../Authentication/redux/axiosInstance";
 import { getLocationName } from "../UtilsFunctions/LocationName";
 
-const MapModal = ({ open, rideId, onOpenChange, activeTab, route, stop }) => {
+const MapModal = ({ open, rideId, onOpenChange, activeTab, route, stop, driverid }) => {
     const mapRef = useRef(null);
     const mapInstanceRef = useRef(null);
     const routeLayerRef = useRef(null);
@@ -34,7 +34,6 @@ const MapModal = ({ open, rideId, onOpenChange, activeTab, route, stop }) => {
     const [error, setError] = useState(false);
     const [loading, setLoading] = useState(false);
     const location = useLocation();
-
     const [stops, setStops] = useState([]);
 
 
@@ -57,9 +56,10 @@ const MapModal = ({ open, rideId, onOpenChange, activeTab, route, stop }) => {
                 const lng = stop?.location?.longitude;
                 const id = stop?._id || stop?.id;
                 const name = stop?.location?.name;
+                const userId = stop?.userId || stop?.user_id;
 
                 if (lat != null && lng != null) {
-                    result.push({ id, lat, lng, name, label: "Stop" });
+                    result.push({ id, lat, lng, name, userId, label: "Stop" });
                 }
             });
         }
@@ -131,7 +131,7 @@ const MapModal = ({ open, rideId, onOpenChange, activeTab, route, stop }) => {
             if (mapRef.current) mapRef.current.innerHTML = "";
         }
     }, [open]);
-    
+
     const noSidebar = activeTab !== "upcoming";
     const noFooter = !buttonFlag && !confirmEnabled && activeTab !== "offers";
 
@@ -222,6 +222,7 @@ const MapModal = ({ open, rideId, onOpenChange, activeTab, route, stop }) => {
                                 activeTab={activeTab}
                                 rideId={rideId}
                                 onRideFinished={onOpenChange} 
+                                driver_id = {driverid}
                                 />
                                 </div>
                             )

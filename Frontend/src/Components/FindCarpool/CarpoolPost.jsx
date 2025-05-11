@@ -30,7 +30,7 @@ const CarpoolPost = ({
   activeTab,
   stops,
   onCarpoolCancelled,
-  requesterName, // Prop to receive the requester's name
+  requesterName, 
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [mapModalOpen, setMapModalOpen] = useState(false);
@@ -73,14 +73,15 @@ const CarpoolPost = ({
   };
 
   const handleCancel = () => {
+     if (userDetails.id !== driver.driverId) {
+        (toast.error("You can only cancel your own ride"))
+      } else{
     if (window.confirm("Are you sure you want to cancel this ride?")) {
       console.log("Attempting to cancel carpool with ID (via Redux):", id);
       if (onCarpoolCancelled) {
         onCarpoolCancelled(id);
       }
-    }
-
-
+    }}
   };
 
   const toggleExpand = () => {
@@ -230,7 +231,7 @@ const CarpoolPost = ({
                   className="flex-none h-[44px] w-[44px] px-4 text-sm bg-red-600 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-red-700 relative group"
                 >
                   <X className="h-4 w-4" />
-                  <span className="absolute bottom-[50px] left-1/2 transform -translate-x-1/2 hidden group-hover:block bg-white text-black text-sm text-center px-2 py-1 rounded-md">
+                  <span  onClick={handleCancel} className="absolute bottom-[50px] left-1/2 transform -translate-x-1/2 hidden group-hover:block bg-white text-black text-sm text-center px-2 py-1 rounded-md" >
                     Cancel Ride
                   </span>
                 </button>
@@ -290,7 +291,7 @@ const CarpoolPost = ({
                 </button>
               )}
 
-              <MapModal open={mapModalOpen} rideId={id} route={route} stop={stops} onOpenChange={setMapModalOpen} activeTab={activeTab} />
+              <MapModal open={mapModalOpen} rideId={id} route={route} stop={stops} onOpenChange={setMapModalOpen} activeTab={activeTab} driverid={driver.driverId} />
             </div>
           )}
 
