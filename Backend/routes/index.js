@@ -3,15 +3,20 @@ const router  = express.Router();
 
 const contactsController = require('../controllers/contactsController');
 const messageController  = require('../controllers/messageController');
+const authMiddleware = require('../middleware/authMiddleware');
 
 
-// GET  /api/contacts
-router.get('/contacts', contactsController.getContacts);
+// Apply auth middleware to all messaging routes
+router.use('/messages', authMiddleware);
 
-// GET  /api/messages/:conversationId
-// POST /api/messages
+// Contacts routes
+router.get('/messages/contacts', contactsController.getContacts);
+
+// Messages routes
 router.get('/messages/:conversationId', messageController.getMessages);
-router.post('/messages',              messageController.postMessage);
-// Signup Route
+router.post('/messages', messageController.postMessage);
+
+// Create or get conversation
+router.get('/messages/conversation/:userId', messageController.getOrCreateConversation);
 
 module.exports = router;
