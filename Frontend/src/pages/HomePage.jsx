@@ -1,9 +1,12 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import Hero from '../Components/Home/Hero';
 import Features from '../Components/Home/Features';
 import HowItWorks from '../Components/Home/HowItWorks';
 import Button from '../Components/ui/Button';
 import { ArrowRight } from 'lucide-react';
+
 
 // Testimonials component for additional content
 const Testimonials = () => {
@@ -66,6 +69,11 @@ const Testimonials = () => {
 
 // CTA component for call to action section
 const CTA = () => {
+  const navigate = useNavigate();
+
+  const handleGetStarted = () => {
+    navigate('/', { state: { openSignUp: true } });
+  };
   return (
     <section className="py-20 bg-primary-50 dark:bg-primary-900/10">
       <div className="container mx-auto px-4">
@@ -77,7 +85,7 @@ const CTA = () => {
               Save money, reduce stress, and make new connections.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Button size="lg">
+              <Button size="lg" onClick={handleGetStarted}>
                 Create Your Account
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -115,6 +123,11 @@ const CTA = () => {
 };
 
 const HomePage = () => {
+  const navigate = useNavigate();
+
+  const handleGetStarted = () => {
+    navigate('/', { state: { openSignUp: true } });
+  };
   return (
     <div className="flex flex-col min-h-screen">
 

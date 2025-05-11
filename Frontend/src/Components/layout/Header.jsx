@@ -21,6 +21,9 @@ const Header = () => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
+  useEffect(() => {
+  if (authModalOpen) window.scrollTo({ top: 0, behavior: 'smooth' });
+}, [authModalOpen]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -40,6 +43,14 @@ const Header = () => {
       setIsDarkMode(false);
     }
   }, []);
+  useEffect(() => {
+  if (location.state?.openSignUp) {
+    setAuthMode('signup');
+    setAuthModalOpen(true);
+    // clear the state so it doesn't trigger again on reload
+    navigate(location.pathname, { replace: true, state: {} });
+  }
+}, [location, navigate]);
 
   const toggleDarkMode = () => {
     if (isDarkMode) {
