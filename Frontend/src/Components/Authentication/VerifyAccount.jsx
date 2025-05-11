@@ -10,7 +10,7 @@ const VerifyAccount = ({ email, onSuccess }) => {
     try {
       const res = await axios.post("http://localhost:5000/api/auth/verify", { email, code });
       toast.success("Account verified! Please sign in.");
-      onSuccess(); 
+      onSuccess(); // Opens Sign In and closes Verify
     } catch (err) {
       toast.error(err.response?.data?.error || "Verification failed.");
     }

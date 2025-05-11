@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import VerifyAccount from "./VerifyAccount";
-import { Loader2 } from "lucide-react"; 
+import { Loader2 } from "lucide-react"; // Spinner icon
 
 const SignUp = ({ onClose, onSwitchToSignIn }) => {
   const [formData, setFormData] = useState({
@@ -15,7 +15,7 @@ const SignUp = ({ onClose, onSwitchToSignIn }) => {
 
   const [showVerify, setShowVerify] = useState(false);
   const [emailForVerification, setEmailForVerification] = useState("");
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false); // Loading state
 
   const handleChange = (e) => {
     setFormData((prevData) => ({
@@ -39,7 +39,7 @@ const SignUp = ({ onClose, onSwitchToSignIn }) => {
     }
 
     try {
-      setLoading(true);
+      setLoading(true); // Start loading
       const res = await axios.post("http://localhost:5000/api/auth/signup", formData);
       toast.success("Verification code sent to your email.");
       setEmailForVerification(formData.email);
@@ -47,7 +47,7 @@ const SignUp = ({ onClose, onSwitchToSignIn }) => {
     } catch (err) {
       toast.error(err.response?.data?.error || "Signup failed.");
     } finally {
-      setLoading(false);
+      setLoading(false); // Stop loading
     }
   };
 
@@ -75,7 +75,7 @@ const SignUp = ({ onClose, onSwitchToSignIn }) => {
             <option value="">Select Department</option>
             <option value="Computer Science">Computer Science</option>
             <option value="Electrical Engineering">Electrical Engineering</option>
-            <option value="Civil">Civil </option>
+            <option value="Civil">Civil</option>
             <option value="Management">Management</option>
           </select>
 

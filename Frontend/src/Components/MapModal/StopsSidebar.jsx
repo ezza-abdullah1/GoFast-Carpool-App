@@ -44,7 +44,7 @@ const StopsSidebar = memo(({
             const updatedStops = stops.filter((_, j) => j !== index);
             setStops(updatedStops);
 
-          
+            // Update Redux ride data
             dispatch(removeStopFromRide({ rideId, stopId: stop.id }));
 
 

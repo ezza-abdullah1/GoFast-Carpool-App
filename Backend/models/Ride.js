@@ -27,7 +27,7 @@ const rideSchema = new mongoose.Schema({
   },
   time: {
     type: String,
-    required: true, 
+    required: true, // store as string like '4:30 pm'
   },
   preferences: {
     type: [String],

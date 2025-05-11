@@ -5,7 +5,7 @@ import { cn } from '../../lib/utils';
 export default function ContactsSidebar({ contacts, activeId, setActiveId }) {
   const [searchTerm, setSearchTerm] = useState('');
 
-
+  // Filter contacts based on search term
   const filteredContacts = searchTerm
     ? contacts.filter(contact => 
         contact.name.toLowerCase().includes(searchTerm.toLowerCase()))

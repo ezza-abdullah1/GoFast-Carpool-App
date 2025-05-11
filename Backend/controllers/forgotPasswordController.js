@@ -1,4 +1,4 @@
-
+// controllers/forgotPasswordController.js
 const express = require("express");
 const router = express.Router();
 const crypto = require("crypto");
@@ -6,6 +6,7 @@ const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const User = require("../models/User");
 
+// POST /api/auth/forgot-password
 router.post("/forgot-password", async (req, res) => {
   const { email } = req.body;
 

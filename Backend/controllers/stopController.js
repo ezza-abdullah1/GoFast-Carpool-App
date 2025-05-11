@@ -22,13 +22,16 @@ exports.deleteStopById = async (req, res) => {
   try {
     const { id } = req.params;
 
+    // First, find the stop to access the rideId
     const stop = await Stop.findById(id);
     if (!stop) {
       return res.status(404).json({ message: "Stop not found" });
     }
 
+    // Delete the stop
     await Stop.findByIdAndDelete(id);
 
+    // Decrease seatsTaken in the associated Ride
     await Ride.findByIdAndUpdate(stop.rideId, {
       $inc: { seatsTaken: -1 }
     });

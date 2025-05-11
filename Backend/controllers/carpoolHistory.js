@@ -33,24 +33,29 @@ exports.rateRideAndUpdateDriverRating = async (req, res) => {
   }
 
   try {
+    // Fetch the ride
     const ride = await Ride.findById(rideId);
     if (!ride) {
       return res.status(404).json({ error: "Ride not found" });
     }
 
+    // Calculate new average ride rating
     const newRideRatingCount = ride.RatingCount + 1;
     const newRideRating =
       (ride.Rating * ride.RatingCount + rating) / newRideRatingCount;
 
+    // Update the ride document
     ride.Rating = newRideRating;
     ride.RatingCount = newRideRatingCount;
     await ride.save();
 
+    // Fetch all rides by this driver that have been rated
     const allRatedRides = await Ride.find({
       userId: ride.userId,
       RatingCount: { $gt: 0 }
     });
 
+    // Calculate overall average rating for the driver
     let totalRatingSum = 0;
     let totalRatingCount = 0;
 
@@ -63,6 +68,7 @@ exports.rateRideAndUpdateDriverRating = async (req, res) => {
       ? totalRatingSum / totalRatingCount
       : 0;
 
+    // Update user (driver) rating
     await User.findByIdAndUpdate(ride.userId, {
       rating: overallDriverRating.toFixed(2)
     });
