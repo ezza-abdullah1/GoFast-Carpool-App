@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { signIn } from "./redux/userSlice";
+import { Mail, Lock, Eye, EyeOff, X } from "lucide-react";
+import { signIn } from "../Authentication/redux/userSlice"; // Adjust path as needed
 import { toast } from "react-hot-toast";
 import ForgotPasswordModal from "./ForgotPasswordModal";
 
@@ -15,7 +15,7 @@ const SignIn = ({ onSwitchToSignUp, onClose }) => {
   });
 
   const dispatch = useDispatch();
-  const { error, loading, currentUser } = useSelector((state) => state.user);
+  const { error, loading } = useSelector((state) => state.user);
 
   useEffect(() => {
     const rememberedEmail = localStorage.getItem("rememberedEmail");
@@ -36,131 +36,119 @@ const SignIn = ({ onSwitchToSignUp, onClose }) => {
     }));
   };
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     const response = await dispatch(signIn(formData));
-    console.log(response)  // Dispatch the signIn action
+
     if (response.meta.requestStatus === "fulfilled") {
-      toast.success(`Welcome, ${response.payload.fullName}`);
+      const { token, user } = response.payload;
+
+      // ✅ Store token & user in localStorage
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // ✅ Handle remember me
       if (formData.rememberMe) {
         localStorage.setItem("rememberedEmail", formData.email);
       } else {
         localStorage.removeItem("rememberedEmail");
       }
-      onClose();
-    } else {
-      toast.error(response.payload || 'Sign in failed');
-    }
-  };
-  
 
-  const handleSwitchToSignUp = (e) => {
-    e.preventDefault();
-    onSwitchToSignUp();
+      toast.success(`Welcome, ${user.fullName}`);
+      onClose(); // ✅ close modal & update header state
+    } else {
+      toast.error(response.payload || "Sign in failed");
+    }
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg w-full max-w-md mx-4 dark:bg-gray-800 dark:text-white">
-        <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
-          <h2 className="text-xl font-bold">Sign In</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-4">
-          <div className="mb-4">
-            <label htmlFor="email" className="block mb-2 font-medium">University Email</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500">
-                <Mail size={20} />
+      <div className="bg-white dark:bg-gray-800 text-black dark:text-white rounded-lg w-full max-w-md mx-4 relative shadow-lg">
+        <button
+          className="absolute top-3 right-3 p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full"
+          onClick={onClose}
+        >
+          <X className="w-5 h-5" />
+        </button>
+        <div className="px-6 py-8">
+          <h2 className="text-2xl font-bold mb-4 text-center">Sign In to GoFAST</h2>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium mb-1">Email</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  className="w-full pl-10 pr-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600"
+                />
               </div>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                placeholder="yourname@nu.edu.pk"
-                className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
             </div>
-          </div>
 
-          <div className="mb-4">
-            <label htmlFor="password" className="block mb-2 font-medium">Password</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500">
-                <Lock size={20} />
+            <div>
+              <label className="block text-sm font-medium mb-1">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  className="w-full pl-10 pr-10 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
               </div>
-              <input
-                type={showPassword ? "text" : "password"}
-                id="password"
-                name="password"
-                placeholder="Enter your password"
-                className="w-full pl-10 pr-10 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
+            </div>
+
+            <div className="flex justify-between items-center">
+              <label className="flex items-center text-sm">
+                <input
+                  type="checkbox"
+                  name="rememberMe"
+                  checked={formData.rememberMe}
+                  onChange={handleChange}
+                  className="mr-2"
+                />
+                Remember me
+              </label>
               <button
                 type="button"
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500"
-                onClick={() => setShowPassword(!showPassword)}
+                className="text-sm text-primary hover:underline"
+                onClick={() => setShowForgotPassword(true)}
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                Forgot password?
               </button>
             </div>
-          </div>
 
-          <div className="flex items-center justify-between mb-6">
-            <label className="inline-flex items-center">
-              <input
-                type="checkbox"
-                name="rememberMe"
-                checked={formData.rememberMe}
-                onChange={handleChange}
-                className="form-checkbox text-blue-500"
-              />
-              <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">Remember Me</span>
-            </label>
             <button
-              type="button"
-              onClick={() => setShowForgotPassword(true)}
-              className="text-sm text-blue-500 hover:underline"
+              type="submit"
+              disabled={loading}
+              className="w-full bg-primary hover:bg-primary-700 text-white font-semibold py-2 rounded transition"
             >
-              Forgot password?
+              {loading ? "Signing in..." : "Sign In"}
             </button>
-          </div>
+          </form>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            {loading ? 'Signing In...' : 'Sign In'}
-          </button>
-
-          <div className="mt-4 text-center">
-            <p className="text-gray-600 dark:text-gray-300">
-              Don't have an account?
-              <button
-                type="button"
-                className="text-blue-500 ml-1 font-medium hover:underline"
-                onClick={handleSwitchToSignUp}
-              >
-                Sign up
-              </button>
-            </p>
-          </div>
-        </form>
+          <p className="text-center text-sm mt-4">
+            Don’t have an account?{" "}
+            <button
+              onClick={onSwitchToSignUp}
+              className="text-primary font-medium hover:underline"
+            >
+              Get Started
+            </button>
+          </p>
+        </div>
       </div>
 
       {showForgotPassword && (

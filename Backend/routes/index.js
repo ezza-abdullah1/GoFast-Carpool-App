@@ -5,6 +5,7 @@ const contactsController = require('../controllers/contactsController');
 const messageController  = require('../controllers/messageController');
 const authMiddleware = require('../middleware/authMiddleware');
 
+
 // Apply auth middleware to all messaging routes
 router.use('/messages', authMiddleware);
 
