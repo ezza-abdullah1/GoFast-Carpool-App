@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import ResetPassword from "./ResetPassword";
 import { X } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 const ResetCode = ({ email, onClose }) => {
   const [code, setCode] = useState("");
@@ -9,7 +10,10 @@ const ResetCode = ({ email, onClose }) => {
 
   const verifyCode = async () => {
     const trimmedCode = code.trim();
-    if (!trimmedCode) return alert("Please enter the verification code.");
+    if (!trimmedCode) {
+      toast.error("Please enter the verification code.");
+      return;
+    }
 
     try {
       setVerifying(true);
@@ -19,11 +23,18 @@ const ResetCode = ({ email, onClose }) => {
         body: JSON.stringify({ email, code: trimmedCode }),
       });
       setVerifying(false);
-      if (res.ok) setShowResetPassword(true);
-      else alert("Invalid or expired verification code.");
+
+      if (res.ok) {
+        toast.success("Verification successful.");
+        setShowResetPassword(true);
+      } else {
+        const message = await res.text();
+        toast.error(message || "Invalid or expired verification code.");
+      }
     } catch (error) {
       setVerifying(false);
-      alert("Something went wrong. Please try again.");
+      toast.error("Something went wrong. Please try again.");
+      console.error("Verification Error:", error);
     }
   };
 
