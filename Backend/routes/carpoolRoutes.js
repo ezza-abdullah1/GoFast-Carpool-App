@@ -19,7 +19,7 @@ router.get(
 );
 router.get(
   "/pendingRequests/:id",
- 
+ authMiddleware,
   pendingRequests.getPendingRequests
 );
 router.patch(
