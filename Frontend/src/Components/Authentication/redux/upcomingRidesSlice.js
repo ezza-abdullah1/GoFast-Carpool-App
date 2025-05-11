@@ -39,13 +39,13 @@ const transformRideToUIFormat = (ride) => {
     const parsed = new Date(dateStr);
     return !isNaN(parsed.getTime());
   };
-
   return {
     id: ride._id,
     driver: {
       name: ride.userDetails?.fullName ?? 'Unknown',
       rating: ride.userDetails?.rating ?? 0,
       department: ride.userDetails?.department ?? 'N/A',
+      driverId: ride.userDetails?._id, 
     },
     route: {
       pickup: {
@@ -96,11 +96,10 @@ const upcomingRidesSlice = createSlice({
     removeStopFromRide: (state, action) => {
       const { rideId, stopId } = action.payload;
       const ride = state.rides.find((r) => r.id === rideId);
-      console.log("remove stop id", stopId);
-      console.log('Ride ID:', rideId);
+  
       if (ride) {
         ride.stops = ride.stops.filter((stop) => stop.id !== stopId);
-        console.log('Updated stops:', ride.stops);
+   
       }
     },
     removeUpcomingRideLocal: (state, action) => {

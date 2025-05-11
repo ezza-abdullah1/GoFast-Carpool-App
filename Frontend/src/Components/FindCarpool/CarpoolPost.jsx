@@ -47,15 +47,15 @@ const CarpoolPost = ({
       toast.error("This is your Profile");
     }
     else {
+
       setProfileModalOpen(true)
     }
   }
 
   const handleClick = () => {
     if (activeTab === "history") {
-      console.log("Rating modal opened");
+
       if (userDetails.id === driver.driverId) {
-        console.log("Rating modal opened");
         (toast.error("You cannot rate your own ride"))
       } else
         setRatingModalOpen(true);
@@ -352,9 +352,9 @@ const CarpoolPost = ({
         onOpenChange={setRatingModalOpen}
         rideId={id}
       />
-      {profileModalOpen && (
+      {profileModalOpen && ( 
         <ProfileCard
-          profileId={driver.id}
+          profileId={driver.id? driver.id : driver.driverId}
           open={profileModalOpen}
           onOpenChange={setProfileModalOpen}
         />
