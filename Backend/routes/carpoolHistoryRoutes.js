@@ -6,6 +6,6 @@ const router = express.Router();
 
 router.get('/:id', authMiddleware, carpoolHistory.getCarpoolHistory);
 
-router.post("/rateRide/:rideId", carpoolHistory.rateRideAndUpdateDriverRating);
+router.post("/rateRide/:rideId", authMiddleware,carpoolHistory.rateRideAndUpdateDriverRating);
 
 module.exports = router;
