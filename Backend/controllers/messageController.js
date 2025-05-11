@@ -9,17 +9,13 @@ const mongoose = require('mongoose');
 exports.getMessages = async (req, res) => {
   try {
     let { conversationId } = req.params;
-
+    
     // Handle conversation IDs with "sample-" prefix
     if (conversationId.startsWith('sample-')) {
-      // Two options: either extract the ID part or find by custom field
-      // Option 1: Extract the ID part (if the part after "sample-" is a valid ObjectId)
       const actualId = conversationId.replace('sample-', '');
       if (mongoose.Types.ObjectId.isValid(actualId)) {
         conversationId = actualId;
       } else {
-        // Option 2: If your frontend consistently uses these prefixed IDs,
-        // you might need to find an alternative way to query the conversation
         return res.status(400).json({ error: 'Invalid conversation ID format' });
       }
     }
@@ -47,15 +43,17 @@ exports.getMessages = async (req, res) => {
       return res.status(403).json({ error: 'Not authorized to access this conversation' });
     }
 
-    // Get messages
-    const messages = await Message.find({ conversationId })
+    // Get messages - Important: Use the ObjectID, not the string version
+    const messages = await Message.find({ 
+      conversationId: conversation._id.toString() 
+    })
       .sort({ timestamp: 1 })
       .limit(100); // Limit to last 100 messages
     
     // Mark messages as read
     await Message.updateMany(
       { 
-        conversationId,
+        conversationId: conversation._id.toString(),
         receiverId: currentUserId,
         read: false
       },
@@ -124,9 +122,9 @@ exports.postMessage = async (req, res) => {
       p => p.toString() !== currentUserId.toString()
     );
 
-    // Create new message
+    // Create new message with the proper ObjectID conversion
     const newMessage = new Message({
-      conversationId,
+      conversationId: conversation._id.toString(), // Make sure this is a string
       senderId: currentUserId,
       receiverId,
       text,
@@ -143,7 +141,7 @@ exports.postMessage = async (req, res) => {
     // Format message for socket.io and response
     const formattedMessage = {
       id: newMessage._id.toString(),
-      conversationId,
+      conversationId: conversation._id.toString(),
       senderId: 'me', // For the sender's UI
       text,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -159,9 +157,9 @@ exports.postMessage = async (req, res) => {
       };
       
       // Emit to both the original ID format and the clean format to ensure delivery
-      const roomId = `sample-${conversationId}`; // If this is how your socket rooms are named
+      const roomId = `sample-${conversation._id.toString()}`; // If this is how your socket rooms are named
       req.io.to(roomId).emit('newMessage', socketMessage);
-      req.io.to(conversationId).emit('newMessage', socketMessage);
+      req.io.to(conversation._id.toString()).emit('newMessage', socketMessage);
     }
 
     res.status(201).json(formattedMessage);
@@ -210,8 +208,8 @@ exports.getOrCreateConversation = async (req, res) => {
 
     // Return both the regular ID and the socket room format ID
     res.json({ 
-      conversationId: conversation._id,
-      socketRoomId: `sample-${conversation._id}` // Include this if needed by your frontend
+      conversationId: conversation._id.toString(),
+      socketRoomId: `sample-${conversation._id.toString()}`
     });
   } catch (error) {
     console.error('Error creating/getting conversation:', error);
