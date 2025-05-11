@@ -294,18 +294,29 @@ exports.deleteCarpool = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 exports.searchCarpools = async (req, res) => {
   try {
-    const { pickup, dropoff, date, time, minSeats, filters } = req.body;
+    const { pickup, dropoff, date, time, minSeats, filters, loggedInUserId } = req.body;
+
+    console.log("Received search request with:", {
+      pickup,
+      dropoff,
+      date,
+      time,
+      minSeats,
+      filters,
+      loggedInUserId,
+    });
 
     const query = { status: "active" };
 
     if (pickup) {
+      console.log("Pickup search term:", pickup);
       query["pickup.name"] = new RegExp(pickup, "i");
     }
 
     if (dropoff) {
+      console.log("Dropoff search term:", dropoff);
       query["dropoff.name"] = new RegExp(dropoff, "i");
     }
 
@@ -319,12 +330,16 @@ exports.searchCarpools = async (req, res) => {
       query.date = { $gte: startDate, $lte: endDate };
     }
 
+    console.log("Initial query:", query);
+
     let rides = await Ride.find(query)
       .populate(
         "userId",
-        "fullName department email gender rating rides_taken rides_offered"
+        "fullName department email gender rating rides_taken rides_offered department" // Ensure department is populated
       )
       .lean();
+
+    console.log("Rides found before filtering:", rides);
 
     function convert12HourToMinutes(time12h) {
       const [time, modifier] = time12h.toLowerCase().split(" ");
@@ -345,6 +360,7 @@ exports.searchCarpools = async (req, res) => {
         const rideMinutes = convert12HourToMinutes(ride.time);
         return Math.abs(rideMinutes - targetMinutes) <= 30;
       });
+      console.log("Rides after time filter:", rides);
     }
 
     if (minSeats) {
@@ -352,33 +368,42 @@ exports.searchCarpools = async (req, res) => {
         const availableSeats = ride.numberOfSeats - (ride.seatsTaken || 0);
         return availableSeats >= minSeats;
       });
+      console.log("Rides after minSeats filter:", rides);
     }
 
     if (filters && filters.length > 0) {
       rides = rides.filter((ride) => {
-        if (
-          filters.includes("Female drivers only") &&
-          ride.userId.gender !== "female"
-        ) {
-          return false;
+        let includeRide = true;
+        if (filters.includes("Female drivers only") && ride.userId.gender !== "female") {
+          includeRide = false;
         }
-
-        if (
-          filters.includes("Male drivers only") &&
-          ride.userId.gender !== "male"
-        ) {
-          return false;
+        if (filters.includes("Male drivers only") && ride.userId.gender !== "male") {
+          includeRide = false;
         }
-
-        if (
-          filters.includes("No smoking") &&
-          (!ride.preferences || !ride.preferences.includes("No smoking"))
-        ) {
-          return false;
+        if (filters.includes("No smoking") && (!ride.preferences || !ride.preferences.includes("No smoking"))) {
+          includeRide = false;
         }
-
-        return true;
+        return includeRide;
       });
+      console.log("Rides after gender/smoking filters:", rides);
+
+      if (filters.includes("Same department") ) {
+        console.log("Applying 'Same Department' filter for userId:", loggedInUserId);
+        const loggedInUser = await User.findById(loggedInUserId).lean();
+        console.log("Logged in user details:", loggedInUser);
+        if (loggedInUser && loggedInUser.department) {
+          const loggedInDepartment = loggedInUser.department;
+          rides = rides.filter(ride => {
+            const driverDepartment = ride.userId ? ride.userId.department : null;
+            const isSameDepartment = driverDepartment === loggedInDepartment;
+            console.log(`Ride ID: ${ride._id}, Driver Department: ${driverDepartment}, Logged In Department: ${loggedInDepartment}, Same Department: ${isSameDepartment}`);
+            return isSameDepartment;
+          });
+          console.log("Rides after 'Same Department' filter:", rides);
+        } else {
+          console.log("Could not retrieve logged-in user's department.");
+        }
+      }
     }
 
     const formattedCarpools = rides.map((ride) => ({
@@ -396,9 +421,9 @@ exports.searchCarpools = async (req, res) => {
           longitude: ride.pickup.longitude,
         },
         dropoff: {
-          name: ride.pickup.name,
-          latitude: ride.pickup.latitude,
-          longitude: ride.pickup.longitude,
+          name: ride.dropoff.name,
+          latitude: ride.dropoff.latitude,
+          longitude: ride.dropoff.longitude,
         },
       },
       schedule: {
@@ -414,6 +439,7 @@ exports.searchCarpools = async (req, res) => {
       _raw: ride,
     }));
 
+    console.log("Formatted carpools for response:", formattedCarpools);
     res.status(200).json(formattedCarpools);
   } catch (error) {
     console.error("Error searching carpools:", error);
