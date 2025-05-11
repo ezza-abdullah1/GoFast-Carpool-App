@@ -9,7 +9,6 @@ export const signIn = createAsyncThunk("user/signIn", async (data, thunkAPI) => 
     sessionStorage.setItem("token", response.data.token); 
     console.log("User data from backend:", response.data.user);  // Log the user data from the backend
 
-    // Dispatch the user data to Redux store
     thunkAPI.dispatch(setUserDetails(response.data.user));  // Assuming setUserDetails action is available in your slice
 
     return response.data.user;  // Return the user data to the reducer
@@ -46,6 +45,16 @@ const userSlice = createSlice({
       state.userDetails = null;
       state.error = null;
     },
+    decrementRidesOffered: (state) => {
+      if (state.userDetails && state.userDetails.rides_offered > 0) {
+        state.userDetails.rides_offered -= 1;
+      }
+    },
+    incrementRidesOffered: (state) => {
+      if (state.userDetails) {
+        state.userDetails.rides_offered += 1;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -60,5 +69,5 @@ const userSlice = createSlice({
   },
 });
 
-export const { setUserDetails, setError, setLoading, logout } = userSlice.actions;
+export const { setUserDetails, setError, setLoading, logout, decrementRidesOffered, incrementRidesOffered  } = userSlice.actions;
 export default userSlice.reducer;

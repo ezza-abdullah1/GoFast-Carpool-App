@@ -43,7 +43,6 @@ const SignIn = ({ onSwitchToSignUp, onClose }) => {
     console.log(response)  // Dispatch the signIn action
     if (response.meta.requestStatus === "fulfilled") {
       toast.success(`Welcome, ${response.payload.fullName}`);
-      dispatch(fetchUserDetails(response.payload.email));
       if (formData.rememberMe) {
         localStorage.setItem("rememberedEmail", formData.email);
       } else {

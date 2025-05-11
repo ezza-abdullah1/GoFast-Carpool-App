@@ -1,45 +1,251 @@
-import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, MapPin, Users, Check } from 'lucide-react';
-
-// Custom Button component
-const CustomButton = ({ children, type = "button", variant = "default", onClick, disabled = false }) => {
+import React, { useState, useEffect, useRef } from 'react';
+import { Calendar, Clock, MapPin, Users, Check, Loader2 } from 'lucide-react';
+import axiosInstance from "../Authentication/redux/axiosInstance"; 
+const CustomButton = ({ children, type = "button", variant = "default", onClick, disabled = false, isLoading = false }) => {
   return (
     <button
       type={type}
       onClick={onClick}
-      disabled={disabled}
-      className={`px-4 py-2 text-sm font-medium rounded-md ${
+      disabled={disabled || isLoading}
+      className={`px-4 py-2 text-sm font-medium rounded-md flex items-center space-x-2 ${
         variant === "outline"
           ? "border border-gray-300 bg-transparent hover:bg-gray-100"
           : "bg-blue-600 text-white hover:bg-blue-700"
-      } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+      } ${(disabled || isLoading) ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
     >
-      {children}
+      {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+      <span>{children}</span>
     </button>
   );
 };
 
-// Helper function to combine class names conditionally
 const cn = (...classes) => {
   return classes.filter(Boolean).join(' ');
 };
 
-export default function CarpoolForm() {
+const LocationSelector = ({ id, label, placeholder, value, onChange, onLocationSelect }) => {
+  const [showMap, setShowMap] = useState(false);
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const markerRef = useRef(null);
+  const stopMarkersRef = useRef([]);
+  const routeLayerRef = useRef(null);
+  const [error, setError] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [confirmEnabled, setConfirmEnabled] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [selectedLatLng, setSelectedLatLng] = useState(null);
+
+  useEffect(() => {
+    if (!showMap || !mapRef.current) return;
+
+    try {
+      const L = window.L;
+      if (!L) {
+        setError(true);
+        setErrorMsg("Leaflet library not loaded");
+        return;
+      }
+
+      if (mapInstanceRef.current) {
+        try {
+          mapInstanceRef.current.remove();
+        } catch (err) {}
+        mapInstanceRef.current = null;
+      }
+
+      if (mapRef.current.childNodes.length > 0) {
+        while (mapRef.current.firstChild) {
+          mapRef.current.removeChild(mapRef.current.firstChild);
+        }
+      }
+
+      const map = L.map(mapRef.current).setView([31.52, 74.3], 10);
+      mapInstanceRef.current = map;
+
+      try {
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 18,
+        }).addTo(map);
+      } catch (err) {
+        setError(true);
+        setErrorMsg("Failed to load map tiles");
+        return;
+      }
+
+      if (L.Control.geocoder) {
+        try {
+          const geocoder = L.Control.geocoder({
+            collapsed: false,
+            placeholder: "Search for a location",
+            geocoder: L.Control.Geocoder.nominatim(),
+            defaultMarkGeocode: false,
+          });
+          
+          geocoder.on('markgeocode', (e) => {
+            const { center, name } = e.geocode;
+            
+            if (markerRef.current) {
+              try {
+                if (map.hasLayer(markerRef.current)) {
+                  map.removeLayer(markerRef.current);
+                }
+              } catch (err) {}
+            }
+            
+            try {
+              markerRef.current = L.marker([center.lat, center.lng]);
+              markerRef.current.addTo(map).bindPopup(`🟣 ${name}`).openPopup();
+              
+              setSelectedLatLng({ lat: center.lat, lng: center.lng, name: name });
+              setConfirmEnabled(true);
+              
+              map.setView([center.lat, center.lng], 14);
+            } catch (err) {
+              setError(true);
+              setErrorMsg("Failed to add marker");
+            }
+          });
+          
+          geocoder.addTo(map);
+          
+          setTimeout(() => {
+            try {
+              const input = document.querySelector(".leaflet-control-geocoder-form input");
+              if (input) {
+                input.className = "px-3 py-2 rounded border border-input shadow-sm w-64 text-sm";
+              }
+            } catch (err) {}
+          }, 300);
+        } catch (err) {
+          setError(true);
+          setErrorMsg("Geocoder failed to initialize");
+        }
+      }
+
+      setTimeout(() => {
+        try {
+          map.invalidateSize();
+        } catch (err) {}
+      }, 400);
+
+    } catch (err) {
+      mapInstanceRef.current = null;
+      setError(true);
+      setErrorMsg("Failed to initialize map");
+    }
+
+    return () => {
+      if (mapInstanceRef.current) {
+        try {
+          mapInstanceRef.current.remove();
+        } catch (err) {}
+        mapInstanceRef.current = null;
+      }
+    };
+  }, [showMap]);
+
+  const confirmLocation = () => {
+    if (selectedLatLng) {
+      onChange({
+        target: {
+          id, 
+          value: selectedLatLng.name || value
+        }
+      });
+      
+      if (onLocationSelect) {
+        onLocationSelect(id, selectedLatLng);
+      }
+      
+      setShowMap(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <label htmlFor={id} className="text-sm font-medium">
+        {label}
+      </label>
+      
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500">
+          <MapPin className="h-5 w-5" />
+        </div>
+        <input
+          id={id}
+          type="text"
+          value={value}
+          onChange={onChange}
+          onClick={() => setShowMap(true)}
+          className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white cursor-pointer"
+          placeholder={placeholder}
+          readOnly
+        />
+      </div>
+      
+      {showMap && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6 dark:bg-gray-800">
+            <h3 className="text-lg font-medium mb-4">Select {label}</h3>
+            
+            {error && (
+              <div className="bg-red-100 text-red-700 p-3 rounded-md mb-4 dark:bg-red-900 dark:text-red-200">
+                {errorMsg}
+              </div>
+            )}
+            
+            <div ref={mapRef} className="w-full h-96 rounded-lg border mb-4"></div>
+            
+            <div className="flex justify-between">
+              <CustomButton variant="outline" onClick={() => setShowMap(false)}>
+                Cancel
+              </CustomButton>
+              
+              <CustomButton onClick={confirmLocation} disabled={!confirmEnabled}>
+                Confirm Location
+              </CustomButton>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const createRideOffer = async (rideData) => {
+  try {
+    const response = await axiosInstance.post('/carpools/rides', rideData); 
+    return response.data;
+  } catch (error) {
+    console.error('Error in createRideOffer service:', error);
+    throw error;
+  }
+};
+
+export default function CarpoolForm( {userId} ) {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     pickup: '',
+    pickupLocation: null, 
     dropoff: '',
+    dropoffLocation: null, 
     date: '',
     time: '',
-    seats: '1',
+    seatsTaken: '1',
     preferences: [],
     notes: ''
   });
+  const [submitStatus, setSubmitStatus] = useState({
+    isSubmitting: false,
+    error: null,
+    success: false
+  });
 
-  // For debugging - log state changes
   useEffect(() => {
     console.log("Current step:", step);
     console.log("Form data:", formData);
+     console.log('CarpoolForm - userId prop received:', userId); 
   }, [step, formData]);
 
   const preferenceOptions = [
@@ -68,33 +274,126 @@ export default function CarpoolForm() {
     }));
   };
 
-  const handleSubmit = (e) => {
-    if (e && e.preventDefault) {
-      e.preventDefault();
+  const handleLocationSelect = (id, locationData) => {
+    if (id === 'pickup') {
+      setFormData(prev => ({
+        ...prev,
+        pickupLocation: {
+          name: locationData.name,
+          lat: locationData.lat,
+          lng: locationData.lng
+        }
+      }));
+    } else if (id === 'dropoff') {
+      setFormData(prev => ({
+        ...prev,
+        dropoffLocation: {
+          name: locationData.name,
+          lat: locationData.lat,
+          lng: locationData.lng
+        }
+      }));
     }
-    console.log('Form submitted:', {
-      type: 'offering',
-      ...formData
-    });
-
-    // Reset form
-    setStep(1);
-    setFormData({
-      pickup: '',
-      dropoff: '',
-      date: '',
-      time: '',
-      seats: '1',
-      preferences: [],
-      notes: ''
-    });
   };
 
+  const handleSubmit = async (e) => {
+  if (e && e.preventDefault) {
+    e.preventDefault();
+  }
+
+  setSubmitStatus({
+    isSubmitting: true,
+    error: null,
+    success: false
+  });
+
+  try {
+    if (!userId) {
+      setSubmitStatus({
+        isSubmitting: false,
+        error: 'User ID is missing. Please log in.',
+        success: false
+      });
+      return;
+    }
+
+    if (!formData.pickupLocation?.lat || !formData.pickupLocation?.lng) {
+      setSubmitStatus({
+        isSubmitting: false,
+        error: 'Please select a pickup location from the map.',
+        success: false
+      });
+      return;
+    }
+
+    if (!formData.dropoffLocation?.lat || !formData.dropoffLocation?.lng) {
+      setSubmitStatus({
+        isSubmitting: false,
+        error: 'Please select a drop-off location from the map.',
+        success: false
+      });
+      return;
+    }
+
+    const rideData = {
+        userId: userId,
+        pickup: {
+          name: formData.pickup,
+          latitude: parseFloat(formData.pickupLocation.lat),  
+          longitude: parseFloat(formData.pickupLocation.lng) 
+        },
+        dropoff: {
+          name: formData.dropoff,
+          latitude: parseFloat(formData.dropoffLocation.lat), 
+          longitude: parseFloat(formData.dropoffLocation.lng) 
+        },
+        numberOfSeats: parseInt(formData.numberOfSeats),
+        date: formData.date,
+        time: formData.time,
+        preferences: formData.preferences
+      };
+
+    const result = await createRideOffer(rideData);
+
+    console.log('Ride created successfully:', result);
+
+    setSubmitStatus({
+      isSubmitting: false,
+      error: null,
+      success: true
+    });
+
+    setTimeout(() => {
+      setStep(1);
+      setFormData({
+        pickup: '',
+        pickupLocation: null,
+        dropoff: '',
+        dropoffLocation: null,
+        date: '',
+        time: '',
+        numberOfSeats: '1',
+        preferences: [],
+        notes: ''
+      });
+      setSubmitStatus(prev => ({ ...prev, success: false }));
+    }, 2000);
+
+  } catch (error) {
+    console.error('Error creating ride:', error);
+
+    setSubmitStatus({
+      isSubmitting: false,
+      error: error.response?.data?.message || error.message || 'Failed to create ride',
+      success: false
+    });
+  }
+};
+
   const nextStep = () => {
-    // Step-specific validation
     if (step === 1) {
-      if (!formData.pickup || !formData.dropoff) {
-        console.log("Step 1 validation failed - missing pickup or dropoff");
+      if (!formData.pickup || !formData.dropoff || !formData.pickupLocation || !formData.dropoffLocation) {
+        console.log("Step 1 validation failed - missing pickup or dropoff location data");
         return;
       }
     } else if (step === 2) {
@@ -112,7 +411,6 @@ export default function CarpoolForm() {
     setStep(prev => prev - 1);
   };
 
-  // Get today's date in YYYY-MM-DD format for min attribute
   const today = new Date().toISOString().split('T')[0];
 
   return (
@@ -158,50 +456,48 @@ export default function CarpoolForm() {
           ))}
         </div>
 
+        {submitStatus.success && (
+          <div className="mb-4 p-4 rounded-md bg-green-50 border border-green-200 text-green-700 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800">
+            <div className="flex items-center">
+              <Check className="h-5 w-5 mr-2" />
+              <span>Ride offer posted successfully!</span>
+            </div>
+          </div>
+        )}
+
+        {submitStatus.error && (
+          <div className="mb-4 p-4 rounded-md bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
+            <div className="flex items-start">
+              <span className="mr-2">⚠️</span>
+              <span>{submitStatus.error}</span>
+            </div>
+          </div>
+        )}
+
         <div>
           {/* Step 1: Route */}
           {step === 1 && (
             <div className="space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="pickup" className="text-sm font-medium">
-                  Pickup Location
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500">
-                    <MapPin className="h-5 w-5" />
-                  </div>
-                  <input
-                    id="pickup"
-                    type="text"
-                    value={formData.pickup}
-                    onChange={handleInputChange}
-                    className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    placeholder="e.g., FAST NUCES Main Campus"
-                  />
-                </div>
-              </div>
+              <LocationSelector
+                id="pickup"
+                label="Pickup Location"
+                placeholder="e.g., FAST NUCES Main Campus"
+                value={formData.pickup}
+                onChange={handleInputChange}
+                onLocationSelect={handleLocationSelect}
+              />
+
+              <LocationSelector
+                id="dropoff"
+                label="Drop-off Location"
+                placeholder="e.g., Gulshan-e-Iqbal"
+                value={formData.dropoff}
+                onChange={handleInputChange}
+                onLocationSelect={handleLocationSelect}
+              />
 
               <div className="space-y-2">
-                <label htmlFor="dropoff" className="text-sm font-medium">
-                  Drop-off Location
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500">
-                    <MapPin className="h-5 w-5" />
-                  </div>
-                  <input
-                    id="dropoff"
-                    type="text"
-                    value={formData.dropoff}
-                    onChange={handleInputChange}
-                    className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    placeholder="e.g., Gulshan-e-Iqbal"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="seats" className="text-sm font-medium">
+                <label htmlFor="numberOfSeats" className="text-sm font-medium">
                   Available Seats
                 </label>
                 <div className="relative">
@@ -209,8 +505,8 @@ export default function CarpoolForm() {
                     <Users className="h-5 w-5" />
                   </div>
                   <select
-                    id="seats"
-                    value={formData.seats}
+                    id="numberOfSeats"
+                    value={formData.numberOfSeats}
                     onChange={handleInputChange}
                     className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   >
@@ -252,7 +548,8 @@ export default function CarpoolForm() {
                   Departure Time
                 </label>
                 <div className="relative">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">                    <Clock className="h-5 w-5" />
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">                    
+                    <Clock className="h-5 w-5" />
                   </div>
                   <input
                     id="time"
@@ -298,15 +595,12 @@ export default function CarpoolForm() {
                   ))}
                 </div>
               </div>
-
-             
             </div>
           )}
 
-          {/* Navigation buttons */}
           <div className="flex justify-between mt-8">
             {step > 1 ? (
-              <CustomButton variant="outline" onClick={prevStep}>
+              <CustomButton variant="outline" onClick={prevStep} disabled={submitStatus.isSubmitting}>
                 Back
               </CustomButton>
             ) : (
@@ -316,23 +610,23 @@ export default function CarpoolForm() {
             {step === 1 ? (
               <CustomButton
                 onClick={nextStep}
-                disabled={!formData.pickup || !formData.dropoff}
+                disabled={!formData.pickup || !formData.dropoff || !formData.pickupLocation || !formData.dropoffLocation || submitStatus.isSubmitting}
               >
                 Continue to Schedule
               </CustomButton>
             ) : step === 2 ? (
               <CustomButton
                 onClick={nextStep}
-                disabled={!formData.date || !formData.time}
+                disabled={!formData.date || !formData.time || submitStatus.isSubmitting}
               >
                 Continue to Preferences
               </CustomButton>
             ) : (
-              <CustomButton onClick={handleSubmit}>Post Ride</CustomButton>
+              <CustomButton onClick={handleSubmit} isLoading={submitStatus.isSubmitting} disabled={submitStatus.isSubmitting}>
+                Post Ride
+              </CustomButton>
             )}
           </div>
-          
-         
         </div>
       </div>
     </div>

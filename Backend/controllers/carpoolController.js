@@ -1,29 +1,44 @@
-const Ride = require('../models/Ride');
-delete require.cache[require.resolve('../models/User')];
+const Ride = require("../models/Ride");
+const Stop = require("../models/Stops");
+delete require.cache[require.resolve("../models/User")];
+const User = require("../models/User")
 
 // Get all carpools
 exports.getAllCarpools = async (req, res) => {
   try {
     // Find all active rides and populate the user details
-    const carpools = await Ride.find({ status: 'active' })
-      .populate('userId', 'fullName department email gender rating rides_taken rides_offered')
+    const carpools = await Ride.find({ status: "active",numberOfSeats: { $gt: 0 } })
+      .populate(
+        "userId",
+        "fullName department email gender rating rides_taken rides_offered"
+      )
       .lean();
+      
 
     // Format the response to match the structure of the previous hardcoded data
-    const formattedCarpools = carpools.map(carpool => ({
+    const formattedCarpools = carpools.map((carpool) => ({
       id: carpool._id.toString(),
       driver: {
+        id: carpool.userId._id.toString(),
         name: carpool.userId.fullName,
         gender: carpool.userId.gender,
         rating: carpool.userId.rating,
         department: carpool.userId.department,
       },
       route: {
-        pickup: carpool.pickup.name,
-        dropoff: carpool.dropoff.name,
+         pickup: {
+          name: carpool.pickup.name,
+          latitude: carpool.pickup.latitude,
+          longitude: carpool.pickup.longitude,
+        },
+        dropoff: {
+          name: carpool.dropoff.name,
+          latitude: carpool.dropoff.latitude,
+          longitude: carpool.dropoff.longitude,
+        },
       },
       schedule: {
-        date: carpool.date.toISOString().split('T')[0], // Format as YYYY-MM-DD
+        date: carpool.date.toISOString().split("T")[0], // Format as YYYY-MM-DD
         time: carpool.time,
         recurring: [], // Your DB doesn't store recurring info, so we'll leave it empty
       },
@@ -33,12 +48,12 @@ exports.getAllCarpools = async (req, res) => {
       },
       preferences: carpool.preferences,
       // Store the original data in a _raw property for reference if needed
-      _raw: carpool
+      _raw: carpool,
     }));
 
     res.status(200).json(formattedCarpools);
   } catch (error) {
-    console.error('Error fetching carpools:', error);
+    console.error("Error fetching carpools:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -47,17 +62,21 @@ exports.getAllCarpools = async (req, res) => {
 exports.getCarpoolById = async (req, res) => {
   try {
     const carpool = await Ride.findById(req.params.id)
-      .populate('userId', 'fullName department email gender rating rides_taken rides_offered')
+      .populate(
+        "userId",
+        "fullName department email gender rating rides_taken rides_offered"
+      )
       .lean();
-    
+
     if (!carpool) {
-      return res.status(404).json({ message: 'Carpool not found' });
+      return res.status(404).json({ message: "Carpool not found" });
     }
 
     // Format the carpool data
     const formattedCarpool = {
       id: carpool._id.toString(),
       driver: {
+        id: carpool.userId._id.toString(),
         name: carpool.userId.fullName,
         gender: carpool.userId.gender,
         rating: carpool.userId.rating,
@@ -68,7 +87,7 @@ exports.getCarpoolById = async (req, res) => {
         dropoff: carpool.dropoff.name,
       },
       schedule: {
-        date: carpool.date.toISOString().split('T')[0],
+        date: carpool.date.toISOString().split("T")[0],
         time: carpool.time,
         recurring: [],
       },
@@ -77,12 +96,12 @@ exports.getCarpoolById = async (req, res) => {
         available: carpool.numberOfSeats - (carpool.seatsTaken || 0),
       },
       preferences: carpool.preferences,
-      _raw: carpool
+      _raw: carpool,
     };
 
     res.status(200).json(formattedCarpool);
   } catch (error) {
-    console.error('Error fetching carpool:', error);
+    console.error("Error fetching carpool:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -90,15 +109,8 @@ exports.getCarpoolById = async (req, res) => {
 // Create a new carpool
 exports.createCarpool = async (req, res) => {
   try {
-    const { 
-      userId, 
-      pickup, 
-      dropoff, 
-      numberOfSeats, 
-      date, 
-      time, 
-      preferences 
-    } = req.body;
+    const { userId, pickup, dropoff, numberOfSeats, date, time, preferences } =
+      req.body;
 
     // Create a new ride entry
     const newRide = new Ride({
@@ -110,18 +122,21 @@ exports.createCarpool = async (req, res) => {
       time,
       preferences,
       seatsTaken: 0,
-      status: 'active'
+      status: "active",
     });
 
     // Save the ride
     const savedRide = await newRide.save();
-    
+
     // Update the user's rides_offered count
     await User.findByIdAndUpdate(userId, { $inc: { rides_offered: 1 } });
 
     // Fetch the saved ride with user details
     const populatedRide = await Ride.findById(savedRide._id)
-      .populate('userId', 'fullName department email gender rating rides_taken rides_offered')
+      .populate(
+        "userId",
+        "fullName department email gender rating rides_taken rides_offered"
+      )
       .lean();
 
     // Format the response
@@ -138,21 +153,22 @@ exports.createCarpool = async (req, res) => {
         dropoff: populatedRide.dropoff.name,
       },
       schedule: {
-        date: populatedRide.date.toISOString().split('T')[0],
+        date: populatedRide.date.toISOString().split("T")[0],
         time: populatedRide.time,
         recurring: [],
       },
       seats: {
         total: populatedRide.numberOfSeats,
-        available: populatedRide.numberOfSeats - (populatedRide.seatsTaken || 0),
+        available:
+          populatedRide.numberOfSeats - (populatedRide.seatsTaken || 0),
       },
       preferences: populatedRide.preferences,
-      _raw: populatedRide
+      _raw: populatedRide,
     };
 
     res.status(201).json(formattedCarpool);
   } catch (error) {
-    console.error('Error creating carpool:', error);
+    console.error("Error creating carpool:", error);
     res.status(400).json({ message: error.message });
   }
 };
@@ -161,17 +177,21 @@ exports.createCarpool = async (req, res) => {
 exports.updateCarpool = async (req, res) => {
   try {
     const updates = req.body;
-    
+
     // Find and update the ride
     const updatedRide = await Ride.findByIdAndUpdate(
       req.params.id,
       { $set: updates },
       { new: true }
-    ).populate('userId', 'fullName department email gender rating rides_taken rides_offered')
-    .lean();
+    )
+      .populate(
+        "userId",
+        "fullName department email gender rating rides_taken rides_offered"
+      )
+      .lean();
 
     if (!updatedRide) {
-      return res.status(404).json({ message: 'Carpool not found' });
+      return res.status(404).json({ message: "Carpool not found" });
     }
 
     // Format the response
@@ -188,7 +208,7 @@ exports.updateCarpool = async (req, res) => {
         dropoff: updatedRide.dropoff.name,
       },
       schedule: {
-        date: updatedRide.date.toISOString().split('T')[0],
+        date: updatedRide.date.toISOString().split("T")[0],
         time: updatedRide.time,
         recurring: [],
       },
@@ -197,35 +217,33 @@ exports.updateCarpool = async (req, res) => {
         available: updatedRide.numberOfSeats - (updatedRide.seatsTaken || 0),
       },
       preferences: updatedRide.preferences,
-      _raw: updatedRide
+      _raw: updatedRide,
     };
 
     res.status(200).json(formattedCarpool);
   } catch (error) {
-    console.error('Error updating carpool:', error);
+    console.error("Error updating carpool:", error);
     res.status(400).json({ message: error.message });
   }
 };
 
-// Delete a carpool
 exports.deleteCarpool = async (req, res) => {
   try {
-    // Find the ride first to return it in the response
     const ride = await Ride.findById(req.params.id)
-      .populate('userId', 'fullName department email gender rating rides_taken rides_offered')
+      .populate(
+        "userId",
+        "fullName department email gender rating rides_taken rides_offered"
+      )
       .lean();
-    
+
     if (!ride) {
-      return res.status(404).json({ message: 'Carpool not found' });
+      return res.status(404).json({ message: "Carpool not found" });
     }
-
-    // Delete the ride
+   
     await Ride.findByIdAndDelete(req.params.id);
-
-    // Decrement the user's rides_offered count
-    await User.findByIdAndUpdate(ride.userId._id, { $inc: { rides_offered: -1 } });
-
-    // Format the response for the deleted ride
+    await User.findByIdAndUpdate(ride.userId._id, {
+      $inc: { rides_offered: -1 },
+    });
     const formattedCarpool = {
       id: ride._id.toString(),
       driver: {
@@ -239,7 +257,7 @@ exports.deleteCarpool = async (req, res) => {
         dropoff: ride.dropoff.name,
       },
       schedule: {
-        date: ride.date.toISOString().split('T')[0],
+        date: ride.date.toISOString().split("T")[0],
         time: ride.time,
         recurring: [],
       },
@@ -248,70 +266,64 @@ exports.deleteCarpool = async (req, res) => {
         available: ride.numberOfSeats - (ride.seatsTaken || 0),
       },
       preferences: ride.preferences,
-      _raw: ride
+      _raw: ride,
     };
 
     res.status(200).json(formattedCarpool);
   } catch (error) {
-    console.error('Error deleting carpool:', error);
     res.status(500).json({ message: error.message });
   }
 };
 
-// Search carpools with filters
 exports.searchCarpools = async (req, res) => {
   try {
     const { pickup, dropoff, date, time, minSeats, filters } = req.body;
 
-    // Build the query
-    const query = { status: 'active' };
+    const query = { status: "active" };
 
-    // Filter by pickup location
     if (pickup) {
-      query['pickup.name'] = new RegExp(pickup, 'i');
+      query["pickup.name"] = new RegExp(pickup, "i");
     }
 
-    // Filter by dropoff location
     if (dropoff) {
-      query['dropoff.name'] = new RegExp(dropoff, 'i');
+      query["dropoff.name"] = new RegExp(dropoff, "i");
     }
 
-    // Filter by date
     if (date) {
-      // Create a date range for the specified date (entire day)
       const startDate = new Date(date);
       startDate.setHours(0, 0, 0, 0);
-      
+
       const endDate = new Date(date);
       endDate.setHours(23, 59, 59, 999);
-      
+
       query.date = { $gte: startDate, $lte: endDate };
     }
 
-    // Find rides with the built query
     let rides = await Ride.find(query)
-      .populate('userId', 'fullName department email gender rating rides_taken rides_offered')
+      .populate(
+        "userId",
+        "fullName department email gender rating rides_taken rides_offered"
+      )
       .lean();
 
-    // Helper to convert "4:00 pm" to minutes since midnight
     function convert12HourToMinutes(time12h) {
-      const [time, modifier] = time12h.toLowerCase().split(' ');
-      let [hours, minutes] = time.split(':').map(Number);
-      if (modifier === 'pm' && hours !== 12) hours += 12;
-      if (modifier === 'am' && hours === 12) hours = 0;
+      const [time, modifier] = time12h.toLowerCase().split(" ");
+      let [hours, minutes] = time.split(":").map(Number);
+      if (modifier === "pm" && hours !== 12) hours += 12;
+      if (modifier === "am" && hours === 12) hours = 0;
       return hours * 60 + minutes;
     }
 
     // Helper to convert "HH:mm" (like 08:30) to minutes since midnight
     function convert24HourToMinutes(time24h) {
-      const [hours, minutes] = time24h.split(':').map(Number);
+      const [hours, minutes] = time24h.split(":").map(Number);
       return hours * 60 + minutes;
     }
 
     // Filter by time (±30 minutes range) in JavaScript (since MongoDB doesn't handle time strings well)
     if (time) {
       const targetMinutes = convert24HourToMinutes(time);
-      rides = rides.filter(ride => {
+      rides = rides.filter((ride) => {
         const rideMinutes = convert12HourToMinutes(ride.time);
         return Math.abs(rideMinutes - targetMinutes) <= 30;
       });
@@ -319,7 +331,7 @@ exports.searchCarpools = async (req, res) => {
 
     // Filter by minimum available seats
     if (minSeats) {
-      rides = rides.filter(ride => {
+      rides = rides.filter((ride) => {
         const availableSeats = ride.numberOfSeats - (ride.seatsTaken || 0);
         return availableSeats >= minSeats;
       });
@@ -327,20 +339,28 @@ exports.searchCarpools = async (req, res) => {
 
     // Apply additional filters
     if (filters && filters.length > 0) {
-      rides = rides.filter(ride => {
+      rides = rides.filter((ride) => {
         // Female drivers only filter
-        if (filters.includes('Female drivers only') && ride.userId.gender !== 'female') {
+        if (
+          filters.includes("Female drivers only") &&
+          ride.userId.gender !== "female"
+        ) {
           return false;
         }
 
         // Male drivers only filter
-        if (filters.includes('Male drivers only') && ride.userId.gender !== 'male') {
+        if (
+          filters.includes("Male drivers only") &&
+          ride.userId.gender !== "male"
+        ) {
           return false;
         }
 
         // No smoking filter
-        if (filters.includes('No smoking') && 
-            (!ride.preferences || !ride.preferences.includes('No smoking'))) {
+        if (
+          filters.includes("No smoking") &&
+          (!ride.preferences || !ride.preferences.includes("No smoking"))
+        ) {
           return false;
         }
 
@@ -349,7 +369,7 @@ exports.searchCarpools = async (req, res) => {
     }
 
     // Format the response
-    const formattedCarpools = rides.map(ride => ({
+    const formattedCarpools = rides.map((ride) => ({
       id: ride._id.toString(),
       driver: {
         name: ride.userId.fullName,
@@ -358,11 +378,19 @@ exports.searchCarpools = async (req, res) => {
         department: ride.userId.department,
       },
       route: {
-        pickup: ride.pickup.name,
-        dropoff: ride.dropoff.name,
+        pickup: {
+          name: ride.pickup.name,
+          latitude: ride.pickup.latitude,
+          longitude: ride.pickup.longitude,
+        },
+        dropoff: {
+          name: ride.pickup.name,
+          latitude: ride.pickup.latitude,
+          longitude: ride.pickup.longitude,
+        },
       },
       schedule: {
-        date: ride.date.toISOString().split('T')[0],
+        date: ride.date.toISOString().split("T")[0],
         time: ride.time,
         recurring: [],
       },
@@ -371,12 +399,42 @@ exports.searchCarpools = async (req, res) => {
         available: ride.numberOfSeats - (ride.seatsTaken || 0),
       },
       preferences: ride.preferences,
-      _raw: ride
+      _raw: ride,
     }));
 
     res.status(200).json(formattedCarpools);
   } catch (error) {
-    console.error('Error searching carpools:', error);
+    console.error("Error searching carpools:", error);
     res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getUpcomingRides = async (req, res) => {
+  const userId = req.params.id;
+  try {
+    const ridesAsDriver = await Ride.find({ userId,status:"active" }).lean();
+
+   const stopsAsPassenger = await Stop.find({ userId, status: "accept" }).lean();
+
+    const rideIdsFromStops = stopsAsPassenger.map(stop => stop.rideId.toString());
+
+    const ridesAsPassenger = await Ride.find({
+      _id: { $in: rideIdsFromStops, $nin: ridesAsDriver.map(r => r._id.toString()) }
+    }).lean();
+
+    const allRides = [...ridesAsDriver, ...ridesAsPassenger];
+
+    const ridesWithStops = await Promise.all(
+      allRides.map(async (ride) => {
+       const stops = await Stop.find({ rideId: ride._id, status: "accept" }).lean();
+
+        return { ...ride, stops };
+      })
+    );
+
+    return res.json(ridesWithStops);
+  } catch (error) {
+    console.error("Error getting user rides:", error);
+    return res.status(500).json({ error: "Server error while fetching rides" });
   }
 };

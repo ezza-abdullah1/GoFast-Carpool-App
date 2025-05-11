@@ -9,9 +9,21 @@ import {
   DialogClose
 } from "../ui/dialog";
 import { Star } from "lucide-react";
+import axiosInstance from "../Authentication/redux/axiosInstance";
 
-const RatingModal = ({ open, onOpenChange, onSubmit }) => {
+import { toast } from "react-hot-toast";
+const RatingModal = ({ open, onOpenChange,rideId }) => {
   const [rating, setRating] = useState(0);
+const handleClick = async () => {
+  try {
+    await axiosInstance.post(`/carpools/history/rateRide/${rideId}`, { rating });
+    onOpenChange(false); 
+    toast.success("Ride Rated!");
+  } catch (error) {
+    console.error("Error submitting rating:", error);
+    toast.error("Failed to rate the ride. Please try again.");
+  }
+};
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -40,10 +52,7 @@ const RatingModal = ({ open, onOpenChange, onSubmit }) => {
           </button>
           <button
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            onClick={() => {
-              onSubmit(rating);
-              onOpenChange(false);
-            }}
+            onClick={handleClick}
           >
             Submit
           </button>

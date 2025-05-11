@@ -1,25 +1,33 @@
+const pendingRequests = require("../controllers/pendingRequests");
 const express = require('express');
 const carpoolController = require('../controllers/carpoolController');
 const authMiddleware = require('../middleware/authMiddleware');
-
+const rideOfferController = require ('../controllers/offerRideController')
+const rideDetailsController = require ('../controllers/rideDetailsController')
 const router = express.Router();
 
-// Get all carpools
-router.get('/', authMiddleware,carpoolController.getAllCarpools);
-
-// Get a single carpool
-router.get('/:id', authMiddleware, carpoolController.getCarpoolById);
-
-// Create a new carpool
-router.post('/',  authMiddleware,carpoolController.createCarpool);
-
-// Update a carpool
-router.put('/:id', authMiddleware, carpoolController.updateCarpool);
-
-// Delete a carpool
-router.delete('/:id', authMiddleware, carpoolController.deleteCarpool);
-
-// Search carpools with filters
-router.post('/search', authMiddleware, carpoolController.searchCarpools);
+router.get("/", authMiddleware, carpoolController.getAllCarpools);
+router.get("/:id", authMiddleware, carpoolController.getCarpoolById);
+router.post("/", authMiddleware, carpoolController.createCarpool);
+router.put("/:id", authMiddleware, carpoolController.updateCarpool);
+router.delete("/:id", authMiddleware, carpoolController.deleteCarpool);
+router.post("/search", authMiddleware, carpoolController.searchCarpools);
+router.get(
+  "/upcomingRides/:id",
+  authMiddleware,
+  carpoolController.getUpcomingRides
+);
+router.get(
+  "/pendingRequests/:id",
+ 
+  pendingRequests.getPendingRequests
+);
+router.patch(
+  "/pendingRequests/:id",
+  authMiddleware,
+  pendingRequests.updateRideStatus
+);
+router.post('/rides', authMiddleware, rideOfferController.createRideOffer); 
+router.get('/rides/:rideId/details', authMiddleware, rideDetailsController.getRideDetails);
 
 module.exports = router;

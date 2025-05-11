@@ -1,42 +1,54 @@
 const mongoose = require("mongoose");
 
+
 const rideSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true
+    required: true,
   },
   pickup: {
     name: { type: String, required: true },
     latitude: { type: Number, required: true },
-    longitude: { type: Number, required: true }
+    longitude: { type: Number, required: true },
   },
   dropoff: {
     name: { type: String, required: true },
     latitude: { type: Number, required: true },
-    longitude: { type: Number, required: true }
+    longitude: { type: Number, required: true },
   },
-  seatsTaken: {  // Optional: to track how many seats have been booked
+  numberOfSeats: {
     type: Number,
-    default: 0
+    required: true,
   },
   date: {
     type: Date,
-    required: true
+    required: true,
   },
   time: {
     type: String,
-    required: true // store as string like '4:30 pm'
+    required: true, // store as string like '4:30 pm'
   },
   preferences: {
     type: [String],
-    default: []
+    default: [],
   },
   status: {
     type: String,
-    enum: ['active', 'complete'],
-    default: 'active'
-  }
+    enum: ["active", "inactive"],
+    default: "active",
+  },
+  Rating: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 5,
+  },
+  RatingCount: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
 });
 
-module.exports = mongoose.model("Ride", rideSchema); 
+module.exports = mongoose.models.Ride || mongoose.model("Ride", rideSchema);
