@@ -7,7 +7,7 @@ const User = require("../models/User")
 exports.getAllCarpools = async (req, res) => {
   try {
     // Find all active rides and populate the user details
-    const carpools = await Ride.find({ status: "active" })
+    const carpools = await Ride.find({ status: "active",numberOfSeats: { $gt: 0 } })
       .populate(
         "userId",
         "fullName department email gender rating rides_taken rides_offered"
@@ -26,8 +26,16 @@ exports.getAllCarpools = async (req, res) => {
         department: carpool.userId.department,
       },
       route: {
-        pickup: carpool.pickup.name,
-        dropoff: carpool.dropoff.name,
+         pickup: {
+          name: carpool.pickup.name,
+          latitude: carpool.pickup.latitude,
+          longitude: carpool.pickup.longitude,
+        },
+        dropoff: {
+          name: carpool.dropoff.name,
+          latitude: carpool.dropoff.latitude,
+          longitude: carpool.dropoff.longitude,
+        },
       },
       schedule: {
         date: carpool.date.toISOString().split("T")[0], // Format as YYYY-MM-DD
