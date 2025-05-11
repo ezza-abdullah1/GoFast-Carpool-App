@@ -12,21 +12,26 @@ const StopsSidebar = memo(({
     mapInstanceRef,
     routeLayerRef,
     activeTab,
-    rideId
+    rideId,
+    driverId
 }) => {
     const [showModal, setShowModal] = useState(false);
     const [stopToDeleteIndex, setStopToDeleteIndex] = useState(null);
     const { userDetails } = useSelector((state) => state.user);
     const dispatch = useDispatch();
 
-    const handleCancelStopCondition = () => {
-    for (const stop of stops) {
-        if (stop.userId === userDetails.id) {
+    const handleCancelStopCondition = (stop) => {
+
+        if (driverId === userDetails.id) {
+            return true;
+        }
+
+        if (stop.userId !== userDetails.id) {
             return false;
         }
-    }
-    return true;
-};
+
+        return true;
+    };
     const handleConfirmRemove = async () => {
         const index = stopToDeleteIndex;
         setShowModal(false);
@@ -99,7 +104,7 @@ const StopsSidebar = memo(({
 
                                         )}
                                     </div>
-                                    {activeTab === "upcoming" &&handleCancelStopCondition()&& (
+                                    {activeTab === "upcoming" && handleCancelStopCondition(stop) && (
                                         <button
                                             className="text-red-500 hover:text-red-700 flex-shrink-0"
                                             onClick={(e) => {

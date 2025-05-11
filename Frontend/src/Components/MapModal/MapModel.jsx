@@ -165,6 +165,7 @@ const MapModal = ({ open, rideId, onOpenChange, activeTab, route, stop, driverid
                             routeLayerRef={routeLayerRef}
                             activeTab={activeTab}
                             rideId={rideId}
+                            driverId={driverid}
                         />
                     )}
 
