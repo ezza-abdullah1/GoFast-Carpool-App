@@ -243,7 +243,13 @@ const CarpoolPost = ({
                   {buttonText}
                 </button>
               )}
-
+              {activeTab === "history" && (
+                <button
+ className="flex-grow sm:flex-grow-0 h-[44px] px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600 dark:bg-button-dark dark:hover:bg-button-hover dark:text-white"                  onClick={handleDetailsClick} // Add the action listener
+                >
+                  Ride Details
+                </button>
+              )}
               <button
                 className="flex-grow sm:flex-grow-0 h-[44px] px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600 dark:bg-button-dark dark:hover:bg-button-hover dark:text-white"
                 onClick={handleClick}
@@ -255,24 +261,13 @@ const CarpoolPost = ({
                   </>
                 ) : (
                   <>
-                    <Star className="h-4 w-4" />
-                    Rate Ride
+                  <Star className="h-4 w-4 mr-1" />
+                  <span className="pl-1">Rate Ride</span>
                   </>
                 )}
               </button>
 
-              {activeTab === "history" && (
-                <button
-                  style={{
-                    height: "32px",
-                    fontSize: "14px",
-                    padding: "0 12px",
-                  }}
-                  onClick={handleDetailsClick} // Add the action listener
-                >
-                  Details
-                </button>
-              )}
+              
 
               {(schedule.recurring || preferences.length > 0) && (
                 <button
