@@ -3,10 +3,8 @@ const Stop = require("../models/Stops");
 delete require.cache[require.resolve("../models/User")];
 const User = require("../models/User")
 
-// Get all carpools
 exports.getAllCarpools = async (req, res) => {
   try {
-    // Find all active rides and populate the user details
     const carpools = await Ride.find({ status: "active",numberOfSeats: { $gt: 0 } })
       .populate(
         "userId",
@@ -15,7 +13,6 @@ exports.getAllCarpools = async (req, res) => {
       .lean();
       
 
-    // Format the response to match the structure of the previous hardcoded data
     const formattedCarpools = carpools.map((carpool) => ({
       id: carpool._id.toString(),
       driver: {
@@ -38,16 +35,15 @@ exports.getAllCarpools = async (req, res) => {
         },
       },
       schedule: {
-        date: carpool.date.toISOString().split("T")[0], // Format as YYYY-MM-DD
+        date: carpool.date.toISOString().split("T")[0], 
         time: carpool.time,
-        recurring: [], // Your DB doesn't store recurring info, so we'll leave it empty
+        recurring: [], 
       },
       seats: {
         total: carpool.numberOfSeats,
         available: carpool.numberOfSeats - (carpool.seatsTaken || 0),
       },
       preferences: carpool.preferences,
-      // Store the original data in a _raw property for reference if needed
       _raw: carpool,
     }));
 
@@ -58,7 +54,6 @@ exports.getAllCarpools = async (req, res) => {
   }
 };
 
-// Get a single carpool
 exports.getCarpoolById = async (req, res) => {
   try {
     const carpool = await Ride.findById(req.params.id)
@@ -72,7 +67,6 @@ exports.getCarpoolById = async (req, res) => {
       return res.status(404).json({ message: "Carpool not found" });
     }
 
-    // Format the carpool data
     const formattedCarpool = {
       id: carpool._id.toString(),
       driver: {
@@ -106,13 +100,11 @@ exports.getCarpoolById = async (req, res) => {
   }
 };
 
-// Create a new carpool
 exports.createCarpool = async (req, res) => {
   try {
     const { userId, pickup, dropoff, numberOfSeats, date, time, preferences } =
       req.body;
 
-    // Create a new ride entry
     const newRide = new Ride({
       userId,
       pickup,
@@ -124,13 +116,10 @@ exports.createCarpool = async (req, res) => {
       status: "active",
     });
 
-    // Save the ride
     const savedRide = await newRide.save();
 
-    // Update the user's rides_offered count
     await User.findByIdAndUpdate(userId, { $inc: { rides_offered: 1 } });
 
-    // Fetch the saved ride with user details
     const populatedRide = await Ride.findById(savedRide._id)
       .populate(
         "userId",
@@ -138,7 +127,6 @@ exports.createCarpool = async (req, res) => {
       )
       .lean();
 
-    // Format the response
     const formattedCarpool = {
       id: populatedRide._id.toString(),
       driver: {
@@ -190,6 +178,9 @@ exports.updateCarpool = async (req, res) => {
         if (stop.userId) {
           await User.findByIdAndUpdate(stop.userId._id, { $inc: { rides_taken: 1 } });
         }
+      }
+      if (existingRide.userId) {
+        await User.findByIdAndUpdate(existingRide.userId._id, { $inc: { rides_offered: 1 } });
       }
     }
 
@@ -259,11 +250,8 @@ exports.deleteCarpool = async (req, res) => {
     if (!ride) {
       return res.status(404).json({ message: "Carpool not found" });
     }
-   
+
     await Ride.findByIdAndDelete(req.params.id);
-    await User.findByIdAndUpdate(ride.userId._id, {
-      $inc: { rides_offered: -1 },
-    });
     const formattedCarpool = {
       id: ride._id.toString(),
       driver: {

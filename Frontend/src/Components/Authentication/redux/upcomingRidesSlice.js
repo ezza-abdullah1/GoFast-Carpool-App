@@ -26,7 +26,6 @@ export const removeUpcomingRide = createAsyncThunk(
   async (rideId, { dispatch, rejectWithValue, getState }) => { 
     try {
       await axiosInstance.delete(`/carpools/${rideId}`);
-      dispatch(decrementRidesOffered()); 
       return rideId; 
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Error cancelling carpool');
