@@ -6,6 +6,7 @@ import { cn } from '../../lib/utils';
 import SignIn from '../Authentication/SignIn';
 import SignUp from '../Authentication/SignUp';
 
+
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -15,6 +16,7 @@ const Header = () => {
   const [user, setUser] = useState(null); // ⬅️ user state
   const location = useLocation();
   const navigate = useNavigate();
+  
 
   // Load user from localStorage
   useEffect(() => {
@@ -146,10 +148,22 @@ const Header = () => {
                 </>
               ) : (
                 <>
-                  <span className="text-sm font-semibold flex items-center gap-2">
-                    <User className="h-5 w-5" />
-                    {user.fullName}
-                  </span>
+                 <button
+  onClick={() => navigate('/profile')}
+  className="text-sm font-semibold flex items-center gap-2 hover:underline"
+>
+  {user.profilePicture ? (
+    <img
+      src={user.profilePicture}
+      alt="Profile"
+      className="h-6 w-6 rounded-full object-cover border"
+    />
+  ) : (
+    <User className="h-5 w-5" />
+  )}
+  {user.fullName}
+</button>
+
                   <Button variant="destructive" size="sm" onClick={logout}>
                     <LogOut className="mr-2 h-4 w-4" /> Logout
                   </Button>

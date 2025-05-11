@@ -60,6 +60,7 @@ app.use("/api/auth", verifyTempUserRouter);    // Handles POST /api/auth/verify
 app.use("/api/auth", forgotPasswordRoutes);
 app.use("/api/auth", verifyCodeRoutes);
 app.use("/api/auth", resetPasswordRoutes);
+app.use('/uploads', express.static('uploads'));
 
 // app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
