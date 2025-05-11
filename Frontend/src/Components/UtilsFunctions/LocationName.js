@@ -7,7 +7,16 @@ export const getLocationName = async (lat, lon) => {
         if (!response.ok) throw new Error("Failed to fetch location");
 
         const data = await response.json();
-        return data.display_name || "Unknown location";
+        const address = data.address;
+    
+        const shortName = [
+            address.road,
+            address.neighbourhood||address.suburb,           
+            address.district.split(" ")[0],
+          
+        ].filter(Boolean).join(", ");
+
+        return shortName||address|| "Unknown location";
     } catch (error) {
         console.error("Reverse geocoding failed:", error);
         return "Location not found";

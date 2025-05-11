@@ -121,7 +121,6 @@ exports.createCarpool = async (req, res) => {
       date,
       time,
       preferences,
-      seatsTaken: 0,
       status: "active",
     });
 

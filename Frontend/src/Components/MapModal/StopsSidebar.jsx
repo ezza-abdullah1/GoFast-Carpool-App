@@ -17,37 +17,37 @@ const StopsSidebar = memo(({
     const [showModal, setShowModal] = useState(false);
     const [stopToDeleteIndex, setStopToDeleteIndex] = useState(null);
 
-const dispatch = useDispatch();
+    const dispatch = useDispatch();
 
-const handleConfirmRemove = async () => {
-  const index = stopToDeleteIndex;
-  setShowModal(false);
+    const handleConfirmRemove = async () => {
+        const index = stopToDeleteIndex;
+        setShowModal(false);
 
-  try {
-    const stop = stops[index];
-    await axiosInstance.delete(`/stop/${stop.id}`);
-    toast.success("Stop removed successfully");
+        try {
+            const stop = stops[index];
+            await axiosInstance.delete(`/stop/${stop.id}`);
+            toast.success("Stop removed successfully");
 
-    const updatedStops = stops.filter((_, j) => j !== index);
-    setStops(updatedStops);
+            const updatedStops = stops.filter((_, j) => j !== index);
+            setStops(updatedStops);
 
-    // Update Redux ride data
-    dispatch(removeStopFromRide({ rideId, stopId: stop.id }));
+            // Update Redux ride data
+            dispatch(removeStopFromRide({ rideId, stopId: stop.id }));
 
 
-    if (stopMarkersRef.current?.[index] && mapInstanceRef.current?.removeLayer) {
-      mapInstanceRef.current.removeLayer(stopMarkersRef.current[index]);
-      stopMarkersRef.current.splice(index, 1);
-    }
+            if (stopMarkersRef.current?.[index] && mapInstanceRef.current?.removeLayer) {
+                mapInstanceRef.current.removeLayer(stopMarkersRef.current[index]);
+                stopMarkersRef.current.splice(index, 1);
+            }
 
-    if (routeLayerRef.current && mapInstanceRef.current?.removeLayer) {
-      mapInstanceRef.current.removeLayer(routeLayerRef.current);
-    }
-  } catch (error) {
-    console.error("Failed to remove stop:", error);
-    toast.error("Failed to remove stop. Please try again.");
-  }
-};
+            if (routeLayerRef.current && mapInstanceRef.current?.removeLayer) {
+                mapInstanceRef.current.removeLayer(routeLayerRef.current);
+            }
+        } catch (error) {
+            console.error("Failed to remove stop:", error);
+            toast.error("Failed to remove stop. Please try again.");
+        }
+    };
     const confirmRemoveStop = (index) => {
         setStopToDeleteIndex(index);
         setShowModal(true);
@@ -85,9 +85,10 @@ const handleConfirmRemove = async () => {
                                             </div>
                                         )}
                                         {stop.name && (
-                                            <div className="text-xs text-muted-foreground truncate max-w-[200px]">
+                                            <div className="text-xs text-muted-foreground break-words">
                                                 {stop.name}
                                             </div>
+
                                         )}
                                     </div>
                                     {activeTab === "upcoming" && (
