@@ -15,7 +15,9 @@ import { useLocation } from "react-router-dom";
 import RatingModal from "./RatingModal";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
-import axiosInstance from "../Authentication/redux/axiosInstance"; 
+import axiosInstance from "../Authentication/redux/axiosInstance";
+import RideDetailsModal from "./RideDetailsModal"; 
+
 const CarpoolPost = ({
   id,
   driver,
@@ -28,33 +30,29 @@ const CarpoolPost = ({
   activeTab,
   stops,
   onCarpoolCancelled,
-
-
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [mapModalOpen, setMapModalOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [buttonText, setButtonText] = useState("");
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
+  const [rideDetailsOpen, setRideDetailsOpen] = useState(false); 
   const { userDetails } = useSelector((state) => state.user || {});
-
   const [errorMessage, setErrorMessage] = useState('');
-
   const location = useLocation();
+
   const handleProfileClick = () => {
     if (userDetails.id === driver.driverId) {
-
       toast.error("This is your Profile");
     }
     else {
       setProfileModalOpen(true)
     }
   }
+
   const handleClick = () => {
     if (activeTab === "history") {
       console.log("Rating modal opened");
-
-
       if (userDetails.id === driver.driverId) {
         console.log("Rating modal opened");
         (toast.error("You cannot rate your own ride"))
@@ -74,15 +72,22 @@ const CarpoolPost = ({
   };
 
   const handleCancel = () => {
-  if (window.confirm("Are you sure you want to cancel this ride?")) {
-    console.log("Attempting to cancel carpool with ID (via Redux):", id);
-    if (onCarpoolCancelled) {
-      onCarpoolCancelled(id); // Only dispatch the Redux action
-    }
-  }
-};
+      if (window.confirm("Are you sure you want to cancel this ride?")) {
+        console.log("Attempting to cancel carpool with ID (via Redux):", id);
+        if (onCarpoolCancelled) {
+          onCarpoolCancelled(id);
+        }
+      }
+    
+    
+  };
+
   const toggleExpand = () => {
     if (variant === "default") setIsExpanded(!isExpanded);
+  };
+
+  const handleDetailsClick = () => {
+    setRideDetailsOpen(true);
   };
 
   return (
@@ -162,11 +167,11 @@ const CarpoolPost = ({
               <div className="flex-1">
                 <div className="font-medium">
                   From:{" "}
-                  <span className="text-muted-foreground">{route.pickup.name ? route.pickup.name : route.pickup}</span>
+                  <span className="text-muted-foreground">{route.pickup?.name || route.pickup || 'Unknown'}</span>
                 </div>
                 <div className="font-medium mt-1">
                   To:{" "}
-                  <span className="text-muted-foreground">{route.dropoff.name ? route.dropoff.name : route.dropoff}</span>
+                  <span className="text-muted-foreground">{route.dropoff?.name || route.dropoff || 'Unknown'}</span>
                 </div>
               </div>
             </div>
@@ -229,18 +234,19 @@ const CarpoolPost = ({
                   </span>
                 </button>
               )}
-              <button
-                onClick={handleRequestSeat}
-                className="flex-grow sm:flex-grow-0 h-[44px] px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600 dark:bg-button-dark dark:hover:bg-button-hover dark:text-white"
-              >
-                {buttonText !== "Request Seat" && <MapPin className="h-4 w-4" />}
-                {buttonText}
-              </button>
+              {activeTab !== "history" && (
+                <button
+                  onClick={handleRequestSeat}
+                  className="flex-grow sm:flex-grow-0 h-[44px] px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600 dark:bg-button-dark dark:hover:bg-button-hover dark:text-white"
+                >
+                  {buttonText !== "Request Seat" && <MapPin className="h-4 w-4" />}
+                  {buttonText}
+                </button>
+              )}
 
               <button
                 className="flex-grow sm:flex-grow-0 h-[44px] px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600 dark:bg-button-dark dark:hover:bg-button-hover dark:text-white"
                 onClick={handleClick}
-
               >
                 {activeTab !== "history" ? (
                   <>
@@ -254,6 +260,19 @@ const CarpoolPost = ({
                   </>
                 )}
               </button>
+
+              {activeTab === "history" && (
+                <button
+                  style={{
+                    height: "32px",
+                    fontSize: "14px",
+                    padding: "0 12px",
+                  }}
+                  onClick={handleDetailsClick} // Add the action listener
+                >
+                  Details
+                </button>
+              )}
 
               {(schedule.recurring || preferences.length > 0) && (
                 <button
@@ -277,21 +296,11 @@ const CarpoolPost = ({
               )}
 
               <MapModal open={mapModalOpen} rideId={id} route={route} stop={stops} onOpenChange={setMapModalOpen} activeTab={activeTab} />
-
-              <button
-                style={{
-                  height: "32px",
-                  fontSize: "14px",
-                  padding: "0 12px",
-                }}
-              >
-                Details
-              </button>
             </div>
           )}
 
           {/* Compact Variant */}
-          {variant === "compact" && activeTab !== "history" && (
+          {variant === "compact" && (
             <div className="mt-3 flex items-center justify-between">
               <div
                 className={cn(
@@ -302,8 +311,31 @@ const CarpoolPost = ({
                 )}
               >
                 <Users className="h-3 w-3" />
-                {seats.available} seat{seats.available !== 1 ? "s" : ""} available
+                {seats.available} seat{seats.available !== 1 ? "s" : ""}{" "}
+                available
               </div>
+              {activeTab === "history" ? (
+                <button
+                  style={{
+                    height: "32px",
+                    fontSize: "14px",
+                    padding: "0 12px",
+                  }}
+                  onClick={handleDetailsClick} // Add the action listener
+                >
+                  Details
+                </button>
+              ) : (
+                <button
+                  style={{
+                    height: "32px",
+                    fontSize: "14px",
+                    padding: "0 12px",
+                  }}
+                >
+                  Show Route
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -313,17 +345,19 @@ const CarpoolPost = ({
         open={ratingModalOpen}
         onOpenChange={setRatingModalOpen}
         rideId={id}
-
-
       />
       {profileModalOpen && (
         <ProfileCard
           profileId={driver.id}
           open={profileModalOpen}
           onOpenChange={setProfileModalOpen}
-
         />
       )}
+      <RideDetailsModal // Render the new modal
+        open={rideDetailsOpen}
+        onOpenChange={setRideDetailsOpen}
+        rideId={id}
+      />
     </div>
   );
 };
