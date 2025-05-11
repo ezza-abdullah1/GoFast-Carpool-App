@@ -1,4 +1,3 @@
-// RideDetailsModal.jsx
 import React, { useState, useEffect } from "react";
 import { X, MapPin } from "lucide-react";
 import { Loader2 } from "lucide-react";
@@ -70,7 +69,7 @@ const RideDetailsModal = ({ open, onOpenChange, rideId }) => {
   }
 
   if (!rideDetails) {
-    return null; // Or a message like "No details available" if needed
+    return null; 
   }
 
   return (

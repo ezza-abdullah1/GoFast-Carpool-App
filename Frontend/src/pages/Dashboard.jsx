@@ -21,12 +21,11 @@ const Dashboard = () => {
     loading: historyLoading,
     error: historyError,
   } = useSelector((state) => state.carpoolHistory);
-  useEffect(() => { console.log("RideHistory:", rideHistory) }, [])
   const { userDetails, loading, error } = useSelector((state) => state.user);
   const { rides: upcomingRides, loading: ridesLoading, error: ridesError } = useSelector((state) => state.upcomingRides);
   const handleCarpoolCancelled = useCallback((cancelledId) => {
     dispatch(removeUpcomingRide(cancelledId));
-}, [dispatch]);
+  }, [dispatch]);
 
 
   useEffect(() => {
@@ -44,13 +43,13 @@ const Dashboard = () => {
       dispatch(fetchUpcomingRides(userDetails.id));
     }
   }, [dispatch, userDetails, activeTab]);
-  
+ 
   const getRequesterName = (ride) => {
-  if (ride?.stops && ride.stops.length > 0 && ride.stops[0].userDetails) {
-    return ride.stops[0].userDetails.fullName;
-  }
-  return 'Requester Name Unavailable';
-};
+    if (ride?.stops && ride.stops.length > 0 && ride.stops[0].userDetails) {
+      return ride.stops[0].userDetails.fullName;
+    }
+    return 'Requester Name Unavailable';
+  };
 
 
   // if (loading || (ridesLoading && activeTab === 'upcoming')) {
@@ -194,11 +193,11 @@ const Dashboard = () => {
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                       {upcomingRides.map((ride) => (
                         <CarpoolPost
-                        key={ride.id}
-                        {...ride}
-                        activeTab={activeTab}
-                        onCarpoolCancelled={handleCarpoolCancelled} // Pass the function here
-                      />
+                          key={ride.id}
+                          {...ride}
+                          activeTab={activeTab}
+                          onCarpoolCancelled={handleCarpoolCancelled} // Pass the function here
+                        />
                       ))}
                     </div>
                   ) : (
@@ -249,7 +248,7 @@ const Dashboard = () => {
                   ) : pendingRequests.length > 0 ? (
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                       {pendingRequests.map((ride) => (
-                        <CarpoolPost key={ride.id} {...ride} offerRide={true} activeTab={activeTab}  requesterName={getRequesterName(ride)}/>
+                        <CarpoolPost key={ride.id} {...ride} offerRide={true} activeTab={activeTab} requesterName={getRequesterName(ride)} />
                       ))}
                     </div>
                   ) : (
