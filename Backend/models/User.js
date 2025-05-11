@@ -38,6 +38,14 @@ const userSchema = new mongoose.Schema({
      resetCode: String,  
 resetPasswordToken: String,
 resetPasswordExpires: Date,
+isOnline: {
+      type: Boolean,
+      default: false,
+    },
+    lastSeen: {
+      type: Date,
+      default: Date.now,
+    },
 
 
 });
