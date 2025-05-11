@@ -334,13 +334,11 @@ exports.searchCarpools = async (req, res) => {
       return hours * 60 + minutes;
     }
 
-    // Helper to convert "HH:mm" (like 08:30) to minutes since midnight
     function convert24HourToMinutes(time24h) {
       const [hours, minutes] = time24h.split(":").map(Number);
       return hours * 60 + minutes;
     }
 
-    // Filter by time (±30 minutes range) in JavaScript (since MongoDB doesn't handle time strings well)
     if (time) {
       const targetMinutes = convert24HourToMinutes(time);
       rides = rides.filter((ride) => {
@@ -349,7 +347,6 @@ exports.searchCarpools = async (req, res) => {
       });
     }
 
-    // Filter by minimum available seats
     if (minSeats) {
       rides = rides.filter((ride) => {
         const availableSeats = ride.numberOfSeats - (ride.seatsTaken || 0);
@@ -357,10 +354,8 @@ exports.searchCarpools = async (req, res) => {
       });
     }
 
-    // Apply additional filters
     if (filters && filters.length > 0) {
       rides = rides.filter((ride) => {
-        // Female drivers only filter
         if (
           filters.includes("Female drivers only") &&
           ride.userId.gender !== "female"
@@ -368,7 +363,6 @@ exports.searchCarpools = async (req, res) => {
           return false;
         }
 
-        // Male drivers only filter
         if (
           filters.includes("Male drivers only") &&
           ride.userId.gender !== "male"
@@ -376,7 +370,6 @@ exports.searchCarpools = async (req, res) => {
           return false;
         }
 
-        // No smoking filter
         if (
           filters.includes("No smoking") &&
           (!ride.preferences || !ride.preferences.includes("No smoking"))
@@ -388,7 +381,6 @@ exports.searchCarpools = async (req, res) => {
       });
     }
 
-    // Format the response
     const formattedCarpools = rides.map((ride) => ({
       id: ride._id.toString(),
       driver: {
@@ -432,22 +424,32 @@ exports.searchCarpools = async (req, res) => {
 exports.getUpcomingRides = async (req, res) => {
   const userId = req.params.id;
   try {
-    const ridesAsDriver = await Ride.find({ userId,status:"active" }).lean();
-
-   const stopsAsPassenger = await Stop.find({ userId, status: "accept" }).lean();
-
+    const ridesAsDriver = await Ride.find({ userId, status: "active" }).lean();
+    const stopsAsPassenger = await Stop.find({ userId, status: "accept" }).lean();
     const rideIdsFromStops = stopsAsPassenger.map(stop => stop.rideId.toString());
-
     const ridesAsPassenger = await Ride.find({
       _id: { $in: rideIdsFromStops, $nin: ridesAsDriver.map(r => r._id.toString()) }
     }).lean();
 
     const allRides = [...ridesAsDriver, ...ridesAsPassenger];
+    const currentDate = new Date();
+
+    const upcomingRides = [];
+    for (const ride of allRides) {
+      const rideDate = new Date(ride.date);
+      rideDate.setHours(0, 0, 0, 0);
+      currentDate.setHours(0, 0, 0, 0);
+
+      if (rideDate >= currentDate) {
+        upcomingRides.push(ride);
+      } else if (ride.status === "active") {
+        await Ride.findByIdAndUpdate(ride._id, { status: "inactive" });
+      }
+    }
 
     const ridesWithStops = await Promise.all(
-      allRides.map(async (ride) => {
-       const stops = await Stop.find({ rideId: ride._id, status: "accept" }).lean();
-
+      upcomingRides.map(async (ride) => {
+        const stops = await Stop.find({ rideId: ride._id, status: "accept" }).lean();
         return { ...ride, stops };
       })
     );
