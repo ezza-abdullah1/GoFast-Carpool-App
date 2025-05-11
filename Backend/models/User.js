@@ -35,8 +35,10 @@ const userSchema = new mongoose.Schema({
   rides_offered:
    { type: Number,
      default: 0 },
-     resetPasswordToken: String,
-     resetPasswordExpires: Date,
+     resetCode: String,  
+resetPasswordToken: String,
+resetPasswordExpires: Date,
+
 
 });
 
