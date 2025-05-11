@@ -11,7 +11,7 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState('signin'); // 'signin' or 'signup'
+  const [authMode, setAuthMode] = useState('signin');
   const location = useLocation();
   
 
@@ -25,7 +25,6 @@ const Header = () => {
   }, []);
 
   useEffect(() => {
-    // Check if user prefers dark mode
     if (localStorage.theme === 'dark' || 
         (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
       document.documentElement.classList.add('dark');
@@ -57,7 +56,6 @@ const Header = () => {
 
   const closeMobileMenu = () => setMobileMenuOpen(false);
   
-  // Auth modal functions
   const openSignIn = () => {
     setAuthMode('signin');
     setAuthModalOpen(true);

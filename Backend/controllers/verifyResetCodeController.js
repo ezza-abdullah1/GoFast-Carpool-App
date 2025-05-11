@@ -1,10 +1,9 @@
-// controllers/verifyResetCodeController.js
+
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 
-// POST /api/auth/verify-code
 router.post("/verify-code", async (req, res) => {
   const { email, code } = req.body;
 

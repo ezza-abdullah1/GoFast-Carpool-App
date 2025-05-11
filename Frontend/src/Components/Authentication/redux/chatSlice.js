@@ -2,7 +2,6 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from './axiosInstance';
 import { toast } from "react-hot-toast";
 
-// Async thunks
 export const fetchUsers = createAsyncThunk(
   "chat/fetchUsers",
   async (_, thunkAPI) => {
@@ -49,7 +48,6 @@ export const sendMessage = createAsyncThunk(
   }
 );
 
-// Slice
 const chatSlice = createSlice({
   name: "chat",
   initialState: {
@@ -73,7 +71,6 @@ const chatSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // fetchUsers
       .addCase(fetchUsers.pending, (state) => {
         state.isUsersLoading = true;
         state.error = null;
@@ -86,7 +83,6 @@ const chatSlice = createSlice({
         state.isUsersLoading = false;
         state.error = action.payload;
       })
-      // fetchMessages
       .addCase(fetchMessages.pending, (state) => {
         state.isMessagesLoading = true;
         state.error = null;
@@ -99,7 +95,6 @@ const chatSlice = createSlice({
         state.isMessagesLoading = false;
         state.error = action.payload;
       })
-      // sendMessage
       .addCase(sendMessage.fulfilled, (state, action) => {
         state.messages.push(action.payload);
       })

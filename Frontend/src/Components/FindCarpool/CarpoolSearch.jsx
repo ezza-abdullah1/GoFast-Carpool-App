@@ -14,7 +14,6 @@ import { cn } from "../../lib/utils";
 const CarpoolSearch = ({ onSearch, className }) => {
   const [isFilterExpanded, setIsFilterExpanded] = useState(false);
 
-  // Search state
   const [pickup, setPickup] = useState("");
   const [dropoff, setDropoff] = useState("");
   const [date, setDate] = useState("");

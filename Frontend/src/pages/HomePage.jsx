@@ -5,7 +5,6 @@ import HowItWorks from '../Components/Home/HowItWorks';
 import Button from '../Components/ui/Button';
 import { ArrowRight } from 'lucide-react';
 
-// Testimonials component for additional content
 const Testimonials = () => {
   const testimonials = [
     {
@@ -64,7 +63,6 @@ const Testimonials = () => {
   );
 };
 
-// CTA component for call to action section
 const CTA = () => {
   return (
     <section className="py-20 bg-primary-50 dark:bg-primary-900/10">

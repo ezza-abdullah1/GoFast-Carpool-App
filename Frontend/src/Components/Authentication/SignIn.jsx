@@ -40,7 +40,7 @@ const SignIn = ({ onSwitchToSignUp, onClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const response = await dispatch(signIn(formData));
-    console.log(response)  // Dispatch the signIn action
+   
     if (response.meta.requestStatus === "fulfilled") {
       toast.success(`Welcome, ${response.payload.fullName}`);
       if (formData.rememberMe) {

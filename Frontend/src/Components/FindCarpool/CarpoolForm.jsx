@@ -315,11 +315,7 @@ export default function CarpoolForm({ userId }) {
   const { userDetails } = useSelector((state) => state.user); 
 
 
-  useEffect(() => {
-    console.log("Current step:", step);
-    console.log("Form data:", formData);
-    console.log('CarpoolForm - userId prop received:', userId);
-  }, [step, formData]);
+
 
   const preferenceOptions = [
     'Female riders only',
@@ -427,14 +423,12 @@ export default function CarpoolForm({ userId }) {
       };
 
       const result = await createRideOffer(rideData);
-      if (userDetails?.id && result?.data) { // Assuming your createRideOffer returns the new ride data in result.data
+      if (userDetails?.id && result?.data) { 
         dispatch(addUpcomingRide(result.data));
       } else if (userDetails?.id) {
-        // Fallback: If no ride data is returned, refetch
         dispatch(fetchUpcomingRides(userDetails.id));
       }
 
-      console.log('Ride created successfully:', result);
 
       setSubmitStatus({
         isSubmitting: false,
@@ -482,7 +476,7 @@ export default function CarpoolForm({ userId }) {
       }
     }
 
-    console.log(`Moving from step ${step} to ${step + 1}`);
+  
     setStep(prev => prev + 1);
   };
 

@@ -5,13 +5,13 @@ import Button from '../ui/compatibility-button';
 const Hero = () => {
   return (
     <section className="relative pt-28 pb-20 md:pt-36 md:pb-28 overflow-hidden">
-      {/* Background gradient */}
+
       <div className="absolute top-0 inset-x-0 h-96 bg-gradient-to-b from-primary-50 to-transparent dark:from-primary-900/10 dark:to-transparent"></div>
       
-      {/* Content container */}
+   
       <div className="container mx-auto px-4 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left column - Text content */}
+     
           <div className="max-w-xl space-y-6 animate-slide-up">
             <div className="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300">
               Exclusive for FAST NUCES students

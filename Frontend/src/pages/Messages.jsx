@@ -6,10 +6,8 @@ import ContactsSidebar from "../Components/Messaging/ContactsSidebar";
 import ChatArea from "../Components/Messaging/ChatArea";
 import EmptyChatState from "../Components/Messaging/EmptyChatState";
 
-// Add API base URL - make sure this matches your backend
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-// Configure axios defaults
 axios.defaults.baseURL = API_URL;
 
 export default function Messages() {
@@ -20,9 +18,8 @@ export default function Messages() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [joinedRoom, setJoinedRoom] = useState(false);
-  const [pendingMessages, setPendingMessages] = useState({}); // Track pending messages
+  const [pendingMessages, setPendingMessages] = useState({}); 
 
-  // Load contacts once
   useEffect(() => {
     setLoading(true);
     console.log('Fetching contacts from:', `${API_URL}/api/contacts`);
@@ -30,7 +27,6 @@ export default function Messages() {
     axios.get('/api/messages/contacts')
       .then(res => {
         console.log('Contacts response:', res.data);
-        // Handle both array format and object format with contacts property
         const contactsArray = Array.isArray(res.data) ? res.data : (res.data.contacts || []);
         setContacts(contactsArray);
         if (contactsArray.length > 0) {
@@ -45,14 +41,12 @@ export default function Messages() {
       });
   }, []);
 
-  // Join room effect - separate from message loading
   useEffect(() => {
     if (!activeId || !isConnected) return;
     
     console.log('Joining room for conversation:', activeId);
     socket.emit('join', activeId);
     
-    // Listen for join confirmation
     const handleJoined = (data) => {
       console.log('Joined room:', data);
       setJoinedRoom(true);
@@ -66,7 +60,6 @@ export default function Messages() {
     };
   }, [activeId, isConnected, socket]);
 
-  // Load messages when active contact changes
   useEffect(() => {
     if (!activeId) return;
     
@@ -84,19 +77,16 @@ export default function Messages() {
       });
   }, [activeId]);
   
-  // Listen for new messages - separate effect for socket events
   useEffect(() => {
     if (!isConnected || !activeId) return;
     
     const handleNewMessage = (msg) => {
       console.log('New message received:', msg);
       
-      // Check if the message is one we already added optimistically
       const pendingKey = `${msg.id}`;
       
       if (msg.conversationId === activeId) {
         if (pendingMessages[pendingKey]) {
-          // This is a message we already added - remove from pending
           console.log('Confirmed message delivery:', pendingKey);
           setPendingMessages(prev => {
             const updated = {...prev};
@@ -104,7 +94,6 @@ export default function Messages() {
             return updated;
           });
         } else {
-          // This is truly a new message from someone else
           setMessages(prev => [...prev, msg]);
         }
       }
@@ -123,20 +112,17 @@ export default function Messages() {
     
     console.log('Sending message to conversation:', activeId);
     
-    // Create a temporary ID for optimistic update
     const tempId = `temp-${Date.now()}`;
     
-    // Create the message object for optimistic UI update
     const newMessage = {
       id: tempId,
       conversationId: activeId,
       senderId: 'me',
       text: messageText.trim(),
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      pending: true // Mark as pending until confirmed
+      pending: true 
     };
     
-    // Add to UI immediately (optimistic update)
     setMessages(prev => [...prev, newMessage]);
     
     axios.post('/api/messages', {
@@ -147,13 +133,11 @@ export default function Messages() {
     .then(response => {
       console.log('Message sent successfully:', response.data);
       
-      // Add the real message ID to our pending messages map
       setPendingMessages(prev => ({
         ...prev,
         [response.data.id]: tempId
       }));
       
-      // Update the temporary message with the real message ID and remove pending state
       setMessages(prev => prev.map(msg => 
         msg.id === tempId 
           ? {...response.data, pending: false} 
@@ -164,7 +148,6 @@ export default function Messages() {
       console.error('Error sending message:', err);
       setError('Failed to send message: ' + (err.message || 'Unknown error'));
       
-      // Mark the message as failed
       setMessages(prev => prev.map(msg => 
         msg.id === tempId 
           ? {...msg, failed: true, pending: false} 

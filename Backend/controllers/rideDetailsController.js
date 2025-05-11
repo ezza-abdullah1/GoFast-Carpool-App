@@ -1,4 +1,4 @@
-// controllers/rideDetailsController.js
+
 const Ride = require('../models/Ride');
 const Stop = require('../models/Stops');
 const User = require('../models/User');
@@ -8,7 +8,7 @@ exports.getRideDetails = async (req, res) => {
 
   try {
     const ride = await Ride.findById(rideId)
-      .populate('userId', 'fullName') // Populate the driver's name
+      .populate('userId', 'fullName')
       .select('pickup dropoff date time userId');
 
     if (!ride) {
@@ -16,7 +16,7 @@ exports.getRideDetails = async (req, res) => {
     }
 
     const stops = await Stop.find({ rideId: rideId, status: 'accept' })
-      .populate('userId', 'fullName') // Populate the requester's name
+      .populate('userId', 'fullName') 
       .select('location userId');
 
     const formattedStops = stops.map(stop => ({

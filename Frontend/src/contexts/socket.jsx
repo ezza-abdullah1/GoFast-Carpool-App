@@ -1,13 +1,9 @@
-// 3. Update frontend/src/contexts/socket.js
-// Replace your existing socket.js with this improved version
 
 import { io } from 'socket.io-client';
 import { createContext, useContext, useEffect, useState } from 'react';
 
-// Use environment variable with fallback
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-// Create socket connection with options
 const socket = io(API_URL, {
   reconnectionAttempts: 5,
   reconnectionDelay: 1000,
@@ -16,20 +12,19 @@ const socket = io(API_URL, {
   forceNew: true
 });
 
-// Create a context for socket state
 const SocketContext = createContext({
   socket: null,
   isConnected: false,
   connectError: null
 });
 
-// Provider component
+
 export const SocketProvider = ({ children }) => {
   const [isConnected, setIsConnected] = useState(socket.connected);
   const [connectError, setConnectError] = useState(null);
 
   useEffect(() => {
-    // Connection event handlers
+   
     const onConnect = () => {
       console.log('Socket connected with ID:', socket.id);
       setIsConnected(true);
@@ -46,18 +41,14 @@ export const SocketProvider = ({ children }) => {
       setConnectError(error.message);
     };
 
-    // Register event listeners
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
     socket.on('connect_error', onConnectError);
     socket.on('error', onConnectError);
 
-    // If not connected already, try to connect
     if (!socket.connected) {
       socket.connect();
     }
-
-    // Cleanup on unmount
     return () => {
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
@@ -66,7 +57,6 @@ export const SocketProvider = ({ children }) => {
     };
   }, []);
 
-  // Force reconnect function
   const reconnect = () => {
     if (!isConnected) {
       console.log('Attempting to reconnect socket...');
@@ -81,8 +71,7 @@ export const SocketProvider = ({ children }) => {
   );
 };
 
-// Custom hook to use the socket context
+
 export const useSocket = () => useContext(SocketContext);
 
-// Also export the socket directly for components that just need the instance
 export default socket;

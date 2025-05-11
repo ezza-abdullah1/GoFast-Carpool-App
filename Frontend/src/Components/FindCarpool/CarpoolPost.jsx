@@ -82,7 +82,6 @@ const CarpoolPost = ({
 
   const handleCancel = () => {
     setShowCancelConfirmModal(false); 
-    console.log("Attempting to cancel carpool with ID (via Redux):", id);
     if (onCarpoolCancelled) {
       onCarpoolCancelled(id);
       toast.success("Ride cancelled successfully");
@@ -326,7 +325,7 @@ const CarpoolPost = ({
                     fontSize: "14px",
                     padding: "0 12px",
                   }}
-                  onClick={handleDetailsClick} // Add the action listener
+                  onClick={handleDetailsClick} 
                 >
                   Details
                 </button>
@@ -348,7 +347,7 @@ const CarpoolPost = ({
             <div className={cn(
               "mt-3 text-sm flex",
               variant === "compact" && "mt-2",
-              "justify-center" // Moved justify-center to the outer div
+              "justify-center" 
             )}>
               <span className="text-red-600 font-bold">Requested by:</span>
               <span className="font-medium text-red-600 font-bold ml-1">{requesterName}</span>

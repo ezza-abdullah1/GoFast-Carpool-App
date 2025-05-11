@@ -52,13 +52,7 @@ const Dashboard = () => {
   };
 
 
-  // if (loading || (ridesLoading && activeTab === 'upcoming')) {
-  //   return (
-  //     <div className="flex justify-center items-center h-screen">
-  //       <RingLoader color="#3498db" size={60} />
-  //     </div>
-  //   );
-  // }
+  
 
   if (error || (ridesError && activeTab === 'upcoming')) {
     return (
@@ -185,7 +179,7 @@ const Dashboard = () => {
               {activeTab === 'upcoming' && (
                 <div>
                   <h2 className="text-xl font-semibold mb-6">Your Upcoming Rides</h2>
-                  {ridesLoading ? ( // 🌀 Loader Added
+                  {ridesLoading ? ( 
                     <div className="flex justify-center items-center h-40">
                       <RingLoader color="#3498db" size={40} />
                     </div>
@@ -196,7 +190,7 @@ const Dashboard = () => {
                           key={ride.id}
                           {...ride}
                           activeTab={activeTab}
-                          onCarpoolCancelled={handleCarpoolCancelled} // Pass the function here
+                          onCarpoolCancelled={handleCarpoolCancelled} 
                         />
                       ))}
                     </div>
@@ -215,7 +209,7 @@ const Dashboard = () => {
               {activeTab === 'history' && (
                 <div>
                   <h2 className="text-xl font-semibold mb-6">Your Ride History</h2>
-                  {historyLoading ? ( // 🌀 Loader Added
+                  {historyLoading ? ( 
                     <div className="flex justify-center items-center h-40">
                       <RingLoader color="#3498db" size={40} />
                     </div>
@@ -241,7 +235,7 @@ const Dashboard = () => {
               {activeTab === 'offers' && (
                 <div>
                   <h2 className="text-xl font-semibold mb-6">Pending Requests</h2>
-                  {pendingLoading ? ( // 🌀 Loader Added
+                  {pendingLoading ? (
                     <div className="flex justify-center items-center h-40">
                       <RingLoader color="#3498db" size={40} />
                     </div>
