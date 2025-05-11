@@ -38,7 +38,7 @@ const userSchema = new mongoose.Schema({
      resetCode: String,  
 resetPasswordToken: String,
 resetPasswordExpires: Date,
-isOnline: {
+ isOnline: {
       type: Boolean,
       default: false,
     },
@@ -46,7 +46,7 @@ isOnline: {
       type: Date,
       default: Date.now,
     },
-
+profilePic: String, 
 
 });
 
