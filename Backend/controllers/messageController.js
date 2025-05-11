@@ -8,7 +8,21 @@ const mongoose = require('mongoose');
  */
 exports.getMessages = async (req, res) => {
   try {
-    const { conversationId } = req.params;
+    let { conversationId } = req.params;
+
+    // Handle conversation IDs with "sample-" prefix
+    if (conversationId.startsWith('sample-')) {
+      // Two options: either extract the ID part or find by custom field
+      // Option 1: Extract the ID part (if the part after "sample-" is a valid ObjectId)
+      const actualId = conversationId.replace('sample-', '');
+      if (mongoose.Types.ObjectId.isValid(actualId)) {
+        conversationId = actualId;
+      } else {
+        // Option 2: If your frontend consistently uses these prefixed IDs,
+        // you might need to find an alternative way to query the conversation
+        return res.status(400).json({ error: 'Invalid conversation ID format' });
+      }
+    }
 
     // Get current user ID from token
     const token = req.headers.authorization?.split(' ')[1];
@@ -70,7 +84,16 @@ exports.getMessages = async (req, res) => {
  */
 exports.postMessage = async (req, res) => {
   try {
-    const { conversationId, text } = req.body;
+    let { conversationId, text } = req.body;
+
+    // Handle conversation IDs with "sample-" prefix
+    if (conversationId.startsWith('sample-')) {
+      conversationId = conversationId.replace('sample-', '');
+      
+      if (!mongoose.Types.ObjectId.isValid(conversationId)) {
+        return res.status(400).json({ error: 'Invalid conversation ID format' });
+      }
+    }
 
     // Get current user ID from token
     const token = req.headers.authorization?.split(' ')[1];
@@ -135,6 +158,9 @@ exports.postMessage = async (req, res) => {
         senderId: currentUserId.toString()
       };
       
+      // Emit to both the original ID format and the clean format to ensure delivery
+      const roomId = `sample-${conversationId}`; // If this is how your socket rooms are named
+      req.io.to(roomId).emit('newMessage', socketMessage);
       req.io.to(conversationId).emit('newMessage', socketMessage);
     }
 
@@ -182,7 +208,11 @@ exports.getOrCreateConversation = async (req, res) => {
       await conversation.save();
     }
 
-    res.json({ conversationId: conversation._id });
+    // Return both the regular ID and the socket room format ID
+    res.json({ 
+      conversationId: conversation._id,
+      socketRoomId: `sample-${conversation._id}` // Include this if needed by your frontend
+    });
   } catch (error) {
     console.error('Error creating/getting conversation:', error);
     res.status(500).json({ error: 'Failed to create/get conversation' });
