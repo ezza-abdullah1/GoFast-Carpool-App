@@ -35,10 +35,10 @@ const LocationSelector = ({ id, label, placeholder, value, onChange, onLocationS
   const [errorMsg, setErrorMsg] = useState("");
   const [confirmEnabled, setConfirmEnabled] = useState(false);
   const [selectedLatLng, setSelectedLatLng] = useState(null);
-  const L = window.L; // Initialize Leaflet here
+  const L = window.L; 
 
   useEffect(() => {
-    if (!showMap || !mapRef.current || !L) return; // Ensure Leaflet is available
+    if (!showMap || !mapRef.current || !L) return; 
 
     if (mapInstanceRef.current) {
       try {
@@ -213,7 +213,7 @@ const LocationSelector = ({ id, label, placeholder, value, onChange, onLocationS
       } catch (err) { }
     }, 400);
 
-  }, [showMap, L]); // Added L to the dependency array
+  }, [showMap, L]); 
 
   const confirmLocation = () => {
     if (selectedLatLng) {
