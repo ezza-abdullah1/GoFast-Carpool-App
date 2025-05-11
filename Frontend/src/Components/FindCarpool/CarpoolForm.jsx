@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, Clock, MapPin, Users, Check, Loader2 } from 'lucide-react';
 import axiosInstance from "../Authentication/redux/axiosInstance";
+import { fetchUpcomingRides } from '../Authentication/redux/upcomingRidesSlice'; 
+import { useDispatch, useSelector } from 'react-redux';
+import { getLocationName } from '../UtilsFunctions/LocationName';
 const CustomButton = ({ children, type = "button", variant = "default", onClick, disabled = false, isLoading = false }) => {
   return (
     <button
@@ -22,71 +25,62 @@ const cn = (...classes) => {
   return classes.filter(Boolean).join(' ');
 };
 
+
 const LocationSelector = ({ id, label, placeholder, value, onChange, onLocationSelect }) => {
   const [showMap, setShowMap] = useState(false);
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markerRef = useRef(null);
-  const stopMarkersRef = useRef([]);
-  const routeLayerRef = useRef(null);
   const [error, setError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [confirmEnabled, setConfirmEnabled] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [selectedLatLng, setSelectedLatLng] = useState(null);
+  const L = window.L; // Initialize Leaflet here
 
   useEffect(() => {
-    if (!showMap || !mapRef.current) return;
+    if (!showMap || !mapRef.current || !L) return; // Ensure Leaflet is available
+
+    if (mapInstanceRef.current) {
+      try {
+        mapInstanceRef.current.remove();
+      } catch (err) { }
+      mapInstanceRef.current = null;
+    }
+
+    if (mapRef.current.childNodes.length > 0) {
+      while (mapRef.current.firstChild) {
+        mapRef.current.removeChild(mapRef.current.firstChild);
+      }
+    }
+
+    const map = L.map(mapRef.current).setView([31.52, 74.3], 10);
+    mapInstanceRef.current = map;
 
     try {
-      const L = window.L;
-      if (!L) {
-        setError(true);
-        setErrorMsg("Leaflet library not loaded");
-        return;
-      }
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 18,
+      }).addTo(map);
+    } catch (err) {
+      setError(true);
+      setErrorMsg("Failed to load map tiles");
+      return;
+    }
 
-      if (mapInstanceRef.current) {
-        try {
-          mapInstanceRef.current.remove();
-        } catch (err) { }
-        mapInstanceRef.current = null;
-      }
-
-      if (mapRef.current.childNodes.length > 0) {
-        while (mapRef.current.firstChild) {
-          mapRef.current.removeChild(mapRef.current.firstChild);
-        }
-      }
-
-      const map = L.map(mapRef.current).setView([31.52, 74.3], 10);
-      mapInstanceRef.current = map;
-
+    if (L.Control.geocoder) {
       try {
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          maxZoom: 18,
-        }).addTo(map);
-      } catch (err) {
-        setError(true);
-        setErrorMsg("Failed to load map tiles");
-        return;
-      }
+        const geocoder = L.Control.geocoder({
+          collapsed: false,
+          placeholder: "Search for a location",
+          geocoder: L.Control.Geocoder.nominatim(),
+          defaultMarkGeocode: false,
+        });
 
-      if (L.Control.geocoder) {
-        try {
-          const geocoder = L.Control.geocoder({
-            collapsed: false,
-            placeholder: "Search for a location",
-            geocoder: L.Control.Geocoder.nominatim(),
-            defaultMarkGeocode: false,
-          });
-
-          geocoder.on('markgeocode', (e) => {
-            const { center, name } = e.geocode;
-
+        geocoder.on('markgeocode', (e) => {
+          const { center, name } = e.geocode;
+          if (name) {
             const parts = name.split(',').map(p => p.trim());
             const shortName = name.split(',').slice(0, 2).join(', ').trim();
-            const district = parts.find(p => p.toLowerCase().includes('district')).split(' ')[0];
+            const district = parts.find(p => p.toLowerCase().includes('district'))?.split(' ')[0];
             const displayName = shortName + (district ? ", " + district : "");
             if (markerRef.current) {
               try {
@@ -95,58 +89,131 @@ const LocationSelector = ({ id, label, placeholder, value, onChange, onLocationS
                 }
               } catch (err) { }
             }
-
             try {
               markerRef.current = L.marker([center.lat, center.lng]);
-              markerRef.current.addTo(map).bindPopup(`🟣 ${displayName}`).openPopup();
-
+              markerRef.current.addTo(map).bindPopup(`📍 ${displayName}`).openPopup();
               setSelectedLatLng({ lat: center.lat, lng: center.lng, name: displayName });
               setConfirmEnabled(true);
-
               map.setView([center.lat, center.lng], 14);
             } catch (err) {
               setError(true);
               setErrorMsg("Failed to add marker");
             }
-          });
+          } else if (center) {
+            getLocationName(center.lat, center.lng)
+              .then(displayName => {
+                setSelectedLatLng({ lat: center.lat, lng: center.lng, name: displayName });
+                setConfirmEnabled(true);
+                if (markerRef.current) {
+                  try {
+                    if (map.hasLayer(markerRef.current)) {
+                      map.removeLayer(markerRef.current);
+                    }
+                  } catch (err) { }
+                }
+                try {
+                  markerRef.current = L.marker([center.lat, center.lng]).addTo(map).bindPopup(`📍 ${displayName}`).openPopup();
+                  map.setView([center.lat, center.lng], 14);
+                } catch (err) {
+                  setError(true);
+                  setErrorMsg("Failed to add marker");
+                }
+              })
+              .catch(error => {
+                console.error("Error getting location name:", error);
+                setSelectedLatLng({ lat: center.lat, lng: center.lng, name: `Coordinates (${center.lat.toFixed(5)}, ${center.lng.toFixed(5)})` });
+                setConfirmEnabled(true);
+                if (markerRef.current) {
+                  try {
+                    if (map.hasLayer(markerRef.current)) {
+                      map.removeLayer(markerRef.current);
+                    }
+                  } catch (err) { }
+                }
+                try {
+                  markerRef.current = L.marker([center.lat, center.lng]).addTo(map).bindPopup(`📍 Coordinates (${center.lat.toFixed(5)}, ${center.lng.toFixed(5)})`).openPopup();
+                  map.setView([center.lat, center.lng], 14);
+                } catch (err) {
+                  setError(true);
+                  setErrorMsg("Failed to add marker");
+                }
+              });
+          }
+        });
 
-          geocoder.addTo(map);
+        geocoder.addTo(map);
 
-          setTimeout(() => {
-            try {
-              const input = document.querySelector(".leaflet-control-geocoder-form input");
-              if (input) {
-                input.className = "px-3 py-2 rounded border border-input shadow-sm w-64 text-sm";
-              }
-            } catch (err) { }
-          }, 300);
-        } catch (err) {
-          setError(true);
-          setErrorMsg("Geocoder failed to initialize");
-        }
+        setTimeout(() => {
+          try {
+            const input = document.querySelector(".leaflet-control-geocoder-form input");
+            if (input) {
+              input.className = "px-3 py-2 rounded border border-input shadow-sm w-64 text-sm";
+            }
+          } catch (err) { }
+        }, 300);
+      } catch (err) {
+        setError(true);
+        setErrorMsg("Geocoder failed to initialize");
       }
-
-      setTimeout(() => {
-        try {
-          map.invalidateSize();
-        } catch (err) { }
-      }, 400);
-
-    } catch (err) {
-      mapInstanceRef.current = null;
-      setError(true);
-      setErrorMsg("Failed to initialize map");
     }
 
-    return () => {
-      if (mapInstanceRef.current) {
-        try {
-          mapInstanceRef.current.remove();
-        } catch (err) { }
-        mapInstanceRef.current = null;
-      }
+    const handleMapClick = async (e) => {
+      const { lat, lng } = e.latlng;
+
+      getLocationName(lat, lng)
+        .then(displayName => {
+          setSelectedLatLng({ lat, lng, name: displayName });
+          setConfirmEnabled(true);
+
+          if (markerRef.current) {
+            try {
+              if (map.hasLayer(markerRef.current)) {
+                map.removeLayer(markerRef.current);
+              }
+            } catch (err) { }
+          }
+          try {
+            markerRef.current = L.marker([lat, lng]).addTo(map).bindPopup(`📍 ${displayName}`).openPopup();
+          } catch (err) {
+            setError(true);
+            setErrorMsg("Failed to add marker");
+          }
+        })
+        .catch(error => {
+          console.error("Error getting location name:", error);
+          setSelectedLatLng({ lat, lng, name: `Pinned Location (${lat.toFixed(5)}, ${lng.toFixed(5)})` });
+          setConfirmEnabled(true);
+          if (markerRef.current) {
+            try {
+              if (map.hasLayer(markerRef.current)) {
+                map.removeLayer(markerRef.current);
+              }
+            } catch (err) { }
+          }
+          try {
+            markerRef.current = L.marker([lat, lng]).addTo(map).bindPopup(`📍 Pinned Location (${lat.toFixed(5)}, ${lng.toFixed(5)})`).openPopup();
+          } catch (err) {
+            setError(true);
+            setErrorMsg("Failed to add marker");
+          }
+        });
     };
-  }, [showMap]);
+
+    if (map) {
+      map.on('click', handleMapClick);
+
+      return () => {
+        map.off('click', handleMapClick);
+      };
+    }
+
+    setTimeout(() => {
+      try {
+        map.invalidateSize();
+      } catch (err) { }
+    }, 400);
+
+  }, [showMap, L]); // Added L to the dependency array
 
   const confirmLocation = () => {
     if (selectedLatLng) {
@@ -244,6 +311,9 @@ export default function CarpoolForm({ userId }) {
     error: null,
     success: false
   });
+   const dispatch = useDispatch(); 
+  const { userDetails } = useSelector((state) => state.user); 
+
 
   useEffect(() => {
     console.log("Current step:", step);
@@ -309,7 +379,7 @@ export default function CarpoolForm({ userId }) {
       error: null,
       success: false
     });
-
+     
     try {
       if (!userId) {
         setSubmitStatus({
@@ -357,6 +427,12 @@ export default function CarpoolForm({ userId }) {
       };
 
       const result = await createRideOffer(rideData);
+      if (userDetails?.id && result?.data) { // Assuming your createRideOffer returns the new ride data in result.data
+        dispatch(addUpcomingRide(result.data));
+      } else if (userDetails?.id) {
+        // Fallback: If no ride data is returned, refetch
+        dispatch(fetchUpcomingRides(userDetails.id));
+      }
 
       console.log('Ride created successfully:', result);
 
