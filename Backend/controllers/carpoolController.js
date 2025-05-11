@@ -203,8 +203,16 @@ exports.updateCarpool = async (req, res) => {
         department: updatedRide.userId.department,
       },
       route: {
-        pickup: updatedRide.pickup.name,
-        dropoff: updatedRide.dropoff.name,
+         pickup: {
+          name: updatedRide.pickup.name,
+          latitude: updatedRide.pickup.latitude,
+          longitude: updatedRide.pickup.longitude,
+        },
+        dropoff: {
+          name: updatedRide.dropoff.name,
+          latitude: updatedRide.dropoff.latitude,
+          longitude: updatedRide.dropoff.longitude,
+        },
       },
       schedule: {
         date: updatedRide.date.toISOString().split("T")[0],
