@@ -17,6 +17,7 @@ import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import axiosInstance from "../Authentication/redux/axiosInstance";
 import RideDetailsModal from "./RideDetailsModal";
+import ConfirmModal from '../ui/comfirmModal';
 
 const CarpoolPost = ({
   id,
@@ -41,20 +42,19 @@ const CarpoolPost = ({
   const { userDetails } = useSelector((state) => state.user || {});
   const [errorMessage, setErrorMessage] = useState('');
   const location = useLocation();
+  const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false); 
 
   const handleProfileClick = () => {
     if (userDetails.id === driver.driverId) {
       toast.error("This is your Profile");
     }
     else {
-
       setProfileModalOpen(true)
     }
   }
 
   const handleClick = () => {
     if (activeTab === "history") {
-
       if (userDetails.id === driver.driverId) {
         (toast.error("You cannot rate your own ride"))
       } else
@@ -72,16 +72,25 @@ const CarpoolPost = ({
     setMapModalOpen(true);
   };
 
+  const handleCancelConfirmation = () => {
+    if (userDetails.id !== driver.driverId) {
+      toast.error("You can only cancel your own ride");
+      return; 
+    }
+    setShowCancelConfirmModal(true);
+  };
+
   const handleCancel = () => {
-     if (userDetails.id !== driver.driverId) {
-        (toast.error("You can only cancel your own ride"))
-      } else{
-    if (window.confirm("Are you sure you want to cancel this ride?")) {
-      console.log("Attempting to cancel carpool with ID (via Redux):", id);
-      if (onCarpoolCancelled) {
-        onCarpoolCancelled(id);
-      }
-    }}
+    setShowCancelConfirmModal(false); 
+    console.log("Attempting to cancel carpool with ID (via Redux):", id);
+    if (onCarpoolCancelled) {
+      onCarpoolCancelled(id);
+      toast.success("Ride cancelled successfully");
+    }
+  };
+
+  const handleCancelModalClose = () => {
+    setShowCancelConfirmModal(false);
   };
 
   const toggleExpand = () => {
@@ -227,7 +236,7 @@ const CarpoolPost = ({
             <div className="mt-4 flex flex-nowrap items-center justify-around gap-2">
               {activeTab === "upcoming" && (
                 <button
-                  onClick={handleCancel}
+                  onClick={handleCancelConfirmation}
                   className="flex-none h-[44px] w-[44px] px-4 text-sm bg-red-600 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-red-700 relative group"
                 >
                   <X className="h-4 w-4" />
@@ -364,6 +373,12 @@ const CarpoolPost = ({
         open={rideDetailsOpen}
         onOpenChange={setRideDetailsOpen}
         rideId={id}
+      />
+      <ConfirmModal
+        isOpen={showCancelConfirmModal}
+        onClose={handleCancelModalClose}
+        onConfirm={handleCancel}
+        message="Are you sure you want to cancel this ride?"
       />
     </div>
   );

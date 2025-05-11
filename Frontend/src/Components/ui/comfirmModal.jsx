@@ -21,13 +21,13 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, message }) => {
                         onClick={(e) => { e.stopPropagation(); onClose(); }} // Prevent click propagation
                         className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded"
                     >
-                        Cancel
+                        No
                     </button>
                     <button
                         onClick={(e) => { e.stopPropagation(); onConfirm(); }} // Prevent click propagation
                         className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded"
                     >
-                        Yes, Remove
+                        Yes
                     </button>
                 </div>
             </div>
