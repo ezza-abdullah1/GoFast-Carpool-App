@@ -172,14 +172,29 @@ exports.createCarpool = async (req, res) => {
   }
 };
 
-// Update a carpool
 exports.updateCarpool = async (req, res) => {
   try {
+    const rideId = req.params.id;
     const updates = req.body;
 
-    // Find and update the ride
+    const existingRide = await Ride.findById(rideId).populate('userId');
+
+    if (!existingRide) {
+      return res.status(404).json({ message: "Carpool not found" });
+    }
+
+    if (updates.status === "inactive" && existingRide.status === "active") {
+      const acceptedStops = await Stop.find({ rideId: rideId, status: "accept" }).populate('userId');
+
+      for (const stop of acceptedStops) {
+        if (stop.userId) {
+          await User.findByIdAndUpdate(stop.userId._id, { $inc: { rides_taken: 1 } });
+        }
+      }
+    }
+
     const updatedRide = await Ride.findByIdAndUpdate(
-      req.params.id,
+      rideId,
       { $set: updates },
       { new: true }
     )
@@ -190,10 +205,9 @@ exports.updateCarpool = async (req, res) => {
       .lean();
 
     if (!updatedRide) {
-      return res.status(404).json({ message: "Carpool not found" });
+      return res.status(404).json({ message: "Carpool not found after update" });
     }
 
-    // Format the response
     const formattedCarpool = {
       id: updatedRide._id.toString(),
       driver: {
@@ -203,7 +217,7 @@ exports.updateCarpool = async (req, res) => {
         department: updatedRide.userId.department,
       },
       route: {
-         pickup: {
+        pickup: {
           name: updatedRide.pickup.name,
           latitude: updatedRide.pickup.latitude,
           longitude: updatedRide.pickup.longitude,
@@ -233,7 +247,6 @@ exports.updateCarpool = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
-
 exports.deleteCarpool = async (req, res) => {
   try {
     const ride = await Ride.findById(req.params.id)
