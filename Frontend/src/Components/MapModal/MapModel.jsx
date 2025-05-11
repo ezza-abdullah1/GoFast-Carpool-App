@@ -131,12 +131,7 @@ const MapModal = ({ open, rideId, onOpenChange, activeTab, route, stop }) => {
             if (mapRef.current) mapRef.current.innerHTML = "";
         }
     }, [open]);
-     const handleRideFinished = (finishedRideId) => {
-    setUpcomingRides((prevRides) =>
-      prevRides.filter((ride) => ride._id !== finishedRideId)
-    );
-    onOpenChange(false); 
-  };
+    
     const noSidebar = activeTab !== "upcoming";
     const noFooter = !buttonFlag && !confirmEnabled && activeTab !== "offers";
 
@@ -222,15 +217,13 @@ const MapModal = ({ open, rideId, onOpenChange, activeTab, route, stop }) => {
                         )}
                         {
                             noFooter && (
-                                <DialogClose asChild>
-                                    <div>
-                                        <UpcomingRideActions
-                                           activeTab={activeTab}
-                                           rideId={rideId}
-                                           onRideFinished={handleRideFinished}
-                                        />
-                                    </div>
-                                </DialogClose>
+                                <div>
+                                <UpcomingRideActions
+                                activeTab={activeTab}
+                                rideId={rideId}
+                                onRideFinished={onOpenChange} 
+                                />
+                                </div>
                             )
                         }
 
