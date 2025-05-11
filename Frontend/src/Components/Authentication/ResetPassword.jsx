@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Eye, EyeOff, X } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 const ResetPassword = ({ email, onClose }) => {
   const [newPassword, setNewPassword] = useState("");
@@ -13,12 +14,12 @@ const ResetPassword = ({ email, onClose }) => {
     const trimmedConfirm = confirmPassword.trim();
 
     if (trimmedPassword.length < 8) {
-      alert("Password must be at least 8 characters.");
+      toast.error("Password must be at least 8 characters.");
       return;
     }
 
     if (trimmedPassword !== trimmedConfirm) {
-      alert("Passwords do not match.");
+      toast.error("Passwords do not match.");
       return;
     }
 
@@ -32,15 +33,17 @@ const ResetPassword = ({ email, onClose }) => {
       setSubmitting(false);
 
       const data = await res.json().catch(() => ({}));
+
       if (res.ok) {
-        alert("Password reset successful.");
+        toast.success("Password reset successful.");
         onClose();
       } else {
-        alert(data.error || "Failed to reset password.");
+        toast.error(data.error || "Failed to reset password.");
       }
     } catch (error) {
       setSubmitting(false);
-      alert("An error occurred. Please try again.");
+      toast.error("An error occurred. Please try again.");
+      console.error("Reset password error:", error);
     }
   };
 

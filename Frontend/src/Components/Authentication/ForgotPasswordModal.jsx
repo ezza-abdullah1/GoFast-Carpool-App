@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import ResetCode from "./ResetCode";
 import { X } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 const ForgotPasswordModal = ({ onClose }) => {
   const [email, setEmail] = useState("");
@@ -12,9 +13,10 @@ const ForgotPasswordModal = ({ onClose }) => {
 
   const handleSendCode = async () => {
     if (!validateEmail(email)) {
-      alert("Enter a valid @lhr.nu.edu.pk email.");
+      toast.error("Please enter a valid @lhr.nu.edu.pk email.");
       return;
     }
+
     try {
       setSending(true);
       const res = await fetch("http://localhost:5000/api/auth/forgot-password", {
@@ -23,11 +25,18 @@ const ForgotPasswordModal = ({ onClose }) => {
         body: JSON.stringify({ email }),
       });
       setSending(false);
-      if (res.ok) setProceedToCode(true);
-      else alert(await res.text() || "Email not registered.");
+
+      if (res.ok) {
+        toast.success("Verification code sent to your email.");
+        setProceedToCode(true);
+      } else {
+        const message = await res.text();
+        toast.error(message || "Email not registered.");
+      }
     } catch (err) {
       setSending(false);
-      alert("Something went wrong. Please try again.");
+      toast.error("Network error. Please try again.");
+      console.error("Forgot Password Error:", err);
     }
   };
 
@@ -36,7 +45,10 @@ const ForgotPasswordModal = ({ onClose }) => {
   return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
       <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-md dark:bg-gray-800 dark:text-white">
-        <button onClick={onClose} className="absolute top-3 right-3 text-gray-500 hover:text-black">
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 text-gray-500 hover:text-black"
+        >
           <X size={20} />
         </button>
         <h2 className="text-xl font-bold mb-4">Forgot Password</h2>
@@ -46,8 +58,9 @@ const ForgotPasswordModal = ({ onClose }) => {
           placeholder="Enter your university email"
           value={email}
           onChange={(e) => {
-            setEmail(e.target.value);
-            setEmailValid(validateEmail(e.target.value));
+            const value = e.target.value;
+            setEmail(value);
+            setEmailValid(validateEmail(value));
           }}
         />
         <button
