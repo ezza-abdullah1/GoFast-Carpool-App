@@ -1,17 +1,23 @@
-import React from 'react';
-import SignIn from './SignIn';
-import SignUp from './SignUp';
-import { useAuthModal } from './AuthModalContext';
+import React, { useState } from "react";
+import SignIn from "./SignIn";
+import SignUp from "./SignUp";
 
-const AuthModal = () => {
-  const { isOpen, authMode, closeModal, switchToSignIn, switchToSignUp } = useAuthModal();
+const AuthModal = ({ onClose }) => {
+  const [showSignIn, setShowSignIn] = useState(true);
 
-  if (!isOpen) return null;
+  const switchToSignUp = () => setShowSignIn(false);
+  const switchToSignIn = () => setShowSignIn(true);
 
-  return authMode === 'signin' ? (
-    <SignIn onSwitchToSignUp={switchToSignUp} onClose={closeModal} />
-  ) : (
-    <SignUp onSwitchToSignIn={switchToSignIn} onClose={closeModal} />
+  return (
+    <div className="modal-backdrop">
+      <div className="modal-content">
+        {showSignIn ? (
+          <SignIn onSwitchToSignUp={switchToSignUp} onClose={onClose} />
+        ) : (
+          <SignUp onSwitchToSignIn={switchToSignIn} onClose={onClose} />
+        )}
+      </div>
+    </div>
   );
 };
 
