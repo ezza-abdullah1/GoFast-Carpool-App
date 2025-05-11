@@ -2,6 +2,7 @@ const User = require('../models/User');
 const Conversation = require('../models/Conversation');
 const Message = require('../models/Message');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 
 /**
  * Get all contacts for the current user with their last messages
@@ -45,6 +46,7 @@ exports.getContacts = async (req, res) => {
 
       return {
         id: conv._id.toString(),
+        socketRoomId: `sample-${conv._id.toString()}`, // Add this for socket.io
         name: otherParticipant.fullName,
         email: otherParticipant.email,
         department: otherParticipant.department,
@@ -62,28 +64,49 @@ exports.getContacts = async (req, res) => {
     // Filter out any null values
     const validContacts = contacts.filter(contact => contact !== null);
 
-    // If no contacts, return an empty array
+    // If no contacts, return an empty array or create real conversations
     if (validContacts.length === 0) {
-      // For debugging - find all users
+      // Find all users
       const allUsers = await User.find({ _id: { $ne: currentUserId } })
         .select('fullName email gender department')
         .limit(5);
         
-      // Create sample contacts with mock data for testing
-      const sampleContacts = allUsers.map(user => ({
-        id: `sample-${user._id}`,
-        name: user.fullName,
-        email: user.email,
-        department: user.department,
-        gender: user.gender,
-        userId: user._id.toString(),
-        isOnline: false,
-        lastMessage: "No messages yet",
-        lastSeen: "New",
-        unreadCount: 0
+      // Create REAL conversations for these users instead of sample ones
+      const realContacts = await Promise.all(allUsers.map(async (user) => {
+        // Create actual conversation in the database
+        let conversation = await Conversation.findOne({
+          participants: { $all: [currentUserId, user._id] }
+        });
+
+        // If no conversation exists, create one
+        if (!conversation) {
+          conversation = new Conversation({
+            participants: [currentUserId, user._id],
+            lastMessage: "No messages yet",
+            lastMessageTimestamp: new Date()
+          });
+          
+          await conversation.save();
+        }
+
+        return {
+          id: conversation._id.toString(),
+          socketRoomId: `sample-${conversation._id.toString()}`, // For socket compatibility
+          name: user.fullName,
+          email: user.email,
+          department: user.department,
+          gender: user.gender,
+          userId: user._id.toString(),
+          isOnline: false,
+          lastMessage: conversation.lastMessage || "No messages yet",
+          lastSeen: conversation.lastMessageTimestamp 
+            ? new Date(conversation.lastMessageTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            : 'New',
+          unreadCount: 0
+        };
       }));
       
-      return res.json(sampleContacts);
+      return res.json(realContacts);
     }
 
     return res.json(validContacts);

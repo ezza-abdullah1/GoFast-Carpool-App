@@ -142,10 +142,6 @@ const Dashboard = () => {
                     </>
                   )}
                 </Button>
-                <Button>
-                  <MessageCircle className="mr-2 h-4 w-4" />
-                  Messages
-                </Button>
               </div>
             </div>
           </div>
