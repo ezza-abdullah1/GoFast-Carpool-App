@@ -7,14 +7,20 @@ export const fetchPendingRequests = createAsyncThunk(
     try {
       const { data } = await axiosInstance.get(`/carpools/pendingRequests/${userId}`);
 
-      const ridesWithUsers = await Promise.all(
+      const ridesWithUsersAndStopDetails = await Promise.all(
         data.map(async (ride) => {
-          const userRes = await axiosInstance.get(`/user/${ride.userId}`);
-          return { ...ride, userDetails: userRes.data };
+          const driverRes = await axiosInstance.get(`/user/${ride.userId}`);
+          const stopsWithUserDetails = await Promise.all(
+            ride.stops.map(async (stop) => {
+              const userRes = await axiosInstance.get(`/user/${stop.userId}`);
+              return { ...stop, userDetails: userRes.data };
+            })
+          );
+          return { ...ride, userDetails: driverRes.data, stops: stopsWithUserDetails };
         })
       );
 
-      return ridesWithUsers.map(transformRideToUIFormat);
+      return ridesWithUsersAndStopDetails.map(transformRideToUIFormat);
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Error fetching pending requests');
     }
@@ -33,6 +39,8 @@ const transformRideToUIFormat = (ride) => {
       name: ride.userDetails?.fullName ?? 'Unknown',
       rating: ride.userDetails?.rating ?? 0,
       department: ride.userDetails?.department ?? 'N/A',
+      image: ride.userDetails?.profilePicture, // Assuming profilePicture exists
+      driverId: ride.userId, // Assuming userId is the driver's ID
     },
     route: {
       pickup: {
@@ -67,6 +75,7 @@ const transformRideToUIFormat = (ride) => {
           userId: stop.userId,
           location: stop.location,
           status: stop.status,
+          userDetails: stop.userDetails, // Include userDetails here
         }))
       : [],
   };
@@ -81,7 +90,7 @@ const pendingRequestsSlice = createSlice({
   },
   reducers: {
     updateStopStatus: (state, action) => {
-      const { stopId, newStatus } = action.payload;
+      const { stopId, newStatus, rideId } = action.payload; // Make sure to pass rideId
       const ride = state.rides.find((r) => r.id === rideId);
 
       if (ride) {

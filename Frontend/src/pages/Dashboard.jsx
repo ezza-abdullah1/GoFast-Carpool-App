@@ -44,6 +44,14 @@ const Dashboard = () => {
       dispatch(fetchUpcomingRides(userDetails.id));
     }
   }, [dispatch, userDetails, activeTab]);
+  
+  const getRequesterName = (ride) => {
+  if (ride?.stops && ride.stops.length > 0 && ride.stops[0].userDetails) {
+    return ride.stops[0].userDetails.fullName;
+  }
+  return 'Requester Name Unavailable';
+};
+
 
   // if (loading || (ridesLoading && activeTab === 'upcoming')) {
   //   return (
@@ -241,7 +249,7 @@ const Dashboard = () => {
                   ) : pendingRequests.length > 0 ? (
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                       {pendingRequests.map((ride) => (
-                        <CarpoolPost key={ride.id} {...ride} offerRide={true} activeTab={activeTab} />
+                        <CarpoolPost key={ride.id} {...ride} offerRide={true} activeTab={activeTab}  requesterName={getRequesterName(ride)}/>
                       ))}
                     </div>
                   ) : (

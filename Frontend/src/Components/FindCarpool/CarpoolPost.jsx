@@ -16,7 +16,7 @@ import RatingModal from "./RatingModal";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import axiosInstance from "../Authentication/redux/axiosInstance";
-import RideDetailsModal from "./RideDetailsModal"; 
+import RideDetailsModal from "./RideDetailsModal";
 
 const CarpoolPost = ({
   id,
@@ -30,13 +30,14 @@ const CarpoolPost = ({
   activeTab,
   stops,
   onCarpoolCancelled,
+  requesterName, // Prop to receive the requester's name
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [mapModalOpen, setMapModalOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [buttonText, setButtonText] = useState("");
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
-  const [rideDetailsOpen, setRideDetailsOpen] = useState(false); 
+  const [rideDetailsOpen, setRideDetailsOpen] = useState(false);
   const { userDetails } = useSelector((state) => state.user || {});
   const [errorMessage, setErrorMessage] = useState('');
   const location = useLocation();
@@ -72,14 +73,14 @@ const CarpoolPost = ({
   };
 
   const handleCancel = () => {
-      if (window.confirm("Are you sure you want to cancel this ride?")) {
-        console.log("Attempting to cancel carpool with ID (via Redux):", id);
-        if (onCarpoolCancelled) {
-          onCarpoolCancelled(id);
-        }
+    if (window.confirm("Are you sure you want to cancel this ride?")) {
+      console.log("Attempting to cancel carpool with ID (via Redux):", id);
+      if (onCarpoolCancelled) {
+        onCarpoolCancelled(id);
       }
-    
-    
+    }
+
+
   };
 
   const toggleExpand = () => {
@@ -220,7 +221,7 @@ const CarpoolPost = ({
             </div>
           )}
 
-          {/* Actions */}
+          {/* Actions (for default variant) */}
           {variant === "default" && (
             <div className="mt-4 flex flex-wrap items-center justify-around gap-2">
               {activeTab === "upcoming" && (
@@ -245,7 +246,7 @@ const CarpoolPost = ({
               )}
               {activeTab === "history" && (
                 <button
- className="flex-grow sm:flex-grow-0 h-[44px] px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600 dark:bg-button-dark dark:hover:bg-button-hover dark:text-white"                  onClick={handleDetailsClick} // Add the action listener
+                  className="flex-grow sm:flex-grow-0 h-[44px] px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600 dark:bg-button-dark dark:hover:bg-button-hover dark:text-white"                 onClick={handleDetailsClick} // Add the action listener
                 >
                   Ride Details
                 </button>
@@ -261,13 +262,12 @@ const CarpoolPost = ({
                   </>
                 ) : (
                   <>
-                  <Star className="h-4 w-4 mr-1" />
-                  <span className="pl-1">Rate Ride</span>
+                    <Star className="h-4 w-4 mr-1" />
+                    <span className="pl-1">Rate Ride</span>
                   </>
                 )}
               </button>
 
-              
 
               {(schedule.recurring || preferences.length > 0) && (
                 <button
@@ -294,7 +294,7 @@ const CarpoolPost = ({
             </div>
           )}
 
-          {/* Compact Variant */}
+          {/* Compact Variant Actions */}
           {variant === "compact" && (
             <div className="mt-3 flex items-center justify-between">
               <div
@@ -333,6 +333,17 @@ const CarpoolPost = ({
               )}
             </div>
           )}
+
+          {activeTab === "offers" && requesterName && (
+            <div className={cn(
+  "mt-3 text-sm flex",
+  variant === "compact" && "mt-2",
+  "justify-center" // Moved justify-center to the outer div
+)}>
+  <span className="text-red-600 font-bold">Requested by:</span>
+  <span className="font-medium text-red-600 font-bold ml-1">{requesterName}</span>
+</div>
+          )}
         </div>
       </div>
 
@@ -348,7 +359,7 @@ const CarpoolPost = ({
           onOpenChange={setProfileModalOpen}
         />
       )}
-      <RideDetailsModal // Render the new modal
+      <RideDetailsModal
         open={rideDetailsOpen}
         onOpenChange={setRideDetailsOpen}
         rideId={id}
