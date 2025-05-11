@@ -1,17 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, Clock, MapPin, Users, Check, Loader2 } from 'lucide-react';
-import axiosInstance from "../Authentication/redux/axiosInstance"; 
+import axiosInstance from "../Authentication/redux/axiosInstance";
 const CustomButton = ({ children, type = "button", variant = "default", onClick, disabled = false, isLoading = false }) => {
   return (
     <button
       type={type}
       onClick={onClick}
       disabled={disabled || isLoading}
-      className={`px-4 py-2 text-sm font-medium rounded-md flex items-center space-x-2 ${
-        variant === "outline"
-          ? "border border-gray-300 bg-transparent hover:bg-gray-100"
-          : "bg-blue-600 text-white hover:bg-blue-700"
-      } ${(disabled || isLoading) ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+      className={`px-4 py-2 text-sm font-medium rounded-md flex items-center space-x-2 ${variant === "outline"
+        ? "border border-gray-300 bg-transparent hover:bg-gray-100"
+        : "bg-blue-600 text-white hover:bg-blue-700"
+        } ${(disabled || isLoading) ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
     >
       {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
       <span>{children}</span>
@@ -50,7 +49,7 @@ const LocationSelector = ({ id, label, placeholder, value, onChange, onLocationS
       if (mapInstanceRef.current) {
         try {
           mapInstanceRef.current.remove();
-        } catch (err) {}
+        } catch (err) { }
         mapInstanceRef.current = null;
       }
 
@@ -81,41 +80,45 @@ const LocationSelector = ({ id, label, placeholder, value, onChange, onLocationS
             geocoder: L.Control.Geocoder.nominatim(),
             defaultMarkGeocode: false,
           });
-          
+
           geocoder.on('markgeocode', (e) => {
             const { center, name } = e.geocode;
-            
+
+            const parts = name.split(',').map(p => p.trim());
+            const shortName = name.split(',').slice(0, 2).join(', ').trim();
+            const district = parts.find(p => p.toLowerCase().includes('district')).split(' ')[0];
+            const displayName = shortName + (district ? ", " + district : "");
             if (markerRef.current) {
               try {
                 if (map.hasLayer(markerRef.current)) {
                   map.removeLayer(markerRef.current);
                 }
-              } catch (err) {}
+              } catch (err) { }
             }
-            
+
             try {
               markerRef.current = L.marker([center.lat, center.lng]);
-              markerRef.current.addTo(map).bindPopup(`🟣 ${name}`).openPopup();
-              
-              setSelectedLatLng({ lat: center.lat, lng: center.lng, name: name });
+              markerRef.current.addTo(map).bindPopup(`🟣 ${displayName}`).openPopup();
+
+              setSelectedLatLng({ lat: center.lat, lng: center.lng, name: displayName });
               setConfirmEnabled(true);
-              
+
               map.setView([center.lat, center.lng], 14);
             } catch (err) {
               setError(true);
               setErrorMsg("Failed to add marker");
             }
           });
-          
+
           geocoder.addTo(map);
-          
+
           setTimeout(() => {
             try {
               const input = document.querySelector(".leaflet-control-geocoder-form input");
               if (input) {
                 input.className = "px-3 py-2 rounded border border-input shadow-sm w-64 text-sm";
               }
-            } catch (err) {}
+            } catch (err) { }
           }, 300);
         } catch (err) {
           setError(true);
@@ -126,7 +129,7 @@ const LocationSelector = ({ id, label, placeholder, value, onChange, onLocationS
       setTimeout(() => {
         try {
           map.invalidateSize();
-        } catch (err) {}
+        } catch (err) { }
       }, 400);
 
     } catch (err) {
@@ -139,7 +142,7 @@ const LocationSelector = ({ id, label, placeholder, value, onChange, onLocationS
       if (mapInstanceRef.current) {
         try {
           mapInstanceRef.current.remove();
-        } catch (err) {}
+        } catch (err) { }
         mapInstanceRef.current = null;
       }
     };
@@ -149,15 +152,15 @@ const LocationSelector = ({ id, label, placeholder, value, onChange, onLocationS
     if (selectedLatLng) {
       onChange({
         target: {
-          id, 
+          id,
           value: selectedLatLng.name || value
         }
       });
-      
+
       if (onLocationSelect) {
         onLocationSelect(id, selectedLatLng);
       }
-      
+
       setShowMap(false);
     }
   };
@@ -167,7 +170,7 @@ const LocationSelector = ({ id, label, placeholder, value, onChange, onLocationS
       <label htmlFor={id} className="text-sm font-medium">
         {label}
       </label>
-      
+
       <div className="relative">
         <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500">
           <MapPin className="h-5 w-5" />
@@ -183,25 +186,25 @@ const LocationSelector = ({ id, label, placeholder, value, onChange, onLocationS
           readOnly
         />
       </div>
-      
+
       {showMap && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
           <div className="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6 dark:bg-gray-800">
             <h3 className="text-lg font-medium mb-4">Select {label}</h3>
-            
+
             {error && (
               <div className="bg-red-100 text-red-700 p-3 rounded-md mb-4 dark:bg-red-900 dark:text-red-200">
                 {errorMsg}
               </div>
             )}
-            
+
             <div ref={mapRef} className="w-full h-96 rounded-lg border mb-4"></div>
-            
+
             <div className="flex justify-between">
               <CustomButton variant="outline" onClick={() => setShowMap(false)}>
                 Cancel
               </CustomButton>
-              
+
               <CustomButton onClick={confirmLocation} disabled={!confirmEnabled}>
                 Confirm Location
               </CustomButton>
@@ -215,7 +218,7 @@ const LocationSelector = ({ id, label, placeholder, value, onChange, onLocationS
 
 const createRideOffer = async (rideData) => {
   try {
-    const response = await axiosInstance.post('/carpools/rides', rideData); 
+    const response = await axiosInstance.post('/carpools/rides', rideData);
     return response.data;
   } catch (error) {
     console.error('Error in createRideOffer service:', error);
@@ -223,16 +226,16 @@ const createRideOffer = async (rideData) => {
   }
 };
 
-export default function CarpoolForm( {userId} ) {
+export default function CarpoolForm({ userId }) {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     pickup: '',
-    pickupLocation: null, 
+    pickupLocation: null,
     dropoff: '',
-    dropoffLocation: null, 
+    dropoffLocation: null,
     date: '',
     time: '',
-    seatsTaken: '1',
+    numberOfSeats: '1',
     preferences: [],
     notes: ''
   });
@@ -245,7 +248,7 @@ export default function CarpoolForm( {userId} ) {
   useEffect(() => {
     console.log("Current step:", step);
     console.log("Form data:", formData);
-     console.log('CarpoolForm - userId prop received:', userId); 
+    console.log('CarpoolForm - userId prop received:', userId);
   }, [step, formData]);
 
   const preferenceOptions = [
@@ -297,55 +300,55 @@ export default function CarpoolForm( {userId} ) {
   };
 
   const handleSubmit = async (e) => {
-  if (e && e.preventDefault) {
-    e.preventDefault();
-  }
-
-  setSubmitStatus({
-    isSubmitting: true,
-    error: null,
-    success: false
-  });
-
-  try {
-    if (!userId) {
-      setSubmitStatus({
-        isSubmitting: false,
-        error: 'User ID is missing. Please log in.',
-        success: false
-      });
-      return;
+    if (e && e.preventDefault) {
+      e.preventDefault();
     }
 
-    if (!formData.pickupLocation?.lat || !formData.pickupLocation?.lng) {
-      setSubmitStatus({
-        isSubmitting: false,
-        error: 'Please select a pickup location from the map.',
-        success: false
-      });
-      return;
-    }
+    setSubmitStatus({
+      isSubmitting: true,
+      error: null,
+      success: false
+    });
 
-    if (!formData.dropoffLocation?.lat || !formData.dropoffLocation?.lng) {
-      setSubmitStatus({
-        isSubmitting: false,
-        error: 'Please select a drop-off location from the map.',
-        success: false
-      });
-      return;
-    }
+    try {
+      if (!userId) {
+        setSubmitStatus({
+          isSubmitting: false,
+          error: 'User ID is missing. Please log in.',
+          success: false
+        });
+        return;
+      }
 
-    const rideData = {
+      if (!formData.pickupLocation?.lat || !formData.pickupLocation?.lng) {
+        setSubmitStatus({
+          isSubmitting: false,
+          error: 'Please select a pickup location from the map.',
+          success: false
+        });
+        return;
+      }
+
+      if (!formData.dropoffLocation?.lat || !formData.dropoffLocation?.lng) {
+        setSubmitStatus({
+          isSubmitting: false,
+          error: 'Please select a drop-off location from the map.',
+          success: false
+        });
+        return;
+      }
+
+      const rideData = {
         userId: userId,
         pickup: {
           name: formData.pickup,
-          latitude: parseFloat(formData.pickupLocation.lat),  
-          longitude: parseFloat(formData.pickupLocation.lng) 
+          latitude: parseFloat(formData.pickupLocation.lat),
+          longitude: parseFloat(formData.pickupLocation.lng)
         },
         dropoff: {
           name: formData.dropoff,
-          latitude: parseFloat(formData.dropoffLocation.lat), 
-          longitude: parseFloat(formData.dropoffLocation.lng) 
+          latitude: parseFloat(formData.dropoffLocation.lat),
+          longitude: parseFloat(formData.dropoffLocation.lng)
         },
         numberOfSeats: parseInt(formData.numberOfSeats),
         date: formData.date,
@@ -353,42 +356,42 @@ export default function CarpoolForm( {userId} ) {
         preferences: formData.preferences
       };
 
-    const result = await createRideOffer(rideData);
+      const result = await createRideOffer(rideData);
 
-    console.log('Ride created successfully:', result);
+      console.log('Ride created successfully:', result);
 
-    setSubmitStatus({
-      isSubmitting: false,
-      error: null,
-      success: true
-    });
-
-    setTimeout(() => {
-      setStep(1);
-      setFormData({
-        pickup: '',
-        pickupLocation: null,
-        dropoff: '',
-        dropoffLocation: null,
-        date: '',
-        time: '',
-        numberOfSeats: '1',
-        preferences: [],
-        notes: ''
+      setSubmitStatus({
+        isSubmitting: false,
+        error: null,
+        success: true
       });
-      setSubmitStatus(prev => ({ ...prev, success: false }));
-    }, 2000);
 
-  } catch (error) {
-    console.error('Error creating ride:', error);
+      setTimeout(() => {
+        setStep(1);
+        setFormData({
+          pickup: '',
+          pickupLocation: null,
+          dropoff: '',
+          dropoffLocation: null,
+          date: '',
+          time: '',
+          numberOfSeats: '1',
+          preferences: [],
+          notes: ''
+        });
+        setSubmitStatus(prev => ({ ...prev, success: false }));
+      }, 2000);
 
-    setSubmitStatus({
-      isSubmitting: false,
-      error: error.response?.data?.message || error.message || 'Failed to create ride',
-      success: false
-    });
-  }
-};
+    } catch (error) {
+      console.error('Error creating ride:', error);
+
+      setSubmitStatus({
+        isSubmitting: false,
+        error: error.response?.data?.message || error.message || 'Failed to create ride',
+        success: false
+      });
+    }
+  };
 
   const nextStep = () => {
     if (step === 1) {
@@ -402,7 +405,7 @@ export default function CarpoolForm( {userId} ) {
         return;
       }
     }
-    
+
     console.log(`Moving from step ${step} to ${step + 1}`);
     setStep(prev => prev + 1);
   };
@@ -429,8 +432,8 @@ export default function CarpoolForm( {userId} ) {
                     step === stepNumber
                       ? 'bg-blue-600 text-white'
                       : step > stepNumber
-                      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
-                      : 'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
+                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                        : 'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
                   )}
                 >
                   {step > stepNumber ? <Check className="h-4 w-4" /> : stepNumber}
@@ -439,8 +442,8 @@ export default function CarpoolForm( {userId} ) {
                   {stepNumber === 1
                     ? 'Route'
                     : stepNumber === 2
-                    ? 'Schedule'
-                    : 'Preferences'}
+                      ? 'Schedule'
+                      : 'Preferences'}
                 </span>
               </div>
 
@@ -548,7 +551,7 @@ export default function CarpoolForm( {userId} ) {
                   Departure Time
                 </label>
                 <div className="relative">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">                    
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">
                     <Clock className="h-5 w-5" />
                   </div>
                   <input

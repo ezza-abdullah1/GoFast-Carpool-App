@@ -1,22 +1,36 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axiosInstance from './axiosInstance';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axiosInstance from "./axiosInstance";
 
 export const fetchPendingRequests = createAsyncThunk(
-  'pendingRequests/fetch',
+  "pendingRequests/fetch",
   async (userId, { rejectWithValue }) => {
     try {
-      const { data } = await axiosInstance.get(`/carpools/pendingRequests/${userId}`);
+      const { data } = await axiosInstance.get(
+        `/carpools/pendingRequests/${userId}`
+      );
 
-      const ridesWithUsers = await Promise.all(
+      const ridesWithUsersAndStopDetails = await Promise.all(
         data.map(async (ride) => {
-          const userRes = await axiosInstance.get(`/user/${ride.userId}`);
-          return { ...ride, userDetails: userRes.data };
+          const driverRes = await axiosInstance.get(`/user/${ride.userId}`);
+          const stopsWithUserDetails = await Promise.all(
+            ride.stops.map(async (stop) => {
+              const userRes = await axiosInstance.get(`/user/${stop.userId}`);
+              return { ...stop, userDetails: userRes.data };
+            })
+          );
+          return {
+            ...ride,
+            userDetails: driverRes.data,
+            stops: stopsWithUserDetails,
+          };
         })
       );
 
-      return ridesWithUsers.map(transformRideToUIFormat);
+      return ridesWithUsersAndStopDetails.map(transformRideToUIFormat);
     } catch (error) {
-      return rejectWithValue(error.response?.data || 'Error fetching pending requests');
+      return rejectWithValue(
+        error.response?.data || "Error fetching pending requests"
+      );
     }
   }
 );
@@ -30,9 +44,11 @@ const transformRideToUIFormat = (ride) => {
   return {
     id: ride._id,
     driver: {
-      name: ride.userDetails?.fullName ?? 'Unknown',
+      name: ride.userDetails?.fullName ?? "Unknown",
       rating: ride.userDetails?.rating ?? 0,
-      department: ride.userDetails?.department ?? 'N/A',
+      department: ride.userDetails?.department ?? "N/A",
+      image: ride.userDetails?.profilePicture, // Assuming profilePicture exists
+      driverId: ride.userDetails?._id,
     },
     route: {
       pickup: {
@@ -48,17 +64,20 @@ const transformRideToUIFormat = (ride) => {
     },
     schedule: {
       date: isValidDate(ride.date)
-        ? new Date(ride.date).toLocaleDateString('en-US', {
-            weekday: 'short',
-            month: 'short',
-            day: 'numeric',
+        ? new Date(ride.date).toLocaleDateString("en-US", {
+            weekday: "short",
+            month: "short",
+            day: "numeric",
           })
-        : 'Invalid date',
-      time: ride.time ?? 'N/A',
+        : "Invalid date",
+      time: ride.time ?? "N/A",
     },
     seats: {
       total: ride.numberOfSeats ?? 0,
-      available: Math.max(0, (ride.numberOfSeats ?? 0) - (ride.stops?.length ?? 0)),
+      available: Math.max(
+        0,
+        (ride.numberOfSeats ?? 0) - (ride.stops?.length ?? 0)
+      ),
     },
     preferences: Array.isArray(ride.preferences) ? ride.preferences : [],
     stops: Array.isArray(ride.stops)
@@ -67,13 +86,14 @@ const transformRideToUIFormat = (ride) => {
           userId: stop.userId,
           location: stop.location,
           status: stop.status,
+          userDetails: stop.userDetails, // Include userDetails here
         }))
       : [],
   };
 };
 
 const pendingRequestsSlice = createSlice({
-  name: 'pendingRequests',
+  name: "pendingRequests",
   initialState: {
     rides: [],
     loading: false,
@@ -81,7 +101,7 @@ const pendingRequestsSlice = createSlice({
   },
   reducers: {
     updateStopStatus: (state, action) => {
-      const { stopId, newStatus } = action.payload;
+      const { stopId, newStatus, rideId } = action.payload; // Make sure to pass rideId
       const ride = state.rides.find((r) => r.id === rideId);
 
       if (ride) {

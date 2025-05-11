@@ -6,6 +6,7 @@ const connectDB = require("./config/db");
 const apiRoutes     = require("./routes/index.js");            // <-- our new index.js
 const carpoolHistoryRoutes = require("./routes/carpoolHistoryRoutes.js");
 
+
 const http     = require("http");
 
 const carpoolRoutes = require("./routes/carpoolRoutes");
@@ -13,6 +14,11 @@ const mapRoutes     = require("./routes/mapRoutes");
 const signinRoutes = require("./controllers/signinController");
 const stopsRoutes = require("./routes/stopRoutes.js");  
 const userRoutes = require("./routes/userRoutes.js"); 
+const signupRouter = require("./controllers/authController").router;
+const verifyTempUserRouter = require("./controllers/verifyTempUser");
+const forgotPasswordRoutes = require("./controllers/forgotPasswordController");
+const verifyCodeRoutes = require("./controllers/verifyResetCodeController");
+const resetPasswordRoutes = require("./controllers/resetPasswordController");
 dotenv.config();
 connectDB();
 
@@ -37,7 +43,7 @@ app.use((req, _, next) => {
   req.io = io;
   next();
 });
-app.use("/api/contacts", apiRoutes);
+
 // Your existing routes
 app.use("/api/carpools", carpoolRoutes);
 app.use("/api/map",      mapRoutes);
@@ -47,7 +53,12 @@ app.use("/api/stop",stopsRoutes);
 app.use("/api/user",userRoutes );
 app.use('/api/', carpoolRoutes);
 // New messaging API+ auth
-app.use("/api/messages", apiRoutes);
+app.use("/api", apiRoutes);
+app.use("/api/auth", signupRouter);            // Handles POST /api/auth/signup
+app.use("/api/auth", verifyTempUserRouter);    // Handles POST /api/auth/verify
+app.use("/api/auth", forgotPasswordRoutes);
+app.use("/api/auth", verifyCodeRoutes);
+app.use("/api/auth", resetPasswordRoutes);
 
 app.get("/", (req, res) => {
   res.send("Carpool API is running");

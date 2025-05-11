@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axiosInstance from './axiosInstance';
-
+import { decrementRidesOffered } from './userSlice';
 export const fetchUpcomingRides = createAsyncThunk(
   'upcomingRides/fetchUpcoming',
   async (userId, { rejectWithValue }) => {
@@ -23,10 +23,11 @@ export const fetchUpcomingRides = createAsyncThunk(
 
 export const removeUpcomingRide = createAsyncThunk(
   'upcomingRides/remove',
-  async (rideId, { rejectWithValue }) => {
+  async (rideId, { dispatch, rejectWithValue, getState }) => { 
     try {
       await axiosInstance.delete(`/carpools/${rideId}`);
-      return rideId; // Return the ID of the removed ride
+      dispatch(decrementRidesOffered()); 
+      return rideId; 
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Error cancelling carpool');
     }
@@ -38,13 +39,13 @@ const transformRideToUIFormat = (ride) => {
     const parsed = new Date(dateStr);
     return !isNaN(parsed.getTime());
   };
-
   return {
     id: ride._id,
     driver: {
       name: ride.userDetails?.fullName ?? 'Unknown',
       rating: ride.userDetails?.rating ?? 0,
       department: ride.userDetails?.department ?? 'N/A',
+      driverId: ride.userDetails?._id, 
     },
     route: {
       pickup: {
@@ -95,16 +96,29 @@ const upcomingRidesSlice = createSlice({
     removeStopFromRide: (state, action) => {
       const { rideId, stopId } = action.payload;
       const ride = state.rides.find((r) => r.id === rideId);
-      console.log("remove stop id", stopId);
-      console.log('Ride ID:', rideId);
+  
       if (ride) {
         ride.stops = ride.stops.filter((stop) => stop.id !== stopId);
-        console.log('Updated stops:', ride.stops);
+   
       }
     },
-    // You can add a reducer here to directly remove the ride from the state
     removeUpcomingRideLocal: (state, action) => {
       state.rides = state.rides.filter(ride => ride.id !== action.payload);
+    },
+   addUpcomingRide: (state, action) => {
+      const backendRide = action.payload;
+      const formattedRideForSlice = {
+        _id: backendRide.id,
+        driver: backendRide.driver,
+        pickup: backendRide.route?.pickup,
+        dropoff: backendRide.route?.dropoff,
+        date: backendRide.schedule?.date,
+        time: backendRide.schedule?.time,
+        numberOfSeats: backendRide.numberOfSeats,
+        preferences: backendRide.preferences,
+        stops: backendRide.stops || [],
+      };
+      state.rides.push(transformRideToUIFormat({ ...formattedRideForSlice, userDetails: {} }));
     },
   },
   extraReducers: (builder) => {
@@ -122,15 +136,14 @@ const upcomingRidesSlice = createSlice({
         state.error = action.payload;
       })
       .addCase(removeUpcomingRide.fulfilled, (state, action) => {
-        // When the async action is successful, update the state
         state.rides = state.rides.filter(ride => ride.id !== action.payload);
       })
       .addCase(removeUpcomingRide.rejected, (state, action) => {
-        state.error = action.payload; // Optionally handle the error
+        state.error = action.payload; 
       });
   },
 });
 
-export const { removeStopFromRide, removeUpcomingRideLocal } = upcomingRidesSlice.actions;
+export const { removeStopFromRide, removeUpcomingRideLocal, addUpcomingRide } = upcomingRidesSlice.actions;
 
 export default upcomingRidesSlice.reducer;

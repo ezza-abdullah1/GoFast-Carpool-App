@@ -1,78 +1,61 @@
-// const express = require("express");
+// const express = require('express');
 // const router = express.Router();
-// const axios = require("axios");
-// const bcrypt = require("bcryptjs");
-// const jwt = require("jsonwebtoken");
-// const User = require("../models/user");
+// const crypto = require('crypto');
+// const bcrypt = require('bcryptjs');
+// const User = require('../models/User');
+// const transporter = require('../config/nodemailer'); // Import the transporter
 
-// const JWT_SECRET =
-//   process.env.JWT_SECRET ||
-//   "8ae74b4cf76c2e91531a6a5e7ed2ef3a62c4dcaee24d7b176fdfd0ba6c1e9abf"; // store this in .env
-
-// // @route   POST /signup
-// // @desc    Register new user with email validation and JWT issuance
-// router.post("/signup", async (req, res) => {
-//   const { fullName, department, email, password } = req.body;
-
-//   // 1. Validate FAST email domain
-//   if (!email.endsWith("@lhr.nu.edu.pk")) {
-//     return res.status(400).json({ error: "Only FAST NUCES emails are allowed." });
-//   }
-
+// router.post('/forgot-password', async (req, res) => {
+//   const { email } = req.body;
 //   try {
-//     // 2. Validate email deliverability via Abstract API
-//     const validateRes = await axios.get(
-//       `https://emailvalidation.abstractapi.com/v1/?api_key=${process.env.EMAIL_VALIDATION_API_KEY}&email=${email}`
-//     );
+//     const user = await User.findOne({ email });
+//     if (!user) return res.status(400).json({ error: 'User not found' });
 
-//     if (
-//       !validateRes.data.deliverability ||
-//       validateRes.data.deliverability !== "DELIVERABLE"
-//     ) {
-//       return res.status(400).json({ error: "Email address is not valid or deliverable." });
-//     }
+//     const token = crypto.randomBytes(32).toString('hex');
+//     const hashedToken = await bcrypt.hash(token, 10);
 
-//     // 3. Check for existing user
-//     const existingUser = await User.findOne({ email });
-//     if (existingUser) {
-//       return res.status(400).json({ error: "Email already in use." });
-//     }
+//     user.resetPasswordToken = hashedToken;
+//     user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+//     await user.save();
 
-//     // 4. Hash password
-//     const hashedPassword = await bcrypt.hash(password, 10);
+//     const resetLink = `${process.env.CLIENT_URL}/reset-password/${token}`;
 
-//     // 5. Create and save user
-//     const newUser = new User({
-//       fullName,
-//       department,
-//       email,
-//       password: hashedPassword,
+//     await transporter.sendMail({
+//       to: user.email,
+//       subject: 'Password Reset',
+//       html: `<p>You requested a password reset</p>
+//              <p>Click this <a href="${resetLink}">link</a> to reset your password</p>`,
 //     });
 
-//     await newUser.save();
-
-//     // 6. Generate JWT token
-//     const token = jwt.sign(
-//       { userId: newUser._id, email: newUser.email },
-//       JWT_SECRET,
-//       { expiresIn: "1h" }
-//     );
-
-//     // 7. Respond with token and user info
-//     res.status(201).json({
-//       message: "User registered successfully.",
-//       token,
-//       user: {
-//         id: newUser._id,
-//         fullName: newUser.fullName,
-//         email: newUser.email,
-//         department: newUser.department,
-//       },
-//     });
+//     res.json({ message: 'Password reset link sent to your email' });
 //   } catch (err) {
-//     console.error("Signup Error:", err.message);
-//     res.status(500).json({ error: "Server error" });
+//     console.error('Forgot Password Error:', err);
+//     res.status(500).json({ error: 'Server error' });
 //   }
 // });
+// router.post('/reset-password/:token', async (req, res) => {
+//   const { token } = req.params;
+//   const { password } = req.body;
+//   try {
+//     const users = await User.find({
+//       resetPasswordExpires: { $gt: Date.now() },
+//     });
 
-// module.exports = router;
+//     const user = users.find((user) =>
+//       bcrypt.compareSync(token, user.resetPasswordToken)
+//     );
+
+//     if (!user) return res.status(400).json({ error: 'Invalid or expired token' });
+
+//     const hashedPassword = await bcrypt.hash(password, 10);
+//     user.password = hashedPassword;
+//     user.resetPasswordToken = undefined;
+//     user.resetPasswordExpires = undefined;
+//     await user.save();
+
+//     res.json({ message: 'Password has been reset successfully' });
+//   } catch (err) {
+//     console.error('Reset Password Error:', err);
+//     res.status(500).json({ error: 'Server error' });
+//   }
+// });
