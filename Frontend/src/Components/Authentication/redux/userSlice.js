@@ -11,7 +11,11 @@ export const signIn = createAsyncThunk("user/signIn", async (data, thunkAPI) => 
 
     thunkAPI.dispatch(setUserDetails(response.data.user));  // Assuming setUserDetails action is available in your slice
 
-    return response.data.user;  // Return the user data to the reducer
+    return {
+  token: response.data.token,
+  user: response.data.user
+};
+ // Return the user data to the reducer
   } catch (err) {
     return thunkAPI.rejectWithValue(err.response?.data?.error || "Sign in failed");
   }
