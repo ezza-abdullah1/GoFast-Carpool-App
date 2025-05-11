@@ -30,7 +30,7 @@ const CarpoolPost = ({
   activeTab,
   stops,
   onCarpoolCancelled,
-  requesterName, // Prop to receive the requester's name
+  requesterName, 
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [mapModalOpen, setMapModalOpen] = useState(false);
@@ -230,7 +230,7 @@ const CarpoolPost = ({
                   className="flex-none h-[44px] w-[44px] px-4 text-sm bg-red-600 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-red-700 relative group"
                 >
                   <X className="h-4 w-4" />
-                  <span className="absolute bottom-[50px] left-1/2 transform -translate-x-1/2 hidden group-hover:block bg-white text-black text-sm text-center px-2 py-1 rounded-md">
+                  <span  onClick={handleCancel} className="absolute bottom-[50px] left-1/2 transform -translate-x-1/2 hidden group-hover:block bg-white text-black text-sm text-center px-2 py-1 rounded-md" >
                     Cancel Ride
                   </span>
                 </button>

@@ -1,10 +1,10 @@
-import React, { useState, memo } from "react";
+import React, { useState, memo, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import axiosInstance from "../Authentication/redux/axiosInstance";
 import ConfirmModal from "../ui/comfirmModal";
 import { useDispatch } from "react-redux";
 import { removeStopFromRide } from "../Authentication/redux/upcomingRidesSlice";
-
+import { useSelector } from "react-redux";
 const StopsSidebar = memo(({
     stops,
     setStops,
@@ -16,9 +16,17 @@ const StopsSidebar = memo(({
 }) => {
     const [showModal, setShowModal] = useState(false);
     const [stopToDeleteIndex, setStopToDeleteIndex] = useState(null);
-
+    const { userDetails } = useSelector((state) => state.user);
     const dispatch = useDispatch();
 
+    const handleCancelStopCondition = () => {
+    for (const stop of stops) {
+        if (stop.userId === userDetails.id) {
+            return false;
+        }
+    }
+    return true;
+};
     const handleConfirmRemove = async () => {
         const index = stopToDeleteIndex;
         setShowModal(false);
@@ -44,7 +52,7 @@ const StopsSidebar = memo(({
                 mapInstanceRef.current.removeLayer(routeLayerRef.current);
             }
         } catch (error) {
-            console.error("Failed to remove stop:", error);
+
             toast.error("Failed to remove stop. Please try again.");
         }
     };
@@ -68,7 +76,7 @@ const StopsSidebar = memo(({
                 <h4 className="font-semibold mb-2 text-sm text-muted-foreground">Stops</h4>
 
                 <ul className="space-y-2 text-sm">
-                    {safeStops.length > 0 ? (
+                    {safeStops.length > 0 ?
                         safeStops
                             .map((stop, actualIndex) => ({ ...stop, actualIndex }))
                             .filter((stop) => stop.label === "Stop")
@@ -91,7 +99,7 @@ const StopsSidebar = memo(({
 
                                         )}
                                     </div>
-                                    {activeTab === "upcoming" && (
+                                    {activeTab === "upcoming" &&handleCancelStopCondition()&& (
                                         <button
                                             className="text-red-500 hover:text-red-700 flex-shrink-0"
                                             onClick={(e) => {
@@ -104,10 +112,10 @@ const StopsSidebar = memo(({
                                         </button>
                                     )}
                                 </li>
-                            ))
-                    ) : (
-                        <li className="text-center text-muted-foreground py-2">No stops available</li>
-                    )}
+                            )
+                            ) : (
+                            <li className="text-center text-muted-foreground py-2">No stops available</li>
+                        )}
                 </ul>
             </div>
         </>
