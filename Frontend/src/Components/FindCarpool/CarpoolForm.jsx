@@ -11,7 +11,7 @@ const CustomButton = ({ children, type = "button", variant = "default", onClick,
       onClick={onClick}
       disabled={disabled || isLoading}
       className={`px-4 py-2 text-sm font-medium rounded-md flex items-center space-x-2 ${variant === "outline"
-        ? "border border-gray-300 bg-transparent hover:bg-gray-100"
+        ? "border border-gray-300 bg-transparent hover:bg-gray-100 dark:hover:bg-blue-700"
         : "bg-blue-600 text-white hover:bg-blue-700"
         } ${(disabled || isLoading) ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
     >
@@ -248,7 +248,7 @@ const LocationSelector = ({ id, label, placeholder, value, onChange, onLocationS
           value={value}
           onChange={onChange}
           onClick={() => setShowMap(true)}
-          className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white cursor-pointer"
+          className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
           placeholder={placeholder}
           readOnly
         />
