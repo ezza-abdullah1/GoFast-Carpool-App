@@ -73,14 +73,15 @@ const CarpoolPost = ({
   };
 
   const handleCancel = () => {
+     if (userDetails.id !== driver.driverId) {
+        (toast.error("You can only cancel your own ride"))
+      } else{
     if (window.confirm("Are you sure you want to cancel this ride?")) {
       console.log("Attempting to cancel carpool with ID (via Redux):", id);
       if (onCarpoolCancelled) {
         onCarpoolCancelled(id);
       }
-    }
-
-
+    }}
   };
 
   const toggleExpand = () => {
@@ -290,7 +291,7 @@ const CarpoolPost = ({
                 </button>
               )}
 
-              <MapModal open={mapModalOpen} rideId={id} route={route} stop={stops} onOpenChange={setMapModalOpen} activeTab={activeTab} />
+              <MapModal open={mapModalOpen} rideId={id} route={route} stop={stops} onOpenChange={setMapModalOpen} activeTab={activeTab} driverid={driver.driverId} />
             </div>
           )}
 

@@ -20,7 +20,7 @@ import { useSelector } from "react-redux";
 import axiosInstance from "../Authentication/redux/axiosInstance";
 import { getLocationName } from "../UtilsFunctions/LocationName";
 
-const MapModal = ({ open, rideId, onOpenChange, activeTab, route, stop }) => {
+const MapModal = ({ open, rideId, onOpenChange, activeTab, route, stop, driverid }) => {
     const mapRef = useRef(null);
     const mapInstanceRef = useRef(null);
     const routeLayerRef = useRef(null);
@@ -218,11 +218,12 @@ const MapModal = ({ open, rideId, onOpenChange, activeTab, route, stop }) => {
                         {
                             noFooter && (
                                 <div>
-                                    <UpcomingRideActions
-                                        activeTab={activeTab}
-                                        rideId={rideId}
-                                        onRideFinished={onOpenChange}
-                                    />
+                                <UpcomingRideActions
+                                activeTab={activeTab}
+                                rideId={rideId}
+                                onRideFinished={onOpenChange} 
+                                driver_id = {driverid}
+                                />
                                 </div>
                             )
                         }
