@@ -171,11 +171,19 @@ const Header = () => {
       </header>
 
       {/* Auth Modals */}
-      {authModalOpen && (authMode === 'signin' ? 
-        <SignIn onClose={() => { setAuthModalOpen(false); setUser(JSON.parse(localStorage.getItem('user'))); }} /> 
-        : 
-        <SignUp onClose={() => { setAuthModalOpen(false); setUser(JSON.parse(localStorage.getItem('user'))); }} />
-      )}
+      {authModalOpen && (
+  authMode === 'signin' ? 
+    <SignIn 
+      onClose={() => { setAuthModalOpen(false); setUser(JSON.parse(localStorage.getItem('user'))); }} 
+      onSwitchToSignUp={() => setAuthMode('signup')}
+    /> 
+    : 
+    <SignUp 
+      onClose={() => { setAuthModalOpen(false); setUser(JSON.parse(localStorage.getItem('user'))); }} 
+      onSwitchToSignIn={() => setAuthMode('signin')}
+    />
+)}
+
     </>
   );
 };
