@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useSocket } from '../contexts/socket';
+import { useSelector } from 'react-redux';
 
 import ContactsSidebar from "../Components/Messaging/ContactsSidebar";
 import ChatArea from "../Components/Messaging/ChatArea";
@@ -9,23 +10,36 @@ import EmptyChatState from "../Components/Messaging/EmptyChatState";
 // Add API base URL - make sure this matches your backend
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-// Configure axios defaults
+// Configure axios defaults and add authorization header
 axios.defaults.baseURL = API_URL;
+axios.interceptors.request.use(
+  (config) => {
+    const token = sessionStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 export default function Messages() {
   const { socket, isConnected, connectError, reconnect } = useSocket();
+  const user = useSelector(state => state.user.userDetails);
   const [contacts, setContacts] = useState([]);
   const [activeId, setActiveId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [joinedRoom, setJoinedRoom] = useState(false);
-  const [pendingMessages, setPendingMessages] = useState({}); // Track pending messages
+  const [pendingMessages, setPendingMessages] = useState({});
 
   // Load contacts once
   useEffect(() => {
+    if (!user) return; // Make sure we have user details
+    
     setLoading(true);
-    console.log('Fetching contacts from:', `${API_URL}/api/contacts`);
+    console.log('Fetching contacts from:', `${API_URL}/api/messages/contacts`);
     
     axios.get('/api/messages/contacts')
       .then(res => {
@@ -43,7 +57,7 @@ export default function Messages() {
         setError('Failed to load contacts: ' + (err.message || 'Unknown error'));
         setLoading(false);
       });
-  }, []);
+  }, [user]);
 
   // Join room effect - separate from message loading
   useEffect(() => {
@@ -141,7 +155,6 @@ export default function Messages() {
     
     axios.post('/api/messages', {
       conversationId: activeId,
-      senderId: 'me',
       text: messageText.trim()
     })
     .then(response => {
