@@ -1,43 +1,31 @@
-const User = require('../models/User');
-const Conversation = require('../models/Conversation');
-const Message = require('../models/Message');
-const jwt = require('jsonwebtoken');
-const mongoose = require('mongoose');
+// backend/controllers/contactsController.js
 
-/**
- * Get all contacts for the current user with their last messages
- */
+const User = require("../models/User");
+const Conversation = require("../models/Conversation");
+const Message = require("../models/Message");
+const jwt = require("jsonwebtoken");
+
 exports.getContacts = async (req, res) => {
   try {
-    // Get current user ID from token
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) {
-      return res.status(401).json({ error: 'Not authenticated' });
-    }
-    
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const currentUserId = decoded.userId;
+    // Authenticate
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ error: "Not authenticated" });
+    const { userId: currentUserId } = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Find all conversations that include the current user
+    // Fetch all one-to-one conversations for this user, most recent first
     const conversations = await Conversation.find({
-      participants: { $in: [currentUserId] }
-    }).populate({
-      path: 'participants',
-      select: 'fullName email gender department'
-    }).sort({ lastMessageTimestamp: -1 });
+      participants: currentUserId
+    })
+      .sort({ lastMessageTimestamp: -1 })
+      .populate("participants", "fullName email gender department isOnline");
 
-    // Format conversations into contacts list
-    const contacts = await Promise.all(conversations.map(async (conv) => {
-      // Find the other participant (not the current user)
-      const otherParticipant = conv.participants.find(
-        p => p._id.toString() !== currentUserId.toString()
+    // Build contact DTOs
+    const contacts = await Promise.all(conversations.map(async conv => {
+      const other = conv.participants.find(
+        p => p._id.toString() !== currentUserId
       );
+      if (!other) return null;
 
-      if (!otherParticipant) {
-        return null; // Skip if somehow there's no other participant
-      }
-
-      // Get unread count
       const unreadCount = await Message.countDocuments({
         conversationId: conv._id.toString(),
         receiverId: currentUserId,
@@ -45,73 +33,62 @@ exports.getContacts = async (req, res) => {
       });
 
       return {
-        id: conv._id.toString(),
-        socketRoomId: `sample-${conv._id.toString()}`, // Add this for socket.io
-        name: otherParticipant.fullName,
-        email: otherParticipant.email,
-        department: otherParticipant.department,
-        gender: otherParticipant.gender,
-        userId: otherParticipant._id.toString(),
-        isOnline: false, // You can implement online status with socket.io
-        lastMessage: conv.lastMessage,
-        lastSeen: conv.lastMessageTimestamp 
-          ? new Date(conv.lastMessageTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          : 'Never',
+        id:           conv._id.toString(),
+        socketRoomId: conv._id.toString(),        // use raw ID
+        userId:       other._id.toString(),
+        name:         other.fullName,
+        email:        other.email,
+        department:   other.department,
+        gender:       other.gender,
+        isOnline:     other.isOnline || false,
+        lastMessage:  conv.lastMessage,
+        lastSeen:     conv.lastMessageTimestamp
+                         .toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         unreadCount
       };
     }));
 
-    // Filter out any null values
-    const validContacts = contacts.filter(contact => contact !== null);
-
-    // If no contacts, return an empty array or create real conversations
-    if (validContacts.length === 0) {
-      // Find all users
-      const allUsers = await User.find({ _id: { $ne: currentUserId } })
-        .select('fullName email gender department')
-        .limit(5);
-        
-      // Create REAL conversations for these users instead of sample ones
-      const realContacts = await Promise.all(allUsers.map(async (user) => {
-        // Create actual conversation in the database
-        let conversation = await Conversation.findOne({
-          participants: { $all: [currentUserId, user._id] }
-        });
-
-        // If no conversation exists, create one
-        if (!conversation) {
-          conversation = new Conversation({
-            participants: [currentUserId, user._id],
-            lastMessage: "No messages yet",
-            lastMessageTimestamp: new Date()
-          });
-          
-          await conversation.save();
-        }
-
-        return {
-          id: conversation._id.toString(),
-          socketRoomId: `sample-${conversation._id.toString()}`, // For socket compatibility
-          name: user.fullName,
-          email: user.email,
-          department: user.department,
-          gender: user.gender,
-          userId: user._id.toString(),
-          isOnline: false,
-          lastMessage: conversation.lastMessage || "No messages yet",
-          lastSeen: conversation.lastMessageTimestamp 
-            ? new Date(conversation.lastMessageTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            : 'New',
-          unreadCount: 0
-        };
-      }));
-      
-      return res.json(realContacts);
+    const validContacts = contacts.filter(c => c);
+    if (validContacts.length) {
+      return res.json(validContacts);
     }
 
-    return res.json(validContacts);
+    // If no existing conversations, seed up to 5 real ones
+    const others = await User.find({ _id: { $ne: currentUserId } })
+      .select("fullName email gender department isOnline")
+      .limit(5);
+
+    const seeded = await Promise.all(others.map(async user => {
+      let conv = await Conversation.findOne({
+        participants: { $all: [currentUserId, user._id] }
+      });
+      if (!conv) {
+        conv = await Conversation.create({
+          participants: [currentUserId, user._id],
+          lastMessage: "",
+          lastMessageTimestamp: Date.now()
+        });
+      }
+
+      return {
+        id:           conv._id.toString(),
+        socketRoomId: conv._id.toString(),
+        userId:       user._id.toString(),
+        name:         user.fullName,
+        email:        user.email,
+        department:   user.department,
+        gender:       user.gender,
+        isOnline:     user.isOnline || false,
+        lastMessage:  conv.lastMessage || "",
+        lastSeen:     conv.lastMessageTimestamp
+                         .toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        unreadCount:  0
+      };
+    }));
+
+    return res.json(seeded);
   } catch (error) {
-    console.error('Error fetching contacts:', error);
-    res.status(500).json({ error: 'Failed to fetch contacts' });
+    console.error("Error fetching contacts:", error);
+    res.status(500).json({ error: "Failed to fetch contacts" });
   }
 };

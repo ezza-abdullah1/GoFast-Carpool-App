@@ -46,7 +46,10 @@ resetPasswordExpires: Date,
       type: Date,
       default: Date.now,
     },
-profilePic: String, 
+profilePicture: {
+  type: String, // base64 image string
+  default: '',
+},
 
 });
 

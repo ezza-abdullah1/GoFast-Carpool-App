@@ -6,6 +6,7 @@ import { cn } from '../../lib/utils';
 import SignIn from '../Authentication/SignIn';
 import SignUp from '../Authentication/SignUp';
 
+
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -15,6 +16,7 @@ const Header = () => {
   const [user, setUser] = useState(null); // ⬅️ user state
   const location = useLocation();
   const navigate = useNavigate();
+  
 
   // Load user from localStorage
   useEffect(() => {
@@ -146,10 +148,14 @@ const Header = () => {
                 </>
               ) : (
                 <>
-                  <span className="text-sm font-semibold flex items-center gap-2">
-                    <User className="h-5 w-5" />
-                    {user.fullName}
-                  </span>
+                <span
+  onClick={() => navigate('/profile-settings')}
+  className="text-sm font-semibold flex items-center gap-2 cursor-pointer hover:text-primary transition-colors"
+>
+  <User className="h-5 w-5" />
+  {user.fullName}
+</span>
+
                   <Button variant="destructive" size="sm" onClick={logout}>
                     <LogOut className="mr-2 h-4 w-4" /> Logout
                   </Button>
@@ -171,11 +177,19 @@ const Header = () => {
       </header>
 
       {/* Auth Modals */}
-      {authModalOpen && (authMode === 'signin' ? 
-        <SignIn onClose={() => { setAuthModalOpen(false); setUser(JSON.parse(localStorage.getItem('user'))); }} /> 
-        : 
-        <SignUp onClose={() => { setAuthModalOpen(false); setUser(JSON.parse(localStorage.getItem('user'))); }} />
-      )}
+      {authModalOpen && (
+  authMode === 'signin' ? 
+    <SignIn 
+      onClose={() => { setAuthModalOpen(false); setUser(JSON.parse(localStorage.getItem('user'))); }} 
+      onSwitchToSignUp={() => setAuthMode('signup')}
+    /> 
+    : 
+    <SignUp 
+      onClose={() => { setAuthModalOpen(false); setUser(JSON.parse(localStorage.getItem('user'))); }} 
+      onSwitchToSignIn={() => setAuthMode('signin')}
+    />
+)}
+
     </>
   );
 };

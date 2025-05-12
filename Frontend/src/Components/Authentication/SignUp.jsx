@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import VerifyAccount from "./VerifyAccount";
-import { Loader2 } from "lucide-react"; // Spinner icon
+import { Loader2, X } from "lucide-react"; // Importing X icon
 
 const SignUp = ({ onClose, onSwitchToSignIn }) => {
   const [formData, setFormData] = useState({
@@ -15,7 +15,7 @@ const SignUp = ({ onClose, onSwitchToSignIn }) => {
 
   const [showVerify, setShowVerify] = useState(false);
   const [emailForVerification, setEmailForVerification] = useState("");
-  const [loading, setLoading] = useState(false); // Loading state
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData((prevData) => ({
@@ -39,7 +39,7 @@ const SignUp = ({ onClose, onSwitchToSignIn }) => {
     }
 
     try {
-      setLoading(true); // Start loading
+      setLoading(true);
       const res = await axios.post("http://localhost:5000/api/auth/signup", formData);
       toast.success("Verification code sent to your email.");
       setEmailForVerification(formData.email);
@@ -47,14 +47,22 @@ const SignUp = ({ onClose, onSwitchToSignIn }) => {
     } catch (err) {
       toast.error(err.response?.data?.error || "Signup failed.");
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-md shadow-md w-[400px]">
-        <h2 className="text-2xl font-bold mb-4 text-center">Sign Up</h2>
+      <div className="relative bg-white dark:bg-gray-800 p-6 rounded-md shadow-md w-[400px]">
+        {/* Close Icon */}
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        <h2 className="text-2xl font-bold mb-4 text-center text-gray-900 dark:text-white">Sign Up</h2>
         <form onSubmit={handleSubmit}>
           <input
             type="text"
@@ -62,21 +70,22 @@ const SignUp = ({ onClose, onSwitchToSignIn }) => {
             placeholder="Full Name"
             value={formData.fullName}
             onChange={handleChange}
-            className="w-full p-2 border rounded-md mb-3"
+            className="w-full p-2 border rounded-md mb-3 bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
             required
           />
           <select
             name="department"
             value={formData.department}
             onChange={handleChange}
-            className="w-full p-2 border rounded-md mb-3"
+            className="w-full p-2 border rounded-md mb-3 bg-white dark:bg-gray-700 text-black dark:text-white"
             required
           >
             <option value="">Select Department</option>
             <option value="Computer Science">Computer Science</option>
             <option value="Electrical Engineering">Electrical Engineering</option>
-            <option value="Civil">Civil</option>
+            <option value="Civil Engineering">Civil Engineering</option>
             <option value="Management">Management</option>
+            <option value="Science and Humanities">Science and Humanities</option>
           </select>
 
           <input
@@ -85,7 +94,7 @@ const SignUp = ({ onClose, onSwitchToSignIn }) => {
             placeholder="FAST Email"
             value={formData.email}
             onChange={handleChange}
-            className="w-full p-2 border rounded-md mb-3"
+            className="w-full p-2 border rounded-md mb-3 bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
             required
           />
           <input
@@ -94,14 +103,14 @@ const SignUp = ({ onClose, onSwitchToSignIn }) => {
             placeholder="Password"
             value={formData.password}
             onChange={handleChange}
-            className="w-full p-2 border rounded-md mb-3"
+            className="w-full p-2 border rounded-md mb-3 bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
             required
           />
           <select
             name="gender"
             value={formData.gender}
             onChange={handleChange}
-            className="w-full p-2 border rounded-md mb-4"
+            className="w-full p-2 border rounded-md mb-4 bg-white dark:bg-gray-700 text-black dark:text-white"
             required
           >
             <option value="">Select Gender</option>
@@ -126,7 +135,7 @@ const SignUp = ({ onClose, onSwitchToSignIn }) => {
           </button>
         </form>
 
-        <p className="mt-4 text-sm text-center text-gray-600">
+        <p className="mt-4 text-sm text-center text-gray-600 dark:text-gray-300">
           Already have an account?{" "}
           <span
             onClick={onSwitchToSignIn}

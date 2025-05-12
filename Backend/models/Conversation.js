@@ -1,9 +1,11 @@
+// backend/models/Conversation.js
+
 const mongoose = require("mongoose");
 
 const conversationSchema = new mongoose.Schema({
   participants: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true
   }],
   lastMessage: {
@@ -20,7 +22,20 @@ const conversationSchema = new mongoose.Schema({
   }
 });
 
-// Ensure participants are unique in each conversation
-conversationSchema.index({ participants: 1 }, { unique: true });
+// Pre-save: sort IDs lexicographically → deterministic [A,B] vs [B,A]
+conversationSchema.pre("save", function(next) {
+  const sorted = this.participants
+    .map(id => id.toString())
+    .sort();
+  this.participants = sorted.map(id => new mongoose.Types.ObjectId(id));
+  next();
+});
 
-module.exports = mongoose.models.Conversation || mongoose.model("Conversation", conversationSchema);
+// Unique compound index on the ordered pair
+conversationSchema.index(
+  { "participants.0": 1, "participants.1": 1 },
+  { unique: true }
+);
+
+module.exports = mongoose.models.Conversation ||
+  mongoose.model("Conversation", conversationSchema);

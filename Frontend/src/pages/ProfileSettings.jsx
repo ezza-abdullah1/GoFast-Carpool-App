@@ -1,102 +1,130 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { useSelector } from 'react-redux'; // Or get user from localStorage if not using Redux
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { toast } from "react-hot-toast";
+import { Loader2 } from "lucide-react";
+import Header from "../Components/layout/Header"; // Adjust path as needed
+import Footer from "../Components/layout/Footer"; // Adjust path as needed
 
 const ProfileSettings = () => {
-  const user = JSON.parse(localStorage.getItem('user')); // Or use Redux
-  const [form, setForm] = useState({
-    fullName: '',
-    department: '',
-    profilePic: null,
-    profilePicUrl: '',
-  });
-  const [message, setMessage] = useState('');
+  const storedUser = JSON.parse(localStorage.getItem("user"));
+  const [formData, setFormData] = useState({
+  fullName: storedUser?.fullName || "",
+  department: storedUser?.department || "",
+  gender: storedUser?.gender || "",
+  password: "",
+});
 
-  useEffect(() => {
-    axios.get(`/api/users/${user._id}`).then(res => {
-      setForm({
-        fullName: res.data.fullName || '',
-        department: res.data.department || '',
-        profilePic: null,
-        profilePicUrl: res.data.profilePic || '',
-      });
-    });
-  }, [user._id]);
+
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleFileChange = (e) => {
-    setForm(prev => ({ ...prev, profilePic: e.target.files[0] }));
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append('fullName', form.fullName);
-    formData.append('department', form.department);
-    if (form.profilePic) {
-      formData.append('profilePic', form.profilePic);
-    }
-
     try {
-      const res = await axios.put(`/api/users/${user._id}`, formData);
-      setMessage('Profile updated successfully');
-      localStorage.setItem('user', JSON.stringify(res.data)); // update local user
-    } catch (err) {
-      setMessage('Error updating profile');
+      setLoading(true);
+const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000"; // Default to localhost if undefined
+console.log("Sending PUT request to:", `${backendUrl}/api/auth/update-profile`);
+      const { data } = await axios.put(
+  `${backendUrl}/api/auth/update-profile`,
+  {
+    fullName: formData.fullName,
+    department: formData.department,
+    gender: formData.gender,
+    password: formData.password,
+  },
+  {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  }
+);
+      localStorage.setItem("user", JSON.stringify(data.updatedUser));
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Something went wrong"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-xl mx-auto mt-20 p-6 bg-white shadow rounded">
-      <h2 className="text-2xl font-bold mb-4">Edit Profile</h2>
-      {message && <p className="mb-4 text-sm text-green-600">{message}</p>}
-      <form onSubmit={handleSubmit} encType="multipart/form-data">
-        <div className="mb-4">
-          <label className="block font-medium">Full Name</label>
-          <input
-            type="text"
-            name="fullName"
-            value={form.fullName}
-            onChange={handleChange}
-            className="mt-1 block w-full border border-gray-300 rounded p-2"
-          />
-        </div>
+    <>
+      <Header />
 
-        <div className="mb-4">
-          <label className="block font-medium">Department</label>
-          <input
-            type="text"
-            name="department"
-            value={form.department}
-            onChange={handleChange}
-            className="mt-1 block w-full border border-gray-300 rounded p-2"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block font-medium">Profile Picture</label>
-          <input type="file" name="profilePic" onChange={handleFileChange} />
-          {form.profilePicUrl && (
-            <img
-              src={form.profilePicUrl}
-              alt="Profile"
-              className="w-20 h-20 mt-2 rounded-full object-cover"
+      <div className="max-w-md mx-auto mt-32 p-6 bg-white shadow-md rounded-md dark:bg-black dark:text-white">
+        <h2 className="text-2xl font-bold mb-6">Update Profile Settings</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block mb-1 font-medium">Full Name</label>
+            <input
+              type="text"
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleChange}
+              className="w-full border px-3 py-2 rounded"
             />
-          )}
-        </div>
+          </div>
+          <div>
+  <label className="block mb-1 font-medium">Gender</label>
+  <select
+    name="gender"
+    value={formData.gender}
+    onChange={handleChange}
+    className="w-full border px-3 py-2 rounded"
+  >
+    <option value="">Select Gender</option>
+    <option value="Male">Male</option>
+    <option value="Female">Female</option>
+    <option value="Other">Other</option>
+  </select>
+</div>
 
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Save Changes
-        </button>
-      </form>
-    </div>
+<div>
+  <label className="block mb-1 font-medium">Department</label>
+  <select
+    name="department"
+    value={formData.department}
+    onChange={handleChange}
+    className="w-full border px-3 py-2 rounded"
+  >
+   <option value="">Select Department</option>
+            <option value="Computer Science">Computer Science</option>
+            <option value="Electrical Engineering">Electrical Engineering</option>
+            <option value="Civil Engineering">Civil Engineering</option>
+            <option value="Management">Management</option>
+            <option value="Science and Humanities">Science and Humanities</option>
+  </select>
+</div>
+
+          <div>
+            <label className="block mb-1 font-medium">New Password</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Leave blank to keep current password"
+              className="w-full border px-3 py-2 rounded"
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-primary text-white py-2 px-4 rounded flex items-center justify-center"
+          >
+            {loading ? <Loader2 className="animate-spin" /> : "Update Profile"}
+          </button>
+        </form>
+      </div>
+
+    </>
   );
 };
 

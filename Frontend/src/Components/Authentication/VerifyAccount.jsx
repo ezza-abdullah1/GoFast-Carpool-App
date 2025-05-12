@@ -12,7 +12,8 @@ const VerifyAccount = ({ email, onSuccess }) => {
       toast.success("Account verified! Please sign in.");
       onSuccess(); // Opens Sign In and closes Verify
     } catch (err) {
-      toast.error(err.response?.data?.error || "Verification failed.");
+      //toast.error(err.response?.data?.error || "Verification failed.");
+      console.log(err);
     }
   };
 

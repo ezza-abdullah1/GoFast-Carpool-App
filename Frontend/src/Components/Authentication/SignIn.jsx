@@ -71,7 +71,7 @@ const SignIn = ({ onSwitchToSignUp, onClose }) => {
           <X className="w-5 h-5" />
         </button>
 
-        <h2 className="text-2xl font-bold mb-4 text-center">Sign In to GoFAST</h2>
+        <h2 className="text-2xl font-bold mb-4 text-center">Sign In </h2>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="relative">
