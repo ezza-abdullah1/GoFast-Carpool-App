@@ -10,6 +10,7 @@ import { RingLoader } from 'react-spinners';
 import { fetchUpcomingRides, removeUpcomingRide } from '../Components/Authentication/redux/upcomingRidesSlice';
 import { fetchPendingRequests } from '../Components/Authentication/redux/pendingRequestSlice';
 import { fetchCarpoolHistory } from '../Components/Authentication/redux/carpoolHistorySlice';
+
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
   const [showCarpoolForm, setShowCarpoolForm] = useState(false);
@@ -33,17 +34,19 @@ const Dashboard = () => {
       dispatch(fetchPendingRequests(userDetails.id));
     }
   }, [dispatch, userDetails, activeTab]);
+
   useEffect(() => {
     if (userDetails?.id && activeTab === 'history') {
       dispatch(fetchCarpoolHistory(userDetails.id));
     }
   }, [dispatch, userDetails, activeTab]);
+
   useEffect(() => {
     if (userDetails?.id && activeTab === 'upcoming') {
       dispatch(fetchUpcomingRides(userDetails.id));
     }
   }, [dispatch, userDetails, activeTab]);
- 
+
   const getRequesterName = (ride) => {
     if (ride?.stops && ride.stops.length > 0 && ride.stops[0].userDetails) {
       return ride.stops[0].userDetails.fullName;
@@ -52,13 +55,13 @@ const Dashboard = () => {
   };
 
 
-  // if (loading || (ridesLoading && activeTab === 'upcoming')) {
-  //   return (
-  //     <div className="flex justify-center items-center h-screen">
-  //       <RingLoader color="#3498db" size={60} />
-  //     </div>
-  //   );
-  // }
+  if (loading || (ridesLoading && activeTab === 'upcoming')) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <RingLoader color="#3498db" size={60} />
+      </div>
+    );
+  }
 
   if (error || (ridesError && activeTab === 'upcoming')) {
     return (
@@ -74,80 +77,65 @@ const Dashboard = () => {
     );
   }
 
-  if (!userDetails) {
-    return (
-
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-center bg-yellow-100 p-8 rounded-lg shadow-md">
-          <AiOutlineExclamationCircle size={40} className="text-yellow-600 mb-4" />
-          <h2 className="text-xl text-yellow-600 font-semibold">No user details available</h2>
-          <p className="text-sm text-gray-600">Please make sure you're logged in.</p>
-        </div>
-      </div>
-    );
-  }
-
-
-
 
   return (
-
     <div className="flex flex-col min-h-screen">
       <main className="flex-1 pt-20">
         {/* User Profile Section */}
-
-        <section className="bg-muted/30 dark:bg-muted/5 py-12">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
-              <div className="h-24 w-24 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center flex-shrink-0 border-4 border-white dark:border-black">
-                <span className="text-4xl font-bold text-primary-600 dark:text-primary-300">
-                  {userDetails.fullName.charAt(0)}
-                </span>
-              </div>
-
-              <div className="md:flex-1 text-center md:text-left">
-                <h1 className="text-2xl font-bold">{userDetails.fullName}</h1>
-                <p className="text-muted-foreground mb-2">{userDetails.department.toUpperCase()}</p>
-                <div className="flex items-center justify-center md:justify-start gap-1 mb-4">
-                  <Star className="h-4 w-4 text-yellow-500" fill="currentColor" />
-                  <span className="font-medium">{userDetails.rating.toFixed(1)}</span>
-                  <span className="text-muted-foreground text-sm">
-                    ({userDetails.rides_offered + userDetails.rides_taken} rides)
+        {userDetails && (
+          <section className="bg-muted/30 dark:bg-muted/5 py-12">
+            <div className="container mx-auto px-4">
+              <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
+                <div className="h-24 w-24 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center flex-shrink-0 border-4 border-white dark:border-black">
+                  <span className="text-4xl font-bold text-primary-600 dark:text-primary-300">
+                    {userDetails.fullName.charAt(0)}
                   </span>
                 </div>
 
-                <div className="flex flex-wrap justify-center md:justify-start gap-4">
-                  <div className="text-center">
-                    <p className="text-lg font-bold">{userDetails.rides_offered}</p>
-                    <p className="text-xs text-muted-foreground">Rides Offered</p>
+                <div className="md:flex-1 text-center md:text-left">
+                  <h1 className="text-2xl font-bold">{userDetails.fullName}</h1>
+                  <p className="text-muted-foreground mb-2">{userDetails.department.toUpperCase()}</p>
+                  <div className="flex items-center justify-center md:justify-start gap-1 mb-4">
+                    <Star className="h-4 w-4 text-yellow-500" fill="currentColor" />
+                    <span className="font-medium">{userDetails.rating.toFixed(1)}</span>
+                    <span className="text-muted-foreground text-sm">
+                      ({userDetails.rides_offered + userDetails.rides_taken} rides)
+                    </span>
                   </div>
-                  <div className="text-center">
-                    <p className="text-lg font-bold">{userDetails.rides_taken}</p>
-                    <p className="text-xs text-muted-foreground">Rides Taken</p>
+
+                  <div className="flex flex-wrap justify-center md:justify-start gap-4">
+                    <div className="text-center">
+                      <p className="text-lg font-bold">{userDetails.rides_offered}</p>
+                      <p className="text-xs text-muted-foreground">Rides Offered</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-lg font-bold">{userDetails.rides_taken}</p>
+                      <p className="text-xs text-muted-foreground">Rides Taken</p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex gap-3">
-                <Button
-                  size="sm"
-                  className="bg-blue-500 dark:bg-muted dark:hover:bg-button-hover dark:text-white text-white rounded-full px-4 py-1.5 text-sm hover:bg-blue-600 active:bg-blue-700"
-                  variant="outline"
-                  onClick={() => setShowCarpoolForm(!showCarpoolForm)}
-                >
-                  {showCarpoolForm ? 'Cancel' : (
-                    <>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Offer Ride
-                    </>
-                  )}
-                </Button>
+                <div className="flex gap-3">
+                  <Button
+                    size="sm"
+                    className="bg-blue-500 dark:bg-muted dark:hover:bg-button-hover dark:text-white text-white rounded-full px-4 py-1.5 text-sm hover:bg-blue-600 active:bg-blue-700"
+                    variant="outline"
+                    onClick={() => setShowCarpoolForm(!showCarpoolForm)}
+                  >
+                    {showCarpoolForm ? 'Cancel' : (
+                      <>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Offer Ride
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
-        {showCarpoolForm && (
+        {showCarpoolForm && userDetails && (
           <section className="py-8">
             <div className="container mx-auto px-4">
               <CarpoolForm userId={userDetails.id} />
@@ -257,7 +245,6 @@ const Dashboard = () => {
                       <Button onClick={() => setShowCarpoolForm(true)}>
                         <Plus className="mr-2 h-4 w-4" />
                         Offer a Ride
-
                       </Button>
                     </div>
                   )}

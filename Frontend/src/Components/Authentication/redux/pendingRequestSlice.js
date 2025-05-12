@@ -47,7 +47,7 @@ const transformRideToUIFormat = (ride) => {
       name: ride.userDetails?.fullName ?? "Unknown",
       rating: ride.userDetails?.rating ?? 0,
       department: ride.userDetails?.department ?? "N/A",
-      image: ride.userDetails?.profilePicture, // Assuming profilePicture exists
+      image: ride.userDetails?.profilePicture,
       driverId: ride.userDetails?._id,
     },
     route: {
@@ -86,7 +86,7 @@ const transformRideToUIFormat = (ride) => {
           userId: stop.userId,
           location: stop.location,
           status: stop.status,
-          userDetails: stop.userDetails, // Include userDetails here
+          userDetails: stop.userDetails,
         }))
       : [],
   };
@@ -101,7 +101,7 @@ const pendingRequestsSlice = createSlice({
   },
   reducers: {
     updateStopStatus: (state, action) => {
-      const { stopId, newStatus, rideId } = action.payload; // Make sure to pass rideId
+      const { stopId, newStatus, rideId } = action.payload; 
       const ride = state.rides.find((r) => r.id === rideId);
 
       if (ride) {
