@@ -1,16 +1,17 @@
 const Ride = require('../models/Ride');
-const User = require('../models/User');  
+const User = require('../models/User');
 const mongoose = require('mongoose');
+
 exports.createRideOffer = async (req, res) => {
   try {
-    const { 
-      userId, 
-      pickup, 
-      dropoff, 
-      numberOfSeats, 
-      date, 
-      time, 
-      preferences 
+    const {
+      userId,
+      pickup,
+      dropoff,
+      numberOfSeats,
+      date,
+      time,
+      preferences
     } = req.body;
 
     const newRide = new Ride({
@@ -21,12 +22,10 @@ exports.createRideOffer = async (req, res) => {
       date,
       time,
       preferences,
-      status: 'active'  
+      status: 'active'
     });
 
     const savedRide = await newRide.save();
-
-    await User.findByIdAndUpdate(userId, { $inc: { rides_offered: 1 } });
 
     const populatedRide = await Ride.findById(savedRide._id)
       .populate('userId', 'fullName department email gender rating rides_taken rides_offered')
@@ -47,15 +46,15 @@ exports.createRideOffer = async (req, res) => {
       numberOfSeats: populatedRide.userId.numberOfSeats,
 
       schedule: {
-        date: populatedRide.date.toISOString().split('T')[0],  
+        date: populatedRide.date.toISOString().split('T')[0],
         time: populatedRide.time,
-        recurring: [],  
+        recurring: [],
       },
       preferences: populatedRide.preferences,
-      _raw: populatedRide  
+      _raw: populatedRide
     };
 
-    res.status(201).json(formattedRideOffer); 
+    res.status(201).json(formattedRideOffer);
   } catch (error) {
     console.error('Error creating ride offer:', error);
     res.status(400).json({ message: error.message });
