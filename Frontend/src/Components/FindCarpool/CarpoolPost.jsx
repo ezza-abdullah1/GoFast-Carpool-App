@@ -31,7 +31,7 @@ const CarpoolPost = ({
   activeTab,
   stops,
   onCarpoolCancelled,
-  requesterName, 
+  requesterName,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [mapModalOpen, setMapModalOpen] = useState(false);
@@ -42,7 +42,7 @@ const CarpoolPost = ({
   const { userDetails } = useSelector((state) => state.user || {});
   const [errorMessage, setErrorMessage] = useState('');
   const location = useLocation();
-  const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false); 
+  const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false);
 
   const handleProfileClick = () => {
     if (userDetails.id === driver.driverId) {
@@ -75,13 +75,13 @@ const CarpoolPost = ({
   const handleCancelConfirmation = () => {
     if (userDetails.id !== driver.driverId) {
       toast.error("You can only cancel your own ride");
-      return; 
+      return;
     }
     setShowCancelConfirmModal(true);
   };
 
   const handleCancel = () => {
-    setShowCancelConfirmModal(false); 
+    setShowCancelConfirmModal(false);
     console.log("Attempting to cancel carpool with ID (via Redux):", id);
     if (onCarpoolCancelled) {
       onCarpoolCancelled(id);
@@ -240,7 +240,7 @@ const CarpoolPost = ({
                   className="flex-none h-[44px] w-[44px] px-4 text-sm bg-red-600 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-red-700 relative group"
                 >
                   <X className="h-4 w-4" />
-                  <span  onClick={handleCancel} className="absolute bottom-[50px] left-1/2 transform -translate-x-1/2 hidden group-hover:block bg-white text-black text-sm text-center px-2 py-1 rounded-md" >
+                  <span onClick={handleCancel} className="absolute bottom-[50px] left-1/2 transform -translate-x-1/2 hidden group-hover:block bg-white text-black text-sm text-center px-2 py-1 rounded-md" >
                     Cancel Ride
                   </span>
                 </button>
@@ -256,8 +256,7 @@ const CarpoolPost = ({
               )}
               {activeTab === "history" && (
                 <button
-                  className="flex-grow sm:flex-grow-0 h-[44px] px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600 dark:bg-button-dark dark:hover:bg-button-hover dark:text-white" onClick={handleDetailsClick} // Add the action listener
-                >
+                  className="flex-grow sm:flex-grow-0 h-[44px] px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600 dark:bg-button-dark dark:hover:bg-button-hover dark:text-white" onClick={handleDetailsClick}            >
                   Ride Details
                 </button>
               )}
@@ -326,7 +325,7 @@ const CarpoolPost = ({
                     fontSize: "14px",
                     padding: "0 12px",
                   }}
-                  onClick={handleDetailsClick} // Add the action listener
+                  onClick={handleDetailsClick}
                 >
                   Details
                 </button>
@@ -348,7 +347,7 @@ const CarpoolPost = ({
             <div className={cn(
               "mt-3 text-sm flex",
               variant === "compact" && "mt-2",
-              "justify-center" // Moved justify-center to the outer div
+              "justify-center"
             )}>
               <span className="text-red-600 font-bold">Requested by:</span>
               <span className="font-medium text-red-600 font-bold ml-1">{requesterName}</span>

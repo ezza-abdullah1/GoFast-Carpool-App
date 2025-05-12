@@ -1,4 +1,4 @@
-// backend/socket.js
+
 const socketIo = require("socket.io");
 let io;
 
@@ -18,7 +18,6 @@ exports.init = (server, corsOptions) => {
       socket.join(conversationId);
     });
 
-    // Listen for sendMessage and broadcast only to others
     socket.on("sendMessage", (msg) => {
       const { conversationId } = msg;
       console.log(`Received sendMessage from ${socket.id} for room ${conversationId}`);

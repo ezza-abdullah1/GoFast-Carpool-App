@@ -45,6 +45,5 @@ const Button = React.forwardRef(
 
 Button.displayName = "Button";
 
-// Change to named export
 export { Button };
 export default Button;

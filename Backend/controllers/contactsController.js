@@ -1,6 +1,4 @@
-// controllers/contactsController.js
 
-// In-memory contacts list
 const contacts = [
   { id: '1', name: 'Sara Malik', lastMessage: 'Sure, I can pick you up at 8:15 AM.', lastSeen: 'Online',   isOnline: true,  unreadCount: 2 },
   { id: '2', name: 'Ahmed Khan', lastMessage: 'Are you still offering the ride tomorrow?', lastSeen: '2 hours ago', isOnline: false, unreadCount: 0 },
@@ -12,6 +10,5 @@ const contacts = [
 ];
 
 exports.getContacts = (req, res) => {
-  // This will now properly return an array, not undefined
   res.json(contacts);
 };

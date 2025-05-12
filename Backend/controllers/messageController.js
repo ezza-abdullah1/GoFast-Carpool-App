@@ -1,5 +1,3 @@
-// backend/controllers/messageController.js
-// Create this file to match the import in your routes
 
 const messages = [
   {
@@ -54,6 +52,5 @@ exports.postMessage = (req, res) => {
   }
   convo.history.push(newMsg);
 
-  // Respond with the full message object
   res.status(201).json(newMsg);
 };

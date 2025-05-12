@@ -35,7 +35,6 @@ router.post("/signup", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Store in memory (you can switch to Redis or DB for production)
     tempUsers.set(email, {
       fullName, department, email, password: hashedPassword, gender,
       code: verificationCode,

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import VerifyAccount from "./VerifyAccount";
-import { Loader2 } from "lucide-react"; // Spinner icon
+import { Loader2 } from "lucide-react"; 
 
 const SignUp = ({ onClose, onSwitchToSignIn }) => {
   const [formData, setFormData] = useState({
@@ -39,7 +39,7 @@ const SignUp = ({ onClose, onSwitchToSignIn }) => {
     }
 
     try {
-      setLoading(true); // Start loading
+      setLoading(true);
       const res = await axios.post("http://localhost:5000/api/auth/signup", formData);
       toast.success("Verification code sent to your email.");
       setEmailForVerification(formData.email);
@@ -47,7 +47,7 @@ const SignUp = ({ onClose, onSwitchToSignIn }) => {
     } catch (err) {
       toast.error(err.response?.data?.error || "Signup failed.");
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false); 
     }
   };
 

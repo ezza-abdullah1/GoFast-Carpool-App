@@ -315,12 +315,6 @@ export default function CarpoolForm({ userId }) {
   const { userDetails } = useSelector((state) => state.user); 
 
 
-  useEffect(() => {
-    console.log("Current step:", step);
-    console.log("Form data:", formData);
-    console.log('CarpoolForm - userId prop received:', userId);
-  }, [step, formData]);
-
   const preferenceOptions = [
     'Female riders only',
     'Male riders only',
@@ -427,14 +421,11 @@ export default function CarpoolForm({ userId }) {
       };
 
       const result = await createRideOffer(rideData);
-      if (userDetails?.id && result?.data) { // Assuming your createRideOffer returns the new ride data in result.data
+      if (userDetails?.id && result?.data) { 
         dispatch(addUpcomingRide(result.data));
       } else if (userDetails?.id) {
-        // Fallback: If no ride data is returned, refetch
         dispatch(fetchUpcomingRides(userDetails.id));
       }
-
-      console.log('Ride created successfully:', result);
 
       setSubmitStatus({
         isSubmitting: false,
@@ -472,17 +463,16 @@ export default function CarpoolForm({ userId }) {
   const nextStep = () => {
     if (step === 1) {
       if (!formData.pickup || !formData.dropoff || !formData.pickupLocation || !formData.dropoffLocation) {
-        console.log("Step 1 validation failed - missing pickup or dropoff location data");
+        console.error("Step 1 validation failed - missing pickup or dropoff location data");
         return;
       }
     } else if (step === 2) {
       if (!formData.date || !formData.time) {
-        console.log("Step 2 validation failed - missing date or time");
+        console.error("Step 2 validation failed - missing date or time");
         return;
       }
     }
 
-    console.log(`Moving from step ${step} to ${step + 1}`);
     setStep(prev => prev + 1);
   };
 

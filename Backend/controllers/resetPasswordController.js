@@ -1,10 +1,9 @@
-// controllers/resetPasswordController.js
+
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 
-// POST /api/auth/reset-password
 router.post("/reset-password", async (req, res) => {
   const { email, password } = req.body;
 
