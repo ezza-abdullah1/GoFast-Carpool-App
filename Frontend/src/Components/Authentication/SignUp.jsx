@@ -83,8 +83,9 @@ const SignUp = ({ onClose, onSwitchToSignIn }) => {
             <option value="">Select Department</option>
             <option value="Computer Science">Computer Science</option>
             <option value="Electrical Engineering">Electrical Engineering</option>
-            <option value="Civil">Civil</option>
+            <option value="Civil Engineering">Civil Engineering</option>
             <option value="Management">Management</option>
+            <option value="Science and Humanities">Science and Humanities</option>
           </select>
 
           <input

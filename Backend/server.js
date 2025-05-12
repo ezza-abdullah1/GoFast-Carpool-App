@@ -19,6 +19,7 @@ const verifyTempUserRouter = require("./controllers/verifyTempUser");
 const forgotPasswordRoutes = require("./controllers/forgotPasswordController");
 const verifyCodeRoutes = require("./controllers/verifyResetCodeController");
 const resetPasswordRoutes = require("./controllers/resetPasswordController");
+const profileSetting=require("./controllers/userProfileController.js");
 // const upload=require("./Components/UtilsFunctions/upload") ;
 dotenv.config();
 connectDB();
@@ -60,7 +61,7 @@ app.use("/api/auth", verifyTempUserRouter);    // Handles POST /api/auth/verify
 app.use("/api/auth", forgotPasswordRoutes);
 app.use("/api/auth", verifyCodeRoutes);
 app.use("/api/auth", resetPasswordRoutes);
-app.use('/uploads', express.static('uploads'));
+app.use("/api/auth",profileSetting)
 
 // app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
