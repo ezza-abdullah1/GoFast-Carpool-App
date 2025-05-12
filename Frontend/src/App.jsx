@@ -14,6 +14,7 @@ import store from "./Components/Authentication/redux/store";
 import ForgotPasswordModal from "./Components/Authentication/ForgotPasswordModal";
 import ResetPassword from "./Components/Authentication/ResetPassword";
 import ResetCode from "./Components/Authentication/ResetCode";
+import ProfileSettings from "./pages/ProfileSettings";
 
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
         <Route path="forgotPassword" element={<ForgotPasswordModal/>}/>
         <Route path="resetPassword" element={<ResetPassword/>}/>
         <Route path="resetCode" element={<ResetCode/>}/>
+        <Route path="/profile-settings" element={<ProfileSettings />} />
 
 
       </Route>

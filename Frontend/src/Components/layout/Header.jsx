@@ -148,21 +148,13 @@ const Header = () => {
                 </>
               ) : (
                 <>
-                 <button
-  onClick={() => navigate('/profile')}
-  className="text-sm font-semibold flex items-center gap-2 hover:underline"
+                <span
+  onClick={() => navigate('/profile-settings')}
+  className="text-sm font-semibold flex items-center gap-2 cursor-pointer hover:text-primary transition-colors"
 >
-  {user.profilePicture ? (
-    <img
-      src={user.profilePicture}
-      alt="Profile"
-      className="h-6 w-6 rounded-full object-cover border"
-    />
-  ) : (
-    <User className="h-5 w-5" />
-  )}
+  <User className="h-5 w-5" />
   {user.fullName}
-</button>
+</span>
 
                   <Button variant="destructive" size="sm" onClick={logout}>
                     <LogOut className="mr-2 h-4 w-4" /> Logout
