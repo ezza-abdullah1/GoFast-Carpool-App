@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, User, Moon, Sun, Car, LogOut } from 'lucide-react';
+import { Menu, X, User, Moon, Sun, Car, LogOut, Settings } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { cn } from '../../lib/utils';
 import SignIn from '../Authentication/SignIn';
 import SignUp from '../Authentication/SignUp';
-
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -13,19 +12,19 @@ const Header = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState('signin');
-  const [user, setUser] = useState(null); // ⬅️ user state
+  const [user, setUser] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
-  
 
-  // Load user from localStorage
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
+    const storedUser = sessionStorage.getItem('user');
+    console.log("UserSession:",storedUser)
     if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
+
   useEffect(() => {
-  if (authModalOpen) window.scrollTo({ top: 0, behavior: 'smooth' });
-}, [authModalOpen]);
+    if (authModalOpen) window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [authModalOpen]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -45,14 +44,15 @@ const Header = () => {
       setIsDarkMode(false);
     }
   }, []);
+
   useEffect(() => {
-  if (location.state?.openSignUp) {
-    setAuthMode('signup');
-    setAuthModalOpen(true);
-    // clear the state so it doesn't trigger again on reload
-    navigate(location.pathname, { replace: true, state: {} });
-  }
-}, [location, navigate]);
+    if (location.state?.openSignUp) {
+      setAuthMode('signup');
+      setAuthModalOpen(true);
+      // Clear the state so it doesn't trigger again on reload
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
 
   const toggleDarkMode = () => {
     if (isDarkMode) {
@@ -86,8 +86,8 @@ const Header = () => {
   };
 
   const logout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
+    sessionStorage.removeItem('user');
+    sessionStorage.removeItem('token');
     setUser(null);
     navigate('/');
   };
@@ -118,8 +118,8 @@ const Header = () => {
                   to={link.path}
                   className={cn(
                     "text-sm font-medium transition-colors duration-200 hover:text-primary relative py-2 px-1",
-                    location.pathname === link.path 
-                      ? "text-primary" 
+                    location.pathname === link.path
+                      ? "text-primary"
                       : "text-foreground/80 hover:text-foreground"
                   )}
                 >
@@ -148,14 +148,14 @@ const Header = () => {
                 </>
               ) : (
                 <>
-                <span
-  onClick={() => navigate('/profile-settings')}
-  className="text-sm font-semibold flex items-center gap-2 cursor-pointer hover:text-primary transition-colors"
->
-  <User className="h-5 w-5" />
-  {user.fullName}
-</span>
-
+                  <span
+                    onClick={() => navigate('/profile-settings')}
+                    className="text-sm font-semibold flex items-center gap-2 cursor-pointer hover:text-primary transition-colors"
+                  >
+                    <User className="h-5 w-5" />
+                    {user.fullName}
+                    <Settings className="h-5 w-5" />
+                  </span>
                   <Button variant="destructive" size="sm" onClick={logout}>
                     <LogOut className="mr-2 h-4 w-4" /> Logout
                   </Button>
@@ -178,18 +178,27 @@ const Header = () => {
 
       {/* Auth Modals */}
       {authModalOpen && (
-  authMode === 'signin' ? 
-    <SignIn 
-      onClose={() => { setAuthModalOpen(false); setUser(JSON.parse(localStorage.getItem('user'))); }} 
-      onSwitchToSignUp={() => setAuthMode('signup')}
-    /> 
-    : 
-    <SignUp 
-      onClose={() => { setAuthModalOpen(false); setUser(JSON.parse(localStorage.getItem('user'))); }} 
-      onSwitchToSignIn={() => setAuthMode('signin')}
-    />
-)}
-
+        authMode === 'signin' ?
+          <SignIn
+            onClose={() => {
+              setAuthModalOpen(false);
+              const updatedUser = sessionStorage.getItem('user');
+              console.log("updated user:",updatedUser)
+              if (updatedUser) setUser(JSON.parse(updatedUser));
+            }}
+            onSwitchToSignUp={() => setAuthMode('signup')}
+          />
+          :
+          <SignUp
+            onClose={() => {
+              setAuthModalOpen(false);
+              const updatedUser = sessionStorage.getItem('user');
+              console.log("Updated USer:",updatedUser)
+              if (updatedUser) setUser(JSON.parse(updatedUser));
+            }}
+            onSwitchToSignIn={() => setAuthMode('signin')}
+          />
+      )}
     </>
   );
 };

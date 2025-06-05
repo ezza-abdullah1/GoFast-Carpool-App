@@ -74,10 +74,7 @@ const transformRideToUIFormat = (ride) => {
     },
     seats: {
       total: ride.numberOfSeats ?? 0,
-      available: Math.max(
-        0,
-        (ride.numberOfSeats ?? 0) - (ride.stops?.length ?? 0)
-      ),
+      available: ride.numberOfSeats?ride.numberOfSeats:0,
     },
     preferences: Array.isArray(ride.preferences) ? ride.preferences : [],
     stops: Array.isArray(ride.stops)

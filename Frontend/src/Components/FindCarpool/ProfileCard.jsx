@@ -41,16 +41,13 @@ const ProfileCard = ({ profileId, open, onOpenChange, className }) => {
     try {
       setMessageLoading(true);
 
-      // <-- FIX: drop leading "/api"
       const { data } = await axiosInstance.get(
         `/messages/conversation/${profileId}`
       );
       const { conversationId } = data;
 
-      // close dialog
       onOpenChange(false);
 
-      // navigate, passing via location.state
       navigate("/messages", {
         state: { activeConversation: conversationId },
       });

@@ -1,5 +1,8 @@
 import React from 'react';
 import { Car, Shield, Clock, Users, CreditCard, Fuel } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext'; 
+import Button from '../ui/compatibility-button';
 
 const FeatureCard = ({ icon, title, description, className }) => (
   <div className={`bg-card border border-border rounded-xl p-6 transition-all duration-200 hover:shadow-md ${className}`}>
@@ -12,6 +15,15 @@ const FeatureCard = ({ icon, title, description, className }) => (
 );
 
 const Features = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth(); // Get authentication state
+
+  const handleNavigation = () => {
+    if (!isAuthenticated) {
+      navigate('/', { state: { openSignUp: true } });
+    }
+  };
+
   const features = [
     {
       key: 1,
@@ -78,6 +90,17 @@ const Features = () => {
               className={feature.className}
             />
           ))}
+        </div>
+
+        {/* Add a call-to-action button */}
+        <div className="mt-12 text-center">
+          <Button
+            size="lg"
+            onClick={handleNavigation}
+            disabled={isAuthenticated}
+          >
+            Join Our Community
+          </Button>
         </div>
       </div>
     </section>

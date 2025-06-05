@@ -97,7 +97,7 @@ const MapContainer = ({
                         try {
                             const input = document.querySelector(".leaflet-control-geocoder-form input");
                             if (input) {
-                                input.className = "px-3 py-2 rounded border border-input shadow-sm w-64 text-sm";
+                                input.className = "px-3 py-2 rounded border border-input shadow-sm w-64 dark:text-black text-sm";
                             }
                         } catch (err) {}
                     }, 300);

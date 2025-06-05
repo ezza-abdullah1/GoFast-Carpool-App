@@ -5,9 +5,9 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const authMiddleware = require("../middleware/authMiddleware");
 
-router.put("/update-profile", authMiddleware, async (req, res) => {
+router.put("/update-profile/:id", authMiddleware, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.params.id;
     const { fullName, department, gender, password } = req.body;
 
     const user = await User.findById(userId);
@@ -19,6 +19,7 @@ router.put("/update-profile", authMiddleware, async (req, res) => {
     if (password) user.password = await bcrypt.hash(password, 10);
 
     await user.save();
+    console.log("User updated:", user);
 
     const { password: _, ...userWithoutPassword } = user.toObject();
     res.json({ message: "Profile updated", updatedUser: userWithoutPassword });

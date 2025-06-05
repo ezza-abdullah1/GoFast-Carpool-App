@@ -1,12 +1,12 @@
 import React from "react";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { toast } from "react-hot-toast";
 import axiosInstance from "../Authentication/redux/axiosInstance";
 import { fetchUpcomingRides } from '../Authentication/redux/upcomingRidesSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import ConfirmModal from '../ui/comfirmModal';
-
-const UpcomingRideActions = ({ activeTab, rideId, onRideFinished, driver_id }) => {
+import { incrementRidesOffered } from "../Authentication/redux/userSlice";
+const UpcomingRideActions = ({ activeTab, rideId, onRideFinished, driver_id,stops }) => {
   const dispatch = useDispatch();
   const { userDetails } = useSelector((state) => state.user);
   const [isFinishing, setIsFinishing] = useState(false);
@@ -36,7 +36,10 @@ const UpcomingRideActions = ({ activeTab, rideId, onRideFinished, driver_id }) =
         toast.success("Ride finished successfully!");
         if (userDetails?.id && activeTab === 'upcoming') {
           dispatch(fetchUpcomingRides(userDetails.id));
+
         }
+        dispatch(incrementRidesOffered(userDetails.id));
+        
         if (onRideFinished) {
           onRideFinished(rideId);
         }
@@ -54,7 +57,9 @@ const UpcomingRideActions = ({ activeTab, rideId, onRideFinished, driver_id }) =
   const handleCancelFinish = () => {
     setShowConfirmModal(false);
   };
-
+useEffect(() => {
+  console.log("Stops:", stops);
+},[])
   return (
     <div className="w-full flex justify-center mt-4">
       {activeTab === "upcoming" && rideId && (

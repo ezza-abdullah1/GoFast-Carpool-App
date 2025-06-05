@@ -43,8 +43,8 @@ const SignIn = ({ onSwitchToSignUp, onClose }) => {
     if (response.meta.requestStatus === "fulfilled") {
       const { token, user } = response.payload;
 
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
+      sessionStorage.setItem("token", token);
+      sessionStorage.setItem("user", JSON.stringify(user));
 
       if (formData.rememberMe) {
         localStorage.setItem("rememberedEmail", formData.email);

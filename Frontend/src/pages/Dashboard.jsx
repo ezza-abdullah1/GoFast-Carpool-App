@@ -10,11 +10,14 @@ import { RingLoader } from 'react-spinners';
 import { fetchUpcomingRides, removeUpcomingRide } from '../Components/Authentication/redux/upcomingRidesSlice';
 import { fetchPendingRequests } from '../Components/Authentication/redux/pendingRequestSlice';
 import { fetchCarpoolHistory } from '../Components/Authentication/redux/carpoolHistorySlice';
+import { fetchUserDetails } from '../Components/Authentication/redux/userSlice';
+import { useNavigate } from 'react-router-dom';
 
+import axiosInstance from '../Components/Authentication/redux/axiosInstance';
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
   const [showCarpoolForm, setShowCarpoolForm] = useState(false);
-
+  const [ratedRidesCount, setRatedRidesCount] = useState(0); 
   const dispatch = useDispatch();
   const { rides: pendingRequests, loading: pendingLoading, error: pendingError } = useSelector((state) => state.pendingRequests);
   const {
@@ -22,12 +25,17 @@ const Dashboard = () => {
     loading: historyLoading,
     error: historyError,
   } = useSelector((state) => state.carpoolHistory);
+ const navigate = useNavigate();
   const { userDetails, loading, error } = useSelector((state) => state.user);
   const { rides: upcomingRides, loading: ridesLoading, error: ridesError } = useSelector((state) => state.upcomingRides);
   const handleCarpoolCancelled = useCallback((cancelledId) => {
     dispatch(removeUpcomingRide(cancelledId));
   }, [dispatch]);
-
+  useEffect(() => {
+    if (userDetails?.id) {
+      dispatch(fetchUserDetails(userDetails.id));
+    }
+  }, [dispatch, userDetails, activeTab,navigate]);
 
   useEffect(() => {
     if (userDetails?.id && activeTab === 'offers') {
@@ -38,12 +46,14 @@ const Dashboard = () => {
   useEffect(() => {
     if (userDetails?.id && activeTab === 'history') {
       dispatch(fetchCarpoolHistory(userDetails.id));
+      console.log("ride history fetched:", rideHistory);
     }
   }, [dispatch, userDetails, activeTab]);
 
   useEffect(() => {
     if (userDetails?.id && activeTab === 'upcoming') {
       dispatch(fetchUpcomingRides(userDetails.id));
+      console.log("upcoming rides fetched:", upcomingRides);
     }
   }, [dispatch, userDetails, activeTab]);
 
@@ -53,15 +63,31 @@ const Dashboard = () => {
     }
     return 'Requester Name Unavailable';
   };
+   
+  useEffect(() => {
+    if (userDetails?.id) {
+      axiosInstance.get(`/carpools/history/${userDetails.id}/rated-ride-count`)
+        .then(response => {
+          if (response.data?.ratedRideCount !== undefined) {
+            setRatedRidesCount(response.data.ratedRideCount);
+          }
+        })
+        .catch(error => {
+          console.error("Error fetching rated ride count:", error);
+          if (error.response) {
+            console.error("Data:", error.response.data);
+            console.error("Status:", error.response.status);
+            console.error("Headers:", error.response.headers);
+          } else if (error.request) {
+            console.error("Request:", error.request);
+          } else {
+            console.error("Error message:", error.message);
+          }
+        });
+    }
+  }, [userDetails?.id]);
 
 
-  if (loading || (ridesLoading && activeTab === 'upcoming')) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <RingLoader color="#3498db" size={60} />
-      </div>
-    );
-  }
 
   if (error || (ridesError && activeTab === 'upcoming')) {
     return (
@@ -99,7 +125,7 @@ const Dashboard = () => {
                     <Star className="h-4 w-4 text-yellow-500" fill="currentColor" />
                     <span className="font-medium">{userDetails.rating.toFixed(1)}</span>
                     <span className="text-muted-foreground text-sm">
-                      ({userDetails.rides_offered + userDetails.rides_taken} rides)
+                      ({ratedRidesCount} rides) 
                     </span>
                   </div>
 

@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { MoreVertical, PhoneCall, Video, Send } from 'lucide-react';
-import { cn } from '../../lib/utils';
-import ChatHeader from './ChatHeader';
-import RideDetailsCard from './RideDetailsCard';
-import MessageList from './MessageList';
+// src/components/Messaging/ChatArea.jsx
+
+import React, { useState } from "react";
+import { Send } from "lucide-react";
+import { cn } from "../../lib/utils";
+import ChatHeader from "./ChatHeader";
+import RideDetailsCard from "./RideDetailsCard";
+import MessageList from "./MessageList";
 
 export default function ChatArea({
   activeContact,
@@ -12,58 +14,66 @@ export default function ChatArea({
   isConnected,
   connectError,
   handleSend,
-  currentUserId // Make sure to receive currentUserId prop
+  currentUserId,
+  rideId,              // now correctly received
 }) {
-  const [messageText, setMessageText] = useState('');
+  const [messageText, setMessageText] = useState("");
 
   const onSubmit = (e) => {
+    e.preventDefault();
     handleSend(e, messageText);
-    setMessageText('');
+    setMessageText("");
   };
 
   return (
     <div className="flex-1 flex flex-col">
-      {/* Chat Header */}
+      {/* Chat header */}
       <ChatHeader activeContact={activeContact} />
 
-      {/* Messages */}
+      {/* Ride details + message list */}
       <div className="flex-1 p-4 overflow-y-auto bg-muted/20 dark:bg-muted/5">
-        <RideDetailsCard />
-        <MessageList 
-          messages={messages} 
-          loading={loading} 
-          currentUserId={currentUserId} // Pass currentUserId down to MessageList
+        {/* Only render the ride card if rideId is truthy */}
+        {rideId && <RideDetailsCard rideId={rideId} />}
+
+        {/* The rest of the conversation */}
+        <MessageList
+          messages={messages}
+          loading={loading}
+          currentUserId={currentUserId}
         />
       </div>
 
-      {/* Input */}
+      {/* Input box */}
       <div className="p-4 border-t border-border bg-card">
         <form onSubmit={onSubmit} className="flex gap-2">
           <input
             type="text"
-            placeholder={isConnected ? "Type a message..." : "Reconnecting..."}
+            placeholder={isConnected ? "Type a message…" : "Reconnecting…"}
             value={messageText}
-            onChange={e => setMessageText(e.target.value)}
+            onChange={(e) => setMessageText(e.target.value)}
             className="input-base flex-1"
             disabled={!isConnected}
           />
-          <button 
-            type="submit" 
-            className="p-2 bg-primary text-white rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+          <button
+            type="submit"
+            className={cn(
+              "p-2 rounded-md hover:bg-primary/90",
+              isConnected
+                ? "bg-primary text-white"
+                : "bg-gray-400 text-gray-700 cursor-not-allowed"
+            )}
             disabled={!isConnected || !messageText.trim()}
           >
             <Send className="h-5 w-5" />
           </button>
         </form>
         {!isConnected && (
-          <p className="text-xs text-red-500 mt-2">
-            Disconnected from messaging service. Reconnecting...
+          <p className="mt-2 text-xs text-red-500">
+            Disconnected. Reconnecting…
           </p>
         )}
         {connectError && (
-          <p className="text-xs text-red-500 mt-2">
-            Error: {connectError}
-          </p>
+          <p className="mt-1 text-xs text-red-500">Error: {connectError}</p>
         )}
       </div>
     </div>

@@ -224,6 +224,7 @@ const MapModal = ({ open, rideId, onOpenChange, activeTab, route, stop, driverid
                                 rideId={rideId}
                                 onRideFinished={onOpenChange} 
                                 driver_id = {driverid}
+                                stops={stop}
                                 />
                                 </div>
                             )

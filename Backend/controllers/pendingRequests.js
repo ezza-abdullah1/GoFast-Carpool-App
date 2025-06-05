@@ -8,6 +8,7 @@ exports.getPendingRequests = async (req, res) => {
     const ridesAsDriver = await Ride.find({
       userId,
       numberOfSeats: { $gt: 0 },
+      status: "active",
     }).lean();
 
     const results = [];

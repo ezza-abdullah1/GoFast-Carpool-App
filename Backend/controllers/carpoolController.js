@@ -182,6 +182,8 @@ exports.updateCarpool = async (req, res) => {
       if (existingRide.userId) {
         await User.findByIdAndUpdate(existingRide.userId._id, { $inc: { rides_offered: 1 } });
       }
+
+      await Stop.updateMany({ rideId: rideId ,status:"pending"}, { $set: { status: 'decline' } });
     }
 
     const updatedRide = await Ride.findByIdAndUpdate(
@@ -437,26 +439,30 @@ exports.searchCarpools = async (req, res) => {
 
 exports.getUpcomingRides = async (req, res) => {
   const userId = req.params.id;
+
   try {
     const ridesAsDriver = await Ride.find({ userId, status: "active" }).lean();
+
     const stopsAsPassenger = await Stop.find({ userId, status: "accept" }).lean();
     const rideIdsFromStops = stopsAsPassenger.map(stop => stop.rideId.toString());
-    const ridesAsPassenger = await Ride.find({
-      _id: { $in: rideIdsFromStops, $nin: ridesAsDriver.map(r => r._id.toString()) }
-    }).lean();
 
+    const ridesAsPassenger = await Ride.find({
+      _id: { $in: rideIdsFromStops, $nin: ridesAsDriver.map(r => r._id.toString()) },
+      status: "active"
+    }).lean();
     const allRides = [...ridesAsDriver, ...ridesAsPassenger];
+
     const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
 
     const upcomingRides = [];
     for (const ride of allRides) {
       const rideDate = new Date(ride.date);
       rideDate.setHours(0, 0, 0, 0);
-      currentDate.setHours(0, 0, 0, 0);
 
       if (rideDate >= currentDate) {
         upcomingRides.push(ride);
-      } else if (ride.status === "active") {
+      } else {
         await Ride.findByIdAndUpdate(ride._id, { status: "inactive" });
       }
     }
@@ -467,8 +473,8 @@ exports.getUpcomingRides = async (req, res) => {
         return { ...ride, stops };
       })
     );
-
     return res.json(ridesWithStops);
+
   } catch (error) {
     console.error("Error getting user rides:", error);
     return res.status(500).json({ error: "Server error while fetching rides" });

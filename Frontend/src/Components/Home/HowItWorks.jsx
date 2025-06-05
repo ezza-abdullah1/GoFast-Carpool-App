@@ -1,8 +1,19 @@
 import React from 'react';
 import { CheckCircle2, MapPin, Calendar, Users } from 'lucide-react';
 import Button from '../ui/compatibility-button';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext'; // Import auth context
 
 const HowItWorks = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth(); // Get authentication state
+
+  const handleNavigation = () => {
+    if (!isAuthenticated) {
+      navigate('/', { state: { openSignUp: true } });
+    }
+  };
+
   const steps = [
     {
       icon: <CheckCircle2 className="h-8 w-8 text-primary" />,
@@ -25,18 +36,18 @@ const HowItWorks = () => {
       description: "Chat with your carpool group, confirm details, and enjoy shared commutes."
     }
   ];
-
+  
   return (
     <section className="py-20">
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl font-bold mb-4">How GoFAST Works</h2>
           <p className="text-lg text-muted-foreground">
-            Our simple 4-step process makes carpooling with fellow students easy, 
+            Our simple 4-step process makes carpooling with fellow students easy,
             safe, and convenient for your daily university commute.
           </p>
         </div>
-
+        
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {steps.map((step, index) => (
             <div key={index} className="relative animate-fade-in" style={{ animationDelay: `${index * 0.2}s` }}>
@@ -64,9 +75,13 @@ const HowItWorks = () => {
             </div>
           ))}
         </div>
-
+        
         <div className="mt-16 text-center">
-          <Button size="lg">
+          <Button 
+            size="lg"
+            onClick={handleNavigation}
+            disabled={isAuthenticated}
+          >
             Start Carpooling Now
           </Button>
         </div>

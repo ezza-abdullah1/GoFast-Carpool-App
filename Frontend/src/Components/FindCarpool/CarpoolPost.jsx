@@ -1,3 +1,5 @@
+// src/components/CarpoolPost/CarpoolPost.jsx
+
 import React, { useState, useEffect } from "react";
 import {
   Calendar,
@@ -11,13 +13,13 @@ import {
 import { cn } from "../../lib/utils";
 import MapModal from "../MapModal/MapModel";
 import ProfileCard from "./ProfileCard";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import RatingModal from "./RatingModal";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import axiosInstance from "../Authentication/redux/axiosInstance";
 import RideDetailsModal from "./RideDetailsModal";
-import ConfirmModal from '../ui/comfirmModal';
+import ConfirmModal from "../ui/comfirmModal";
 
 const CarpoolPost = ({
   id,
@@ -31,75 +33,100 @@ const CarpoolPost = ({
   activeTab,
   stops,
   onCarpoolCancelled,
-  requesterName, 
+  requesterName,
 }) => {
+  const D_ID = driver.id || driver.driverId;
+
   const [isExpanded, setIsExpanded] = useState(false);
   const [mapModalOpen, setMapModalOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [buttonText, setButtonText] = useState("");
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
   const [rideDetailsOpen, setRideDetailsOpen] = useState(false);
+  const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false);
+  const [messageLoading, setMessageLoading] = useState(false);
+
   const { userDetails } = useSelector((state) => state.user || {});
-  const [errorMessage, setErrorMessage] = useState('');
   const location = useLocation();
-  const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false); 
-
-  const handleProfileClick = () => {
-    if (userDetails.id === driver.driverId) {
-      toast.error("This is your Profile");
-    }
-    else {
-      setProfileModalOpen(true)
-    }
-  }
-
-  const handleClick = () => {
-    if (activeTab === "history") {
-      if (userDetails.id === driver.driverId) {
-        (toast.error("You cannot rate your own ride"))
-      } else
-        setRatingModalOpen(true);
-    } else {
-      // handle message functionality
-    }
-  };
+  const navigate = useNavigate();
 
   useEffect(() => {
-    setButtonText(location.pathname === "/carpools" ? "Request Seat" : "Show Route");
+    setButtonText(
+      location.pathname === "/carpools" ? "Request Seat" : "Show Route"
+    );
   }, [location.pathname]);
 
-  const handleRequestSeat = () => {
-    setMapModalOpen(true);
+  const handleProfileClick = () => {
+    if (!userDetails?.id) {
+      return toast.error("Please log in to view profiles.");
+    }
+    if (userDetails.id === D_ID) {
+      toast.error("This is your Profile");
+    } else {
+      setProfileModalOpen(true);
+    }
   };
 
-  const handleCancelConfirmation = () => {
-    if (userDetails.id !== driver.driverId) {
-      toast.error("You can only cancel your own ride");
-      return; 
+  const handleClick = async () => {
+    if (activeTab === "history") {
+      if (userDetails.id === D_ID) {
+        toast.error("You cannot rate your own ride");
+      } else {
+        setRatingModalOpen(true);
+      }
+      return;
     }
+
+    if (!userDetails?.id) {
+      return toast.error("Please log in to perform this action.");
+    }
+    if (userDetails.id === D_ID) {
+      return toast.error("You cannot message yourself");
+    }
+
+    setMessageLoading(true);
+    let conversationId;
+    try {
+      const { data } = await axiosInstance.get(
+        `/messages/conversation/${D_ID}`
+      );
+      conversationId = data.conversationId;
+    } catch (err) {
+      if ([400, 404].includes(err.response?.status)) {
+        const { data: postData } = await axiosInstance.post(
+          `/messages/conversation`,
+          { participants: [userDetails.id, D_ID] }
+        );
+        conversationId = postData.conversationId;
+      } else {
+        console.error(err);
+        toast.error("Failed to open chat. Please try again.");
+        setMessageLoading(false);
+        return;
+      }
+    }
+
+    navigate("/messages", {
+      state: { activeConversation: conversationId, rideId: id },
+    });
+    setMessageLoading(false);
+  };
+
+  const handleRequestSeat = () => setMapModalOpen(true);
+  const handleCancelConfirmation = () => {
+    if (!userDetails?.id) return toast.error("Please log in to cancel rides.");
+    if (userDetails.id !== D_ID) return toast.error("You can only cancel your own ride");
     setShowCancelConfirmModal(true);
   };
-
   const handleCancel = () => {
-    setShowCancelConfirmModal(false); 
-    console.log("Attempting to cancel carpool with ID (via Redux):", id);
-    if (onCarpoolCancelled) {
-      onCarpoolCancelled(id);
-      toast.success("Ride cancelled successfully");
-    }
-  };
-
-  const handleCancelModalClose = () => {
     setShowCancelConfirmModal(false);
+    onCarpoolCancelled?.(id);
+    toast.success("Ride cancelled successfully");
   };
-
   const toggleExpand = () => {
-    if (variant === "default") setIsExpanded(!isExpanded);
+    if (variant === "default") setIsExpanded((v) => !v);
   };
-
-  const handleDetailsClick = () => {
-    setRideDetailsOpen(true);
-  };
+  const handleDetailsClick = () => setRideDetailsOpen(true);
 
   return (
     <div
@@ -111,17 +138,10 @@ const CarpoolPost = ({
     >
       <div className="flex gap-4">
         {/* Avatar */}
-        <div
-          onClick={handleProfileClick}
-          className="cursor-pointer flex-shrink-0"
-        >
+        <div onClick={handleProfileClick} className="cursor-pointer flex-shrink-0">
           <div className="h-12 w-12 rounded-full bg-primary-100 dark:bg-primary-900/40 overflow-hidden flex items-center justify-center">
             {driver?.image ? (
-              <img
-                src={driver.image}
-                alt={driver?.name || "Driver"}
-                className="h-full w-full object-cover"
-              />
+              <img src={driver.image} alt={driver?.name || "Driver"} className="h-full w-full object-cover"/>
             ) : (
               <span className="text-lg font-semibold text-primary-600 dark:text-primary-300">
                 {driver?.name?.charAt(0) || "?"}
@@ -134,55 +154,43 @@ const CarpoolPost = ({
         <div className="flex-1 min-w-0">
           <div className="flex justify-between">
             <div>
-              <h3
-                className="text-lg font-semibold truncate cursor-pointer"
-                onClick={handleProfileClick}
-              >
+              <h3 onClick={handleProfileClick} className="text-lg font-semibold truncate cursor-pointer">
                 {driver.name}
               </h3>
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
                 <span className="flex items-center">
-                  <Star
-                    className="h-3.5 w-3.5 text-yellow-500 mr-1"
-                    fill="currentColor"
-                  />
+                  <Star className="h-3.5 w-3.5 text-yellow-500 mr-1" fill="currentColor"/>
                   {driver.rating.toFixed(1)}
                 </span>
                 <span className="mx-1.5">•</span>
                 <span>{driver.department}</span>
               </div>
             </div>
-
             {variant === "default" && activeTab !== "history" && (
-              <div className="flex items-center text-sm">
-                <span
-                  className={cn(
-                    "flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium",
-                    seats.available > 0
-                      ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300"
-                      : "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300"
-                  )}
-                >
-                  <Users className="h-3 w-3" />
-                  {seats.available} seat{seats.available !== 1 ? "s" : ""}{" "}
-                  available
-                </span>
-              </div>
+              <span
+                className={cn(
+                  "flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium",
+                  seats.available > 0
+                    ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300"
+                    : "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                )}
+              >
+                <Users className="h-3 w-3"/>
+                {seats.available} seat{seats.available !== 1 ? "s" : ""} available
+              </span>
             )}
           </div>
 
           {/* Route */}
           <div className={cn("mt-3", variant === "compact" && "text-sm")}>
             <div className="flex items-start gap-2">
-              <MapPin className={cn("h-5 w-5 text-primary mt-0.5", variant === "compact" && "h-4 w-4")} />
+              <MapPin className={cn("h-5 w-5 text-primary mt-0.5", variant === "compact" && "h-4 w-4")}/>
               <div className="flex-1">
                 <div className="font-medium">
-                  From:{" "}
-                  <span className="text-muted-foreground">{route.pickup?.name || route.pickup || 'Unknown'}</span>
+                  From: <span className="text-muted-foreground">{route.pickup?.name || route.pickup || "Unknown"}</span>
                 </div>
                 <div className="font-medium mt-1">
-                  To:{" "}
-                  <span className="text-muted-foreground">{route.dropoff?.name || route.dropoff || 'Unknown'}</span>
+                  To: <span className="text-muted-foreground">{route.dropoff?.name || route.dropoff || "Unknown"}</span>
                 </div>
               </div>
             </div>
@@ -191,11 +199,11 @@ const CarpoolPost = ({
           {/* Schedule */}
           <div className={cn("mt-3 grid", variant === "default" ? "grid-cols-2" : "grid-cols-1 text-sm")}>
             <div className="flex items-center gap-2">
-              <Calendar className={cn("h-5 w-5 text-primary", variant === "compact" && "h-4 w-4")} />
+              <Calendar className={cn("h-5 w-5 text-primary", variant === "compact" && "h-4 w-4")}/>
               <span>{schedule.date}</span>
             </div>
             <div className="flex items-center gap-2">
-              <Clock className={cn("h-5 w-5 text-primary", variant === "compact" && "h-4 w-4")} />
+              <Clock className={cn("h-5 w-5 text-primary", variant === "compact" && "h-4 w-4")}/>
               <span>{schedule.time}</span>
             </div>
           </div>
@@ -204,10 +212,7 @@ const CarpoolPost = ({
           {schedule.recurring?.length > 0 && isExpanded && (
             <div className="mt-3 flex flex-wrap gap-2">
               {schedule.recurring.map((day, idx) => (
-                <span
-                  key={idx}
-                  className="bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-secondary-300 px-2.5 py-0.5 rounded-full text-xs font-medium"
-                >
+                <span key={idx} className="bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-secondary-300 px-2.5 py-0.5 rounded-full text-xs font-medium">
                   {day}
                 </span>
               ))}
@@ -220,10 +225,7 @@ const CarpoolPost = ({
               <div className="text-sm font-medium mb-1">Preferences:</div>
               <div className="flex flex-wrap gap-2">
                 {preferences.map((pref, idx) => (
-                  <span
-                    key={idx}
-                    className="bg-accent text-accent-foreground px-2.5 py-0.5 rounded-full text-xs font-medium"
-                  >
+                  <span key={idx} className="bg-accent text-accent-foreground px-2.5 py-0.5 rounded-full text-xs font-medium">
                     {pref}
                   </span>
                 ))}
@@ -231,152 +233,102 @@ const CarpoolPost = ({
             </div>
           )}
 
-          {/* Actions (for default variant) */}
+          {/* Actions */}
           {variant === "default" && (
-            <div className="mt-4 flex flex-nowrap items-center justify-around gap-2">
+            <div className="mt-4 flex items-center justify-around gap-2">
               {activeTab === "upcoming" && (
-                <button
-                  onClick={handleCancelConfirmation}
-                  className="flex-none h-[44px] w-[44px] px-4 text-sm bg-red-600 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-red-700 relative group"
-                >
-                  <X className="h-4 w-4" />
-                  <span  onClick={handleCancel} className="absolute bottom-[50px] left-1/2 transform -translate-x-1/2 hidden group-hover:block bg-white text-black text-sm text-center px-2 py-1 rounded-md" >
-                    Cancel Ride
-                  </span>
+                <button onClick={handleCancelConfirmation} className="h-[44px] w-[44px] bg-red-600 text-white rounded-xl flex items-center justify-center">
+                  <X className="h-4 w-4"/>
                 </button>
               )}
               {activeTab !== "history" && (
-                <button
-                  onClick={handleRequestSeat}
-                  className="flex-1 h-[44px] px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600 dark:bg-button-dark dark:hover:bg-button-hover dark:text-white"
-                >
-                  {buttonText !== "Request Seat" && <MapPin className="h-4 w-4" />}
+                <button onClick={handleRequestSeat} className="flex-1 h-[44px] bg-blue-500 text-white rounded-xl">
                   {buttonText}
                 </button>
               )}
+
               {activeTab === "history" && (
+                <>
+                  <button onClick={handleClick} className="flex-1 h-[44px] bg-yellow-500 text-white rounded-xl flex items-center justify-center">
+                    <Star className="h-4 w-4 mr-1" fill="currentColor"/>Rate Ride
+                  </button>
+                  <button onClick={handleDetailsClick} className="flex-1 h-[44px] bg-blue-500 text-white rounded-xl flex items-center justify-center">
+                    Ride Details
+                  </button>
+                </>
+              )}
+
+              {activeTab !== "history" && (
                 <button
-                  className="flex-grow sm:flex-grow-0 h-[44px] px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600 dark:bg-button-dark dark:hover:bg-button-hover dark:text-white" onClick={handleDetailsClick} // Add the action listener
+                  onClick={handleClick}
+                  disabled={messageLoading}
+                  className={cn(
+                    "flex-1 h-[44px] rounded-xl flex items-center justify-center",
+                    messageLoading
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-blue-500 text-white"
+                  )}
                 >
-                  Ride Details
+                  <MessageCircle className="h-4 w-4 mr-1"/>
+                  {messageLoading ? "Opening…" : "Message"}
                 </button>
               )}
-              <button
-                className="flex-1 h-[44px] px-4 text-sm bg-blue-500 text-white rounded-xl flex items-center justify-center transition-colors duration-200 hover:bg-blue-600 dark:bg-button-dark dark:hover:bg-button-hover dark:text-white"
-                onClick={handleClick}
-              >
-                {activeTab !== "history" ? (
-                  <>
-                    <MessageCircle className="h-4 w-4" />
-                    Message
-                  </>
-                ) : (
-                  <>
-                    <Star className="h-4 w-4 mr-1" />
-                    <span className="pl-1">Rate Ride</span>
-                  </>
-                )}
-              </button>
 
-
-              {(schedule.recurring || preferences.length > 0) && (
-                <button
-                  onClick={toggleExpand}
-                  aria-label={isExpanded ? "Show less" : "Show more"}
-                  className="flex-none h-[44px] px-2 text-sm bg-inherit text-black dark:text-white rounded-xl dark:hover:bg-button-hover/60 transition-colors"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className={cn("h-5 w-5 transition-transform duration-200", isExpanded && "rotate-180")}
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="6 9 12 15 18 9" />
+              {(schedule.recurring?.length > 0 || preferences.length > 0) && (
+                <button onClick={toggleExpand} className="h-[44px] px-2 rounded-xl" aria-label={isExpanded ? "Show less" : "Show more"}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className={cn("h-5 w-5", isExpanded && "rotate-180")} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="6 9 12 15 18 9"/>
                   </svg>
                 </button>
               )}
 
-              <MapModal open={mapModalOpen} rideId={id} route={route} stop={stops} onOpenChange={setMapModalOpen} activeTab={activeTab} driverid={driver.driverId} />
+              <MapModal
+                open={mapModalOpen}
+                rideId={id}
+                route={route}
+                stop={stops}
+                onOpenChange={setMapModalOpen}
+                activeTab={activeTab}
+                driverid={D_ID}
+              />
             </div>
           )}
 
-          {/* Compact Variant Actions */}
+          {/* Compact Variant */}
           {variant === "compact" && (
             <div className="mt-3 flex items-center justify-between">
-              <div
-                className={cn(
-                  "flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium",
-                  seats.available > 0
-                    ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300"
-                    : "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300"
-                )}
-              >
-                <Users className="h-3 w-3" />
-                {seats.available} seat{seats.available !== 1 ? "s" : ""}{" "}
-                available
-              </div>
+              <span className={cn(
+                "flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium",
+                seats.available > 0 ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"
+              )}>
+                <Users className="h-3 w-3"/> {seats.available} seat{seats.available !== 1 ? "s" : ""}
+              </span>
               {activeTab === "history" ? (
-                <button
-                  style={{
-                    height: "32px",
-                    fontSize: "14px",
-                    padding: "0 12px",
-                  }}
-                  onClick={handleDetailsClick} // Add the action listener
-                >
-                  Details
-                </button>
+                <button onClick={handleDetailsClick}>Details</button>
               ) : (
-                <button
-                  style={{
-                    height: "32px",
-                    fontSize: "14px",
-                    padding: "0 12px",
-                  }}
-                >
-                  Show Route
-                </button>
+                <button onClick={handleRequestSeat}>Show Route</button>
               )}
             </div>
           )}
 
           {activeTab === "offers" && requesterName && (
-            <div className={cn(
-              "mt-3 text-sm flex",
-              variant === "compact" && "mt-2",
-              "justify-center" // Moved justify-center to the outer div
-            )}>
+            <div className="mt-3 text-sm justify-center flex">
               <span className="text-red-600 font-bold">Requested by:</span>
-              <span className="font-medium text-red-600 font-bold ml-1">{requesterName}</span>
+              <span className="ml-1 font-bold text-red-600">{requesterName}</span>
             </div>
           )}
         </div>
       </div>
 
-      <RatingModal
-        open={ratingModalOpen}
-        onOpenChange={setRatingModalOpen}
-        rideId={id}
-      />
+      {/* Modals */}
+      <RatingModal open={ratingModalOpen} onOpenChange={setRatingModalOpen} rideId={id}/>
       {profileModalOpen && (
-        <ProfileCard
-          profileId={driver.id ? driver.id : driver.driverId}
-          open={profileModalOpen}
-          onOpenChange={setProfileModalOpen}
-        />
+        <ProfileCard profileId={D_ID} open={profileModalOpen} onOpenChange={setProfileModalOpen}/>
       )}
-      <RideDetailsModal
-        open={rideDetailsOpen}
-        onOpenChange={setRideDetailsOpen}
-        rideId={id}
-      />
+      <RideDetailsModal open={rideDetailsOpen} onOpenChange={setRideDetailsOpen} rideId={id}/>
       <ConfirmModal
         isOpen={showCancelConfirmModal}
-        onClose={handleCancelModalClose}
+        onClose={() => setShowCancelConfirmModal(false)}
         onConfirm={handleCancel}
         message="Are you sure you want to cancel this ride?"
       />

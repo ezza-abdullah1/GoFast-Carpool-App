@@ -83,3 +83,26 @@ exports.rateRideAndUpdateDriverRating = async (req, res) => {
     return res.status(500).json({ error: "Server error while rating ride" });
   }
 };
+exports.getDriverRideCount = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const allRatedRides = await Ride.find({
+      userId: userId,
+      RatingCount: { $gt: 0 }
+    });
+
+    let totalRatingCountSum = 0;
+    for (const ride of allRatedRides) {
+      totalRatingCountSum += ride.RatingCount || 0; // Add RatingCount, default to 0 if missing
+    }
+
+    console.log("Total Rating Count Sum", totalRatingCountSum);
+    console.log("ID IN COUNT RIDE", userId);
+
+    return res.status(200).json({ ratedRideCount: totalRatingCountSum }); // Rename the key for clarity
+  } catch (error) {
+    console.error("Error fetching driver's rated ride count sum:", error);
+    return res.status(500).json({ error: "Server error while fetching ride count sum" });
+  }
+};
